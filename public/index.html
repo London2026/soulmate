@@ -1763,6 +1763,58 @@
     'https://xkgorkcrkignmpkjlbda.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrZ29ya2Nya2lnbm1wa2psYmRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjkxOTgsImV4cCI6MjA5NDUwNTE5OH0.JutL1S7keioI9zCOtQfq8iV6-LBQfPTPjctHfmYvkEo'
   )
+
+  async function initAuthNav() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) return
+
+      const user = session.user
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, onboarding_complete')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const name = profile?.full_name
+        || user.user_metadata?.full_name
+        || user.email?.split('@')[0]
+        || 'Member'
+
+      const isOnboarded = profile?.onboarding_complete
+      const profileHref = isOnboarded ? '/discover' : '/onboarding'
+      const profileLabel = isOnboarded ? 'My Profile' : 'Create Profile'
+
+      const authArea = document.getElementById('nav-auth-area')
+      if (!authArea) return
+
+      authArea.innerHTML = `
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--text-mid);font-style:italic;">
+            ${name}
+          </span>
+          <span style="font-family:'Raleway',sans-serif;font-size:0.55rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.65rem;background:rgba(139,105,20,0.08);border:1px solid rgba(139,105,20,0.3);color:var(--gold);border-radius:20px;">
+            Free Plan
+          </span>
+          <a href="${profileHref}" class="nav-cta" style="margin:0;text-decoration:none;">${profileLabel}</a>
+          <button onclick="handleSignOut()" style="font-family:'Raleway',sans-serif;font-size:0.6rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--sepia);background:none;border:1px solid rgba(90,110,130,0.3);border-radius:4px;cursor:pointer;padding:0.45rem 0.75rem;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--burgundy)';this.style.color='var(--burgundy)'" onmouseout="this.style.borderColor='rgba(90,110,130,0.3)';this.style.color='var(--sepia)'">
+            Sign Out
+          </button>
+        </div>
+      `
+    } catch (e) { console.warn('Auth nav error', e) }
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    window.location.reload()
+  }
+
+  document.addEventListener('DOMContentLoaded', initAuthNav)
+
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') initAuthNav()
+  })
 </script>
 </head>
 <body>
@@ -1783,7 +1835,9 @@
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#safety">Safety</a></li>
   </ul>
-  <button class="nav-cta" onclick="openModal()">Begin Journey</button>
+  <div id="nav-auth-area">
+    <button class="nav-cta" onclick="openModal()">Begin Journey</button>
+  </div>
   <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleMenu()">
     <span></span><span></span><span></span>
   </button>
