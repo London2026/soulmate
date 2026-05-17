@@ -66,7 +66,7 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
       else if (phone) result = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' })
       else throw new Error('No contact provided')
       if (result?.error) throw result.error
-      router.push(type === 'signup' ? '/onboarding' : '/discover')
+      router.push(type === 'signup' ? '/pricing' : '/discover')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid code. Please try again.')
       setDigits(Array(6).fill(''))

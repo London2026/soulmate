@@ -2748,12 +2748,7 @@
   const users = {};
 
   function openModal() {
-    // If already logged in, just close
-    if (localStorage.getItem('sm_user')) { closeModal(); return; }
-    document.getElementById('registerModal').classList.add('open');
-    document.body.style.overflow = 'hidden';
-    mGoToStep(1);
-    switchModalTab('register');
+    window.location.href = '/signup';
   }
 
   function closeModal() {
