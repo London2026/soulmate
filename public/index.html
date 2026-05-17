@@ -1250,7 +1250,7 @@
     inset: 0;
     background: rgba(20, 8, 4, 0.80);
     z-index: 9999;
-    display: flex;
+    display: none !important;   /* replaced by Next.js auth flow */
     align-items: center;
     justify-content: center;
     padding: 1rem;
@@ -1784,12 +1784,6 @@
       const isOnboarded = profile?.onboarding_complete
       const profileHref = isOnboarded ? '/discover' : '/onboarding'
       const profileLabel = isOnboarded ? 'My Profile' : 'Create Profile'
-
-      // When logged in, all "Begin Journey" / openModal() calls → go to onboarding
-      const isOnboarded = profile?.onboarding_complete
-      window.openModal = function() {
-        window.location.href = isOnboarded ? '/discover' : '/onboarding'
-      }
 
       const authArea = document.getElementById('nav-auth-area')
       if (!authArea) return
@@ -2747,8 +2741,18 @@
   // Simple in-memory user store (demo)
   const users = {};
 
-  function openModal() {
-    window.location.href = '/signup';
+  async function openModal() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        const { data: p } = await supabase
+          .from('profiles').select('onboarding_complete')
+          .eq('id', session.user.id).maybeSingle()
+        window.location.href = p?.onboarding_complete ? '/discover' : '/onboarding'
+      } else {
+        window.location.href = '/signup'
+      }
+    } catch { window.location.href = '/signup' }
   }
 
   function closeModal() {
