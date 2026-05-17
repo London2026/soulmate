@@ -23,7 +23,7 @@ export interface ProfileData {
   meeting_room_id: string | null
 }
 
-export default function ProfileCard({ profile }: { profile: ProfileData }) {
+export default function ProfileCard({ profile, canReveal = true, canMeet = true }: { profile: ProfileData; canReveal?: boolean; canMeet?: boolean }) {
   const [revealed, setRevealed] = useState(profile.already_revealed)
   const [frontUrl, setFrontUrl] = useState<string | null>(profile.front_photo_url)
   const [revealing, setRevealing] = useState(false)
@@ -154,7 +154,15 @@ export default function ProfileCard({ profile }: { profile: ProfileData }) {
 
       {/* ── Reveal Section ── */}
       <div className="px-6 py-5">
-        {revealed && frontUrl ? (
+        {!canReveal && !revealed ? (
+          <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+            <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: 'rgba(90,110,130,0.1)', border: '1px solid rgba(90,110,130,0.2)', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', margin: '0 auto 0.75rem' }}>🔒</div>
+            <p className="text-xs" style={{ color: 'var(--ivory-dim)', marginBottom: '0.5rem' }}>Face reveal requires a paid plan</p>
+            <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--antique-gold)', textDecoration: 'none', border: '1px solid rgba(201,168,76,0.35)', padding: '0.5rem 1rem', borderRadius: '4px', display: 'inline-block' }}>
+              Upgrade Plan →
+            </a>
+          </div>
+        ) : revealed && frontUrl ? (
           <div className="space-y-4">
             <p
               className="text-xs text-center tracking-widest uppercase"
@@ -178,7 +186,11 @@ export default function ProfileCard({ profile }: { profile: ProfileData }) {
 
             {/* Video meeting button — appears after reveal */}
             <div className="pt-1">
-              {roomId ? (
+              {!canMeet ? (
+                <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '8px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ivory-dim)', border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)' }}>
+                  🔒 Upgrade to request meetings
+                </a>
+              ) : roomId ? (
                 <a
                   href={`https://meet.jit.si/SoulMate-${roomId}`}
                   target="_blank"

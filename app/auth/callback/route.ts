@@ -6,7 +6,6 @@ import type { NextRequest } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/discover'
 
   if (code) {
     const cookieStore = await cookies()
@@ -24,9 +23,29 @@ export async function GET(request: NextRequest) {
         },
       }
     )
+
     const { error } = await supabase.auth.exchangeCodeForSession(code)
+
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_complete, plan')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (profile?.onboarding_complete) {
+          // Profile done → go straight to discover
+          return NextResponse.redirect(`${origin}/discover`)
+        } else if (profile?.plan) {
+          // Has picked a plan but not finished onboarding
+          return NextResponse.redirect(`${origin}/onboarding`)
+        } else {
+          // New user → pick a plan first
+          return NextResponse.redirect(`${origin}/pricing`)
+        }
+      }
     }
   }
 

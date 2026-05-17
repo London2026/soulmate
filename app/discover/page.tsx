@@ -10,14 +10,18 @@ export default async function DiscoverPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Guard: onboarding must be complete
+  // Guard: onboarding must be complete + get plan
   const { data: me } = await supabase
     .from('profiles')
-    .select('onboarding_complete')
+    .select('onboarding_complete, plan')
     .eq('id', user.id)
     .maybeSingle()
 
   if (!me?.onboarding_complete) redirect('/onboarding')
+
+  const userPlan = me?.plan ?? 'free'
+  const canReveal = userPlan !== 'free'
+  const canMeet   = userPlan !== 'free'
 
   // Fetch all complete profiles except the current user
   const { data: rows } = await supabase
@@ -146,7 +150,7 @@ export default async function DiscoverPage() {
         ) : (
           <div className="space-y-8">
             {profiles.map((p) => (
-              <ProfileCard key={p.id} profile={p} />
+              <ProfileCard key={p.id} profile={p} canReveal={canReveal} canMeet={canMeet} />
             ))}
           </div>
         )}
