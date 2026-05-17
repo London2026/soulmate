@@ -1785,6 +1785,12 @@
       const profileHref = isOnboarded ? '/discover' : '/onboarding'
       const profileLabel = isOnboarded ? 'My Profile' : 'Create Profile'
 
+      // When logged in, all "Begin Journey" / openModal() calls → go to onboarding
+      const isOnboarded = profile?.onboarding_complete
+      window.openModal = function() {
+        window.location.href = isOnboarded ? '/discover' : '/onboarding'
+      }
+
       const authArea = document.getElementById('nav-auth-area')
       if (!authArea) return
 
