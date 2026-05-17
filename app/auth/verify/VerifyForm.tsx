@@ -5,11 +5,17 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-interface Props {
-  email?: string
-  phone?: string
-  name?: string
-  type: string
+interface Props { email?: string; phone?: string; name?: string; type: string }
+
+const c = {
+  cream: '#f4f1eb',
+  navy: '#0d1f3c',
+  navyMid: '#1a3a5c',
+  burgundy: '#1b3a6b',
+  gold: '#8b6914',
+  goldLight: '#c9a84c',
+  sepia: '#5a6e82',
+  border: 'rgba(13,31,60,0.15)',
 }
 
 export default function VerifyForm({ email, phone, name, type }: Props) {
@@ -23,9 +29,7 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
   const destination = email ?? phone ?? ''
   const masked = email
     ? email.replace(/(.{2}).*(@.*)/, '$1•••$2')
-    : phone
-    ? phone.replace(/(\+\d{2})\d+(\d{4})/, '$1•••••$2')
-    : ''
+    : phone ? phone.replace(/(\+\d{2})\d+(\d{4})/, '$1•••••$2') : ''
 
   function handleChange(index: number, value: string) {
     if (!/^\d*$/.test(value)) return
@@ -38,9 +42,7 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
   }
 
   function handleKeyDown(index: number, e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Backspace' && !digits[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
-    }
+    if (e.key === 'Backspace' && !digits[index] && index > 0) inputRefs.current[index - 1]?.focus()
   }
 
   function handlePaste(e: ClipboardEvent<HTMLInputElement>) {
@@ -50,8 +52,7 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
     const next = [...digits]
     pasted.split('').forEach((ch, i) => { next[i] = ch })
     setDigits(next)
-    const focusIndex = Math.min(pasted.length, 5)
-    inputRefs.current[focusIndex]?.focus()
+    inputRefs.current[Math.min(pasted.length, 5)]?.focus()
     if (pasted.length === 6) handleVerify(pasted)
   }
 
@@ -59,18 +60,12 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
     setLoading(true)
     setError('')
     const supabase = createClient()
-
     try {
       let result
-      if (email) {
-        result = await supabase.auth.verifyOtp({ email, token: code, type: 'email' })
-      } else if (phone) {
-        result = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' })
-      } else {
-        throw new Error('No contact method provided')
-      }
-
-      if (result.error) throw result.error
+      if (email) result = await supabase.auth.verifyOtp({ email, token: code, type: 'email' })
+      else if (phone) result = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' })
+      else throw new Error('No contact provided')
+      if (result?.error) throw result.error
       router.push(type === 'signup' ? '/onboarding' : '/discover')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid code. Please try again.')
@@ -83,157 +78,96 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
 
   async function handleResend() {
     const supabase = createClient()
-    if (email) {
-      await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: type === 'signup' } })
-    } else if (phone) {
-      await supabase.auth.signInWithOtp({ phone })
-    }
+    if (email) await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: type === 'signup' } })
+    else if (phone) await supabase.auth.signInWithOtp({ phone })
     setResent(true)
     setDigits(Array(6).fill(''))
     inputRefs.current[0]?.focus()
     setTimeout(() => setResent(false), 4000)
   }
 
-  const boxStyle = (filled: boolean) => ({
-    backgroundColor: 'var(--oxford-navy)',
-    border: `1px solid ${filled ? 'var(--antique-gold)' : 'rgba(201,168,76,0.25)'}`,
-    color: 'var(--ivory)',
-    transition: 'border-color 0.2s',
-  })
-
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: 'var(--oxford-navy)' }}
-    >
-      <div
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(201,168,76,0.07) 0%, transparent 70%)',
-        }}
-      />
+    <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
 
-      <div className="w-full max-w-md relative">
+      {/* Brand */}
+      <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+        <Link href="/" style={{ textDecoration: 'none' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>💘</div>
+          <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2.4rem', fontWeight: 700, color: c.navy, margin: '0 0 0.3rem', letterSpacing: '0.02em' }}>
+            Soul Mate
+          </h1>
+        </Link>
+        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: c.gold, margin: 0 }}>
+          ✦ Find Your Forever ✦
+        </p>
+      </div>
 
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <Link href="/">
-            <div className="text-4xl mb-3">💘</div>
-            <h1
-              className="text-4xl tracking-wide mb-2"
-              style={{ fontFamily: 'var(--font-playfair), Georgia, serif', color: 'var(--ivory)' }}
-            >
-              Soul Mate
-            </h1>
-          </Link>
-          <div
-            className="mx-auto mt-5 h-px w-24"
-            style={{ background: 'linear-gradient(to right, transparent, var(--antique-gold), transparent)' }}
-          />
-        </div>
+      {/* Card */}
+      <div style={{ width: '100%', maxWidth: '440px', background: '#fff', borderRadius: '10px', boxShadow: '0 16px 60px rgba(13,31,60,0.12)', border: `1px solid ${c.border}`, overflow: 'hidden' }}>
 
-        {/* Card */}
-        <div
-          className="rounded-2xl px-8 py-10"
-          style={{
-            backgroundColor: 'var(--oxford-navy-mid)',
-            border: '1px solid rgba(201,168,76,0.2)',
-            boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
-          }}
-        >
-          {/* Check mark icon */}
-          <div
-            className="mx-auto mb-6 w-16 h-16 rounded-full flex items-center justify-center text-2xl"
-            style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)' }}
-          >
-            ✉️
-          </div>
-
-          <h2
-            className="text-2xl text-center mb-2"
-            style={{ fontFamily: 'var(--font-playfair), Georgia, serif', color: 'var(--ivory)' }}
-          >
-            Check Your{' '}
-            {email ? 'Inbox' : 'Messages'}
+        {/* Card header */}
+        <div style={{ padding: '1.8rem 2rem 1.4rem', borderBottom: `1px solid ${c.border}`, textAlign: 'center', background: c.cream }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✉️</div>
+          <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.6rem', fontWeight: 600, color: c.navy, margin: '0 0 0.2rem' }}>
+            Check Your {email ? 'Inbox' : 'Messages'}
           </h2>
-
-          <p className="text-center text-sm mb-2" style={{ color: 'var(--ivory-dim)' }}>
+          <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: '1rem', color: c.sepia, margin: '0 0 0.25rem', fontStyle: 'italic' }}>
             We sent a 6-digit code to
           </p>
-          <p
-            className="text-center text-sm font-medium mb-8"
-            style={{ color: 'var(--antique-gold)' }}
-          >
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 600, color: c.burgundy, margin: 0 }}>
             {masked || destination}
           </p>
+        </div>
 
-          {/* OTP Boxes */}
-          <div className="flex gap-3 justify-center mb-6">
+        {/* OTP input */}
+        <div style={{ padding: '1.75rem 2rem' }}>
+          <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginBottom: '1.25rem' }}>
             {digits.map((digit, i) => (
-              <input
-                key={i}
+              <input key={i}
                 ref={(el) => { inputRefs.current[i] = el }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
+                type="text" inputMode="numeric" maxLength={1}
                 value={digit}
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 onPaste={handlePaste}
                 disabled={loading}
-                className="w-11 h-14 text-center text-xl font-semibold rounded-lg outline-none"
-                style={boxStyle(!!digit)}
-                onFocus={(e) => (e.target.style.borderColor = 'var(--antique-gold)')}
-                onBlur={(e) => (e.target.style.borderColor = digit ? 'var(--antique-gold)' : 'rgba(201,168,76,0.25)')}
-              />
+                style={{ width: '46px', height: '54px', textAlign: 'center', fontSize: '1.4rem', fontWeight: 600, fontFamily: '"Playfair Display", serif', border: `1px solid ${digit ? c.burgundy : 'rgba(13,31,60,0.18)'}`, background: 'rgba(244,241,235,0.4)', color: c.navy, borderRadius: '6px', outline: 'none', transition: 'border-color 0.2s' }}
+                onFocus={(e) => (e.target.style.borderColor = c.burgundy)}
+                onBlur={(e) => (e.target.style.borderColor = digit ? c.burgundy : 'rgba(13,31,60,0.18)')} />
             ))}
           </div>
 
+          {loading && <p style={{ textAlign: 'center', color: c.sepia, fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', marginBottom: '0.75rem' }}>Verifying…</p>}
+
           {error && (
-            <p className="text-sm text-center rounded-lg px-3 py-2 mb-4" style={{ color: '#F87171', backgroundColor: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)' }}>
+            <div style={{ background: 'rgba(158,42,43,0.07)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '4px', padding: '0.65rem 0.9rem', marginBottom: '1rem', color: '#9e2a2b', fontSize: '0.85rem', textAlign: 'center', fontFamily: '"Cormorant Garamond", serif' }}>
               {error}
-            </p>
+            </div>
           )}
 
           {resent && (
-            <p className="text-sm text-center mb-4" style={{ color: 'var(--antique-gold)' }}>
+            <p style={{ textAlign: 'center', color: '#2e7d32', fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', marginBottom: '0.75rem' }}>
               ✓ A new code has been sent
             </p>
           )}
 
-          {loading && (
-            <p className="text-sm text-center mb-4" style={{ color: 'var(--ivory-dim)' }}>
-              Verifying…
+          <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: '1.25rem', textAlign: 'center' }}>
+            <p style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontSize: '1rem', color: c.sepia, margin: '0 0 0.5rem' }}>
+              Didn&apos;t receive it?{' '}
+              <button onClick={handleResend} style={{ background: 'none', border: 'none', color: c.burgundy, fontWeight: 600, cursor: 'pointer', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem' }}>
+                Resend code
+              </button>
             </p>
-          )}
-
-          <div
-            className="my-6 h-px"
-            style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.2), transparent)' }}
-          />
-
-          <p className="text-center text-sm" style={{ color: 'var(--ivory-dim)' }}>
-            Didn't receive it?{' '}
-            <button
-              onClick={handleResend}
-              className="font-medium transition-colors"
-              style={{ color: 'var(--antique-gold)', background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              Resend code
-            </button>
-          </p>
-
-          <p className="text-center text-sm mt-3" style={{ color: 'var(--ivory-dim)' }}>
-            <Link href={type === 'signup' ? '/signup' : '/login'} style={{ color: 'var(--ivory-dim)' }}>
+            <Link href={type === 'signup' ? '/signup' : '/login'} style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.1em', color: c.sepia, textDecoration: 'none' }}>
               ← Go back
             </Link>
-          </p>
+          </div>
         </div>
-
-        <p className="text-center text-xs mt-8" style={{ color: 'rgba(189,181,166,0.4)' }}>
-          By continuing you agree to our Terms & Privacy Policy
-        </p>
       </div>
+
+      <p style={{ marginTop: '1.25rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', letterSpacing: '0.1em', color: c.sepia, textAlign: 'center' }}>
+        By continuing you agree to our Terms &amp; Privacy Policy
+      </p>
     </div>
   )
 }
