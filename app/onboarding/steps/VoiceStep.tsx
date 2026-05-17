@@ -2,163 +2,114 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-interface Props {
-  onVoiceChange: (blob: Blob | null) => void
-  hasRecording: boolean
-}
+interface Props { onVoiceChange: (blob: Blob | null) => void; hasRecording: boolean }
+
+const c = { navy: '#0d1f3c', gold: '#8b6914', goldLight: '#c9a84c', sepia: '#5a6e82', rose: '#9e2a2b' }
 
 export default function VoiceStep({ onVoiceChange, hasRecording }: Props) {
   const [recording, setRecording] = useState(false)
   const [seconds, setSeconds] = useState(0)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
-  const [permissionDenied, setPermissionDenied] = useState(false)
+  const [denied, setDenied] = useState(false)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<BlobPart[]>([])
 
   useEffect(() => {
     return () => {
-      if (recorderRef.current?.state === 'recording') {
-        recorderRef.current.stop()
-      }
-      recorderRef.current?.stream?.getTracks().forEach((t) => t.stop())
+      recorderRef.current?.stream?.getTracks().forEach(t => t.stop())
     }
   }, [])
 
   useEffect(() => {
     if (!recording) return
-    const id = setInterval(() => {
-      setSeconds((s) => {
-        if (s >= 60) { stopRecording(); return 60 }
-        return s + 1
-      })
-    }, 1000)
+    const id = setInterval(() => setSeconds(s => { if (s >= 60) { stopRecording(); return 60 } return s + 1 }), 1000)
     return () => clearInterval(id)
   }, [recording])
 
   async function startRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
-      const recorder = new MediaRecorder(stream, { mimeType })
+      const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+      const recorder = new MediaRecorder(stream, { mimeType: mime })
       chunksRef.current = []
-      recorder.ondataavailable = (e) => chunksRef.current.push(e.data)
+      recorder.ondataavailable = e => chunksRef.current.push(e.data)
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: mimeType })
-        const url = URL.createObjectURL(blob)
-        setAudioUrl(url)
+        const blob = new Blob(chunksRef.current, { type: mime })
+        setAudioUrl(URL.createObjectURL(blob))
         onVoiceChange(blob)
-        stream.getTracks().forEach((t) => t.stop())
+        stream.getTracks().forEach(t => t.stop())
       }
       recorder.start()
       recorderRef.current = recorder
       setSeconds(0)
       setRecording(true)
-    } catch {
-      setPermissionDenied(true)
-    }
+    } catch { setDenied(true) }
   }
 
-  function stopRecording() {
-    recorderRef.current?.stop()
-    setRecording(false)
-  }
+  function stopRecording() { recorderRef.current?.stop(); setRecording(false) }
 
-  function reRecord() {
-    setAudioUrl(null)
-    onVoiceChange(null)
-    setSeconds(0)
-  }
+  function reRecord() { setAudioUrl(null); onVoiceChange(null); setSeconds(0) }
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
   return (
     <div>
-      <h2 className="text-2xl mb-1" style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}>
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', fontWeight: 600, color: c.navy, margin: '0 0 0.25rem' }}>
         Your voice introduction
       </h2>
-      <p className="text-sm mb-6" style={{ color: 'var(--ivory-dim)' }}>
+      <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.sepia, margin: '0 0 1rem' }}>
         Record 30–60 seconds. Let your personality shine before photos.
       </p>
-      <div
-        className="mb-8 h-px"
-        style={{ background: 'linear-gradient(to right, var(--antique-gold), transparent)' }}
-      />
+      <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.5rem' }} />
 
-      {permissionDenied ? (
-        <div className="text-center py-8 rounded-xl" style={{ border: '1px solid rgba(248,113,113,0.3)', backgroundColor: 'rgba(248,113,113,0.05)' }}>
-          <p className="text-2xl mb-2">🎙️</p>
-          <p className="text-sm" style={{ color: '#F87171' }}>Microphone access denied. Please allow it in your browser settings.</p>
+      {denied ? (
+        <div style={{ textAlign: 'center', padding: '2rem', background: 'rgba(158,42,43,0.05)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '8px' }}>
+          <p style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎙️</p>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', color: c.rose }}>Microphone access denied. Please allow it in your browser settings.</p>
         </div>
       ) : audioUrl ? (
-        /* Playback */
-        <div className="text-center space-y-6">
-          <div
-            className="mx-auto w-20 h-20 rounded-full flex items-center justify-center text-3xl"
-            style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '2px solid var(--antique-gold)' }}
-          >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(139,105,20,0.08)', border: `2px solid ${c.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', margin: '0 auto 0.75rem' }}>
             🎙️
           </div>
-          <p className="text-sm font-medium" style={{ color: 'var(--antique-gold)' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', color: c.gold, marginBottom: '1rem', textTransform: 'uppercase' }}>
             ✓ Recording saved ({fmt(seconds)})
           </p>
-          <audio controls src={audioUrl} className="w-full rounded-lg" style={{ accentColor: 'var(--antique-gold)' }} />
-          <button
-            type="button"
-            onClick={reRecord}
-            className="text-sm underline"
-            style={{ color: 'var(--ivory-dim)' }}
-          >
+          <audio controls src={audioUrl} preload="none" style={{ width: '100%', marginBottom: '1rem', accentColor: c.gold }} />
+          <button onClick={reRecord} style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', letterSpacing: '0.05em' }}>
             Re-record
           </button>
         </div>
       ) : (
-        /* Record */
-        <div className="text-center space-y-6">
-          <button
-            type="button"
-            onClick={recording ? stopRecording : startRecording}
-            className="mx-auto flex flex-col items-center gap-3 group"
-          >
-            <div
-              className="w-24 h-24 rounded-full flex items-center justify-center text-4xl transition-all duration-300"
-              style={
-                recording
-                  ? { backgroundColor: 'rgba(239,68,68,0.15)', border: '2px solid #EF4444', animation: 'pulse-ring 2s infinite' }
-                  : { backgroundColor: 'rgba(201,168,76,0.1)', border: '2px solid var(--antique-gold)' }
-              }
-            >
+        <div style={{ textAlign: 'center' }}>
+          <button onClick={recording ? stopRecording : startRecording} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', margin: '0 auto' }}>
+            <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: recording ? 'rgba(158,42,43,0.08)' : 'rgba(139,105,20,0.08)', border: `2px solid ${recording ? c.rose : c.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', transition: 'all 0.3s' }}>
               {recording ? '⏹' : '🎙️'}
             </div>
-            <span
-              className="text-sm font-medium tracking-wider"
-              style={{ color: recording ? '#EF4444' : 'var(--antique-gold)' }}
-            >
-              {recording ? 'Stop Recording' : hasRecording ? 'Record Again' : 'Tap to Record'}
+            <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: recording ? c.rose : c.gold }}>
+              {recording ? 'Stop Recording' : 'Tap to Record'}
             </span>
           </button>
 
           {recording && (
-            <div className="space-y-3">
-              <p className="text-2xl font-mono font-bold" style={{ color: 'var(--ivory)' }}>
+            <div style={{ marginTop: '1.5rem' }}>
+              <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '2rem', fontWeight: 700, color: c.navy, margin: '0 0 0.5rem' }}>
                 {fmt(seconds)}
               </p>
-              <div className="flex justify-center gap-1 items-end h-8">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-1.5 rounded-full wave-bar"
-                    style={{ background: 'var(--antique-gold)', animationDelay: `${i * 0.08}s` }}
-                  />
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '3px', height: '32px', marginBottom: '0.5rem' }}>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} style={{ width: '4px', borderRadius: '2px', background: c.rose, animation: `waveBar 0.${7 + (i % 4)}s ease-in-out infinite alternate`, height: `${20 + Math.random() * 12}px` }} />
                 ))}
               </div>
-              <p className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
+              <style>{`@keyframes waveBar { from { height: 20%; } to { height: 100%; } }`}</style>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', color: c.sepia, letterSpacing: '0.1em' }}>
                 {60 - seconds}s remaining
               </p>
             </div>
           )}
 
           {!recording && (
-            <p className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
+            <p style={{ marginTop: '1.25rem', fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: c.sepia, fontSize: '0.9rem' }}>
               Tip: Mention your name, interests, and what you are looking for.
             </p>
           )}

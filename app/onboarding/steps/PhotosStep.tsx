@@ -3,192 +3,116 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface Props {
-  back1: File | null
-  back2: File | null
-  front: File | null
-  onPhotosChange: (back1: File | null, back2: File | null, front: File | null) => void
+  back1: File | null; back2: File | null; front: File | null
+  onPhotosChange: (b1: File | null, b2: File | null, f: File | null) => void
 }
 
+const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e' }
+
 export default function PhotosStep({ back1, back2, front, onPhotosChange }: Props) {
-  const [preview1, setPreview1] = useState<string | null>(null)
-  const [preview2, setPreview2] = useState<string | null>(null)
-  const [previewFront, setPreviewFront] = useState<string | null>(null)
-  const ref1 = useRef<HTMLInputElement>(null)
-  const ref2 = useRef<HTMLInputElement>(null)
-  const refFront = useRef<HTMLInputElement>(null)
+  const [p1, setP1] = useState<string | null>(null)
+  const [p2, setP2] = useState<string | null>(null)
+  const [pf, setPf] = useState<string | null>(null)
+  const r1 = useRef<HTMLInputElement>(null)
+  const r2 = useRef<HTMLInputElement>(null)
+  const rf = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    return () => {
-      if (preview1) URL.revokeObjectURL(preview1)
-      if (preview2) URL.revokeObjectURL(preview2)
-      if (previewFront) URL.revokeObjectURL(previewFront)
-    }
-  }, [])
+  useEffect(() => () => { if (p1) URL.revokeObjectURL(p1); if (p2) URL.revokeObjectURL(p2); if (pf) URL.revokeObjectURL(pf) }, [])
 
-  function pickBack1(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null
-    if (preview1) URL.revokeObjectURL(preview1)
-    setPreview1(file ? URL.createObjectURL(file) : null)
-    onPhotosChange(file, back2, front)
+  function pick1(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0] ?? null
+    if (p1) URL.revokeObjectURL(p1); setP1(f ? URL.createObjectURL(f) : null)
+    onPhotosChange(f, back2, front)
   }
-
-  function pickBack2(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null
-    if (preview2) URL.revokeObjectURL(preview2)
-    setPreview2(file ? URL.createObjectURL(file) : null)
-    onPhotosChange(back1, file, front)
+  function pick2(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0] ?? null
+    if (p2) URL.revokeObjectURL(p2); setP2(f ? URL.createObjectURL(f) : null)
+    onPhotosChange(back1, f, front)
   }
-
-  function pickFront(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null
-    if (previewFront) URL.revokeObjectURL(previewFront)
-    setPreviewFront(file ? URL.createObjectURL(file) : null)
-    onPhotosChange(back1, back2, file)
+  function pickF(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0] ?? null
+    if (pf) URL.revokeObjectURL(pf); setPf(f ? URL.createObjectURL(f) : null)
+    onPhotosChange(back1, back2, f)
   }
 
   return (
     <div>
-      <h2 className="text-2xl mb-1" style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}>
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', fontWeight: 600, color: c.navy, margin: '0 0 0.25rem' }}>
         Your photos
       </h2>
-      <p className="text-sm mb-6" style={{ color: 'var(--ivory-dim)' }}>
-        Two back-side photos for members · one face photo revealed only when you choose
+      <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.sepia, margin: '0 0 1rem' }}>
+        2 back-side photos for members · 1 face photo revealed only when you choose
       </p>
-      <div
-        className="mb-6 h-px"
-        style={{ background: 'linear-gradient(to right, var(--antique-gold), transparent)' }}
-      />
+      <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
       {/* Back photos */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm font-medium tracking-wider uppercase" style={{ color: 'var(--antique-gold)' }}>
-            Back-side photos
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.gold }}>
+            Back-side Photos
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(201,168,76,0.1)', color: 'var(--antique-gold)', border: '1px solid rgba(201,168,76,0.2)' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.1em', padding: '0.15rem 0.5rem', background: 'rgba(139,105,20,0.08)', border: '1px solid rgba(139,105,20,0.25)', color: c.gold, borderRadius: '20px' }}>
             Visible to members
           </span>
         </div>
-        <p className="text-xs mb-4" style={{ color: 'var(--ivory-dim)' }}>
+        <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', color: c.sepia, margin: '0 0 0.75rem', fontStyle: 'italic' }}>
           Share a back, silhouette, or side profile — your face stays private here.
         </p>
-
-        <div className="grid grid-cols-2 gap-4">
-          <PhotoBox
-            label="Photo 1"
-            preview={preview1}
-            inputRef={ref1}
-            onChange={pickBack1}
-            blurred={false}
-          />
-          <PhotoBox
-            label="Photo 2"
-            preview={preview2}
-            inputRef={ref2}
-            onChange={pickBack2}
-            blurred={false}
-          />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <PhotoBox label="Photo 1" preview={p1} inputRef={r1} onChange={pick1} blurred={false} />
+          <PhotoBox label="Photo 2" preview={p2} inputRef={r2} onChange={pick2} blurred={false} />
         </div>
       </div>
 
-      {/* Divider */}
-      <div
-        className="my-6 h-px"
-        style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.2), transparent)' }}
-      />
+      <div style={{ height: '1px', background: 'rgba(13,31,60,0.08)', margin: '0 0 1.25rem' }} />
 
-      {/* Reveal / front photo */}
+      {/* Reveal photo */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm font-medium tracking-wider uppercase" style={{ color: 'var(--antique-gold)' }}>
-            Your reveal photo
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.gold }}>
+            Your Reveal Photo
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(14,26,53,0.8)', color: 'var(--ivory-dim)', border: '1px solid rgba(201,168,76,0.15)' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.1em', padding: '0.15rem 0.5rem', background: 'rgba(13,31,60,0.05)', border: '1px solid rgba(13,31,60,0.15)', color: c.sepia, borderRadius: '20px' }}>
             🔒 Hidden until revealed
           </span>
         </div>
-        <p className="text-xs mb-4" style={{ color: 'var(--ivory-dim)' }}>
-          Your face photo. Only visible when you click "Reveal Photo" on someone's profile — and they are notified instantly.
+        <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', color: c.sepia, margin: '0 0 0.75rem', fontStyle: 'italic' }}>
+          Your face photo. Only visible when you click "Reveal Photo" on someone's profile.
         </p>
-
-        <PhotoBox
-          label="Face photo"
-          preview={previewFront}
-          inputRef={refFront}
-          onChange={pickFront}
-          blurred={true}
-          fullWidth
-        />
+        <PhotoBox label="Face photo" preview={pf} inputRef={rf} onChange={pickF} blurred={true} fullWidth />
       </div>
     </div>
   )
 }
 
-function PhotoBox({
-  label,
-  preview,
-  inputRef,
-  onChange,
-  blurred,
-  fullWidth,
-}: {
-  label: string
-  preview: string | null
-  inputRef: React.RefObject<HTMLInputElement | null>
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  blurred: boolean
-  fullWidth?: boolean
+function PhotoBox({ label, preview, inputRef, onChange, blurred, fullWidth }: {
+  label: string; preview: string | null; inputRef: React.RefObject<HTMLInputElement | null>
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; blurred: boolean; fullWidth?: boolean
 }) {
   return (
-    <button
-      type="button"
-      onClick={() => inputRef.current?.click()}
-      className={`relative rounded-xl overflow-hidden transition-all duration-200 ${fullWidth ? 'w-full' : 'w-full'}`}
-      style={{
-        height: fullWidth ? '180px' : '140px',
-        border: preview ? '1px solid var(--antique-gold)' : '1px dashed rgba(201,168,76,0.3)',
-        backgroundColor: 'var(--oxford-navy)',
-      }}
-    >
+    <button type="button" onClick={() => inputRef.current?.click()}
+      style={{ position: 'relative', width: '100%', aspectRatio: '4/3', borderRadius: '6px', overflow: 'hidden', border: preview ? '1px solid rgba(27,58,107,0.4)' : '1px dashed rgba(13,31,60,0.2)', background: 'rgba(244,241,235,0.4)', cursor: 'pointer', display: 'block', ...(fullWidth ? { aspectRatio: '16/7' } : {}) }}>
       {preview ? (
         <>
-          <img
-            src={preview}
-            alt={label}
-            className="w-full h-full object-cover"
-            style={blurred ? { filter: 'blur(12px)', transform: 'scale(1.1)' } : {}}
-          />
+          <img src={preview} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: blurred ? 'blur(10px)' : 'none', transform: blurred ? 'scale(1.1)' : 'none' }} />
           {blurred && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center"
-              style={{ backgroundColor: 'rgba(14,26,53,0.5)' }}>
-              <span className="text-2xl mb-1">🔒</span>
-              <span className="text-xs font-medium" style={{ color: 'var(--ivory)' }}>Hidden</span>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(13,31,60,0.35)' }}>
+              <span style={{ fontSize: '1.5rem' }}>🔒</span>
+              <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', color: '#fff', letterSpacing: '0.1em', marginTop: '0.25rem' }}>Hidden</span>
             </div>
           )}
-          <div className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs font-medium"
-            style={{ backgroundColor: 'rgba(14,26,53,0.85)', color: 'var(--antique-gold)' }}>
+          <div style={{ position: 'absolute', bottom: '6px', right: '6px', padding: '0.2rem 0.5rem', background: 'rgba(13,31,60,0.7)', borderRadius: '3px', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: '#c9a84c', letterSpacing: '0.05em' }}>
             ✓ Uploaded
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center h-full gap-2">
-          <span className="text-2xl">{blurred ? '🔒' : '📷'}</span>
-          <span className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
-            {label}
-          </span>
-          <span className="text-xs" style={{ color: 'rgba(189,181,166,0.5)' }}>
-            Tap to upload
-          </span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '0.4rem' }}>
+          <span style={{ fontSize: '1.5rem' }}>{blurred ? '🔒' : '📷'}</span>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', color: '#5a6e82', letterSpacing: '0.05em' }}>{label}</span>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: 'rgba(90,110,130,0.6)' }}>Tap to upload</span>
         </div>
       )}
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={onChange}
-      />
+      <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onChange} />
     </button>
   )
 }

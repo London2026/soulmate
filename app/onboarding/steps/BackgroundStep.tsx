@@ -1,100 +1,55 @@
+const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e' }
+const label = { display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: c.textMid, marginBottom: '0.4rem' }
+const inp = { width: '100%', padding: '0.7rem 0.9rem', border: '1px solid rgba(13,31,60,0.18)', background: 'rgba(244,241,235,0.4)', color: c.navy, fontSize: '1rem', fontFamily: '"Cormorant Garamond", Georgia, serif', outline: 'none', borderRadius: '4px', boxSizing: 'border-box' as const, transition: 'border-color 0.2s', appearance: 'auto' as const }
+const field = { marginBottom: '1.1rem' }
+const focus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => (e.target.style.borderColor = '#1b3a6b')
+const blur  = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')
+
+const RELIGIONS  = ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Buddhist', 'Jewish', 'Zoroastrian', 'Other', 'Prefer not to say']
+const EDUCATIONS = ["High School", "Diploma", "Bachelor's Degree", "Master's Degree", "Doctorate (PhD)", "Other"]
+
 interface Props {
   data: { religion: string; motherTongue: string; education: string; occupation: string }
   onChange: (key: string, value: string) => void
 }
 
-const RELIGIONS = ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Buddhist', 'Jewish', 'Zoroastrian', 'Other', 'Prefer not to say']
-const EDUCATIONS = ["High School", "Diploma", "Bachelor's Degree", "Master's Degree", "Doctorate (PhD)", "Other"]
-
 export default function BackgroundStep({ data, onChange }: Props) {
-  const input = "w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-200 appearance-none"
-  const iStyle = { backgroundColor: 'var(--oxford-navy)', border: '1px solid rgba(201,168,76,0.25)', color: 'var(--ivory)' }
-  const focus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => (e.target.style.borderColor = 'var(--antique-gold)')
-  const blur  = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => (e.target.style.borderColor = 'rgba(201,168,76,0.25)')
-
   return (
     <div>
-      <h2 className="text-2xl mb-1" style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}>
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', fontWeight: 600, color: c.navy, margin: '0 0 0.25rem' }}>
         Your heritage
       </h2>
-      <p className="text-sm mb-6" style={{ color: 'var(--ivory-dim)' }}>
+      <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.sepia, margin: '0 0 1rem' }}>
         Background helps us find meaningful connections
       </p>
-      <div
-        className="mb-6 h-px"
-        style={{ background: 'linear-gradient(to right, var(--antique-gold), transparent)' }}
-      />
+      <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
-      <div className="space-y-5">
-        <div>
-          <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-            Religion
-          </label>
-          <select
-            value={data.religion}
-            onChange={(e) => onChange('religion', e.target.value)}
-            className={input}
-            style={iStyle}
-            onFocus={focus}
-            onBlur={blur}
-          >
-            <option value="" disabled style={{ backgroundColor: 'var(--oxford-navy)' }}>Select religion</option>
-            {RELIGIONS.map((r) => (
-              <option key={r} value={r} style={{ backgroundColor: 'var(--oxford-navy)' }}>{r}</option>
-            ))}
-          </select>
-        </div>
+      <div style={field}>
+        <label style={label}>Religion</label>
+        <select value={data.religion} onChange={e => onChange('religion', e.target.value)} style={inp} onFocus={focus} onBlur={blur}>
+          <option value="">Select religion</option>
+          {RELIGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+        </select>
+      </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-            Mother Tongue
-          </label>
-          <input
-            type="text"
-            value={data.motherTongue}
-            onChange={(e) => onChange('motherTongue', e.target.value)}
-            placeholder="e.g. Gujarati, Tamil, Punjabi…"
-            className={input}
-            style={iStyle}
-            onFocus={focus}
-            onBlur={blur}
-          />
-        </div>
+      <div style={field}>
+        <label style={label}>Mother Tongue</label>
+        <input type="text" value={data.motherTongue} onChange={e => onChange('motherTongue', e.target.value)}
+          placeholder="e.g. Gujarati, Tamil, Punjabi…" style={inp} onFocus={focus} onBlur={blur} />
+      </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-            Education
-          </label>
-          <select
-            value={data.education}
-            onChange={(e) => onChange('education', e.target.value)}
-            className={input}
-            style={iStyle}
-            onFocus={focus}
-            onBlur={blur}
-          >
-            <option value="" disabled style={{ backgroundColor: 'var(--oxford-navy)' }}>Select education level</option>
-            {EDUCATIONS.map((e) => (
-              <option key={e} value={e} style={{ backgroundColor: 'var(--oxford-navy)' }}>{e}</option>
-            ))}
-          </select>
-        </div>
+      <div style={field}>
+        <label style={label}>Education</label>
+        <select value={data.education} onChange={e => onChange('education', e.target.value)} style={inp} onFocus={focus} onBlur={blur}>
+          <option value="">Select education level</option>
+          {EDUCATIONS.map(e => <option key={e} value={e}>{e}</option>)}
+        </select>
+      </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-            Occupation
-          </label>
-          <input
-            type="text"
-            value={data.occupation}
-            onChange={(e) => onChange('occupation', e.target.value)}
-            placeholder="e.g. Software Engineer, Doctor…"
-            className={input}
-            style={iStyle}
-            onFocus={focus}
-            onBlur={blur}
-          />
-        </div>
+      <div style={field}>
+        <label style={label}>Occupation</label>
+        <input type="text" value={data.occupation} onChange={e => onChange('occupation', e.target.value)}
+          placeholder="e.g. Software Engineer, Doctor…" style={inp} onFocus={focus} onBlur={blur} />
       </div>
     </div>
   )

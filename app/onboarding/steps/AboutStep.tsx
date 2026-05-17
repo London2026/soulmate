@@ -1,119 +1,66 @@
+const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e', rose: '#9e2a2b' }
+const label = { display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: c.textMid, marginBottom: '0.4rem' }
+const inp = { width: '100%', padding: '0.7rem 0.9rem', border: '1px solid rgba(13,31,60,0.18)', background: 'rgba(244,241,235,0.4)', color: c.navy, fontSize: '1rem', fontFamily: '"Cormorant Garamond", Georgia, serif', outline: 'none', borderRadius: '4px', boxSizing: 'border-box' as const, transition: 'border-color 0.2s' }
+const field = { marginBottom: '1.1rem' }
+const focus = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = '#1b3a6b')
+const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')
+
+const GENDERS = ['Man', 'Woman', 'Other']
+
 interface Props {
   data: { fullName: string; age: string; gender: string; city: string; country: string }
   onChange: (key: string, value: string) => void
 }
 
-const GENDERS = ['Man', 'Woman', 'Other']
-
 export default function AboutStep({ data, onChange }: Props) {
-  const input = "w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-200"
-  const iStyle = { backgroundColor: 'var(--oxford-navy)', border: '1px solid rgba(201,168,76,0.25)', color: 'var(--ivory)' }
-  const focus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => (e.target.style.borderColor = 'var(--antique-gold)')
-  const blur  = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => (e.target.style.borderColor = 'rgba(201,168,76,0.25)')
-
   return (
     <div>
-      <h2 className="text-2xl mb-1" style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}>
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', fontWeight: 600, color: c.navy, margin: '0 0 0.25rem' }}>
         Tell us about yourself
       </h2>
-      <p className="text-sm mb-6" style={{ color: 'var(--ivory-dim)' }}>
+      <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.sepia, margin: '0 0 1rem' }}>
         Help us find your perfect match
       </p>
-      <div
-        className="mb-6 h-px"
-        style={{ background: 'linear-gradient(to right, var(--antique-gold), transparent)' }}
-      />
+      <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
-      <div className="space-y-5">
-        {/* Name – readonly */}
-        <div>
-          <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-            Full Name
-          </label>
-          <input
-            type="text"
-            value={data.fullName}
-            readOnly
-            className={`${input} opacity-60 cursor-not-allowed`}
-            style={iStyle}
-          />
+      {/* Full Name – readonly */}
+      <div style={field}>
+        <label style={label}>Full Name</label>
+        <input type="text" value={data.fullName} readOnly
+          style={{ ...inp, opacity: 0.6, cursor: 'not-allowed', background: 'rgba(13,31,60,0.04)' }} />
+      </div>
+
+      {/* Age */}
+      <div style={field}>
+        <label style={label}>Age</label>
+        <input type="number" min={18} max={100} value={data.age} onChange={e => onChange('age', e.target.value)}
+          placeholder="Your age" style={inp} onFocus={focus} onBlur={blur} />
+      </div>
+
+      {/* Gender */}
+      <div style={field}>
+        <label style={label}>I am a</label>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {GENDERS.map(g => (
+            <button key={g} type="button" onClick={() => onChange('gender', g)}
+              style={{ flex: 1, padding: '0.65rem', border: data.gender === g ? `1px solid #1b3a6b` : '1px solid rgba(13,31,60,0.18)', background: data.gender === g ? 'rgba(27,58,107,0.07)' : 'transparent', color: data.gender === g ? '#1b3a6b' : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '4px', transition: 'all 0.2s' }}>
+              {g}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Age */}
+      {/* City + Country */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
         <div>
-          <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-            Age
-          </label>
-          <input
-            type="number"
-            min={18}
-            max={100}
-            value={data.age}
-            onChange={(e) => onChange('age', e.target.value)}
-            placeholder="Your age"
-            className={input}
-            style={iStyle}
-            onFocus={focus}
-            onBlur={blur}
-          />
+          <label style={label}>City</label>
+          <input type="text" value={data.city} onChange={e => onChange('city', e.target.value)}
+            placeholder="London" style={inp} onFocus={focus} onBlur={blur} />
         </div>
-
-        {/* Gender */}
         <div>
-          <label className="block text-xs font-medium mb-3 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-            I am a
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {GENDERS.map((g) => (
-              <button
-                key={g}
-                type="button"
-                onClick={() => onChange('gender', g)}
-                className="py-3 rounded-lg text-sm font-medium transition-all duration-200"
-                style={
-                  data.gender === g
-                    ? { backgroundColor: 'rgba(201,168,76,0.15)', border: '1px solid var(--antique-gold)', color: 'var(--antique-gold)' }
-                    : { backgroundColor: 'var(--oxford-navy)', border: '1px solid rgba(201,168,76,0.2)', color: 'var(--ivory-dim)' }
-                }
-              >
-                {g}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* City + Country */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-              City
-            </label>
-            <input
-              type="text"
-              value={data.city}
-              onChange={(e) => onChange('city', e.target.value)}
-              placeholder="London"
-              className={input}
-              style={iStyle}
-              onFocus={focus}
-              onBlur={blur}
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-2 tracking-wider uppercase" style={{ color: 'var(--ivory-dim)' }}>
-              Country
-            </label>
-            <input
-              type="text"
-              value={data.country}
-              onChange={(e) => onChange('country', e.target.value)}
-              placeholder="United Kingdom"
-              className={input}
-              style={iStyle}
-              onFocus={focus}
-              onBlur={blur}
-            />
-          </div>
+          <label style={label}>Country</label>
+          <input type="text" value={data.country} onChange={e => onChange('country', e.target.value)}
+            placeholder="United Kingdom" style={inp} onFocus={focus} onBlur={blur} />
         </div>
       </div>
     </div>

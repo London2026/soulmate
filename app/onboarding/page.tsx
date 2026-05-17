@@ -12,6 +12,11 @@ import PhotosStep from './steps/PhotosStep'
 
 const STEPS = ['About You', 'Your Heritage', 'Preferences', 'Voice Intro', 'Your Photos']
 
+const c = {
+  cream: '#f4f1eb', navy: '#0d1f3c', navyMid: '#1a3a5c',
+  gold: '#8b6914', goldLight: '#c9a84c', sepia: '#5a6e82', rose: '#9e2a2b',
+}
+
 interface Draft {
   fullName: string; age: string; gender: string; city: string; country: string
   religion: string; motherTongue: string; education: string; occupation: string
@@ -42,55 +47,34 @@ export default function OnboardingPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_complete, full_name')
-        .eq('id', user.id)
-        .maybeSingle()
-
+      const { data: profile } = await supabase.from('profiles').select('onboarding_complete, full_name').eq('id', user.id).maybeSingle()
       if (profile?.onboarding_complete) { router.replace('/discover'); return }
-
       setUserId(user.id)
-      setDraft((d) => ({
-        ...d,
-        fullName: profile?.full_name ?? user.user_metadata?.full_name ?? '',
-      }))
+      setDraft(d => ({ ...d, fullName: profile?.full_name ?? user.user_metadata?.full_name ?? '' }))
       setReady(true)
     }
     init()
   }, [router])
 
-  function change(key: string, value: string) {
-    setDraft((d) => ({ ...d, [key]: value }))
-    setError('')
-  }
+  function change(key: string, value: string) { setDraft(d => ({ ...d, [key]: value })); setError('') }
 
   function validate(): string {
-    switch (step) {
-      case 0:
-        if (!draft.age || parseInt(draft.age) < 18) return 'Please enter a valid age (18+).'
-        if (!draft.gender) return 'Please select your gender.'
-        if (!draft.city || !draft.country) return 'Please enter your city and country.'
-        break
-      case 1:
-        if (!draft.religion || !draft.motherTongue || !draft.education || !draft.occupation)
-          return 'Please complete all fields.'
-        break
-      case 2:
-        if (!draft.prefGender) return 'Please select who you are looking for.'
-        if (!draft.prefAgeMin || !draft.prefAgeMax) return 'Please enter an age range.'
-        if (parseInt(draft.prefAgeMin) >= parseInt(draft.prefAgeMax))
-          return 'Maximum age must be greater than minimum age.'
-        if (!draft.prefReligion) return 'Please select a religion preference.'
-        break
-      case 3:
-        if (!voiceBlob) return 'Please record your voice introduction.'
-        break
-      case 4:
-        if (!back1 || !back2) return 'Please upload both back-side photos.'
-        if (!front) return 'Please upload your reveal (face) photo.'
-        break
+    if (step === 0) {
+      if (!draft.age || parseInt(draft.age) < 18) return 'Please enter a valid age (18+).'
+      if (!draft.gender) return 'Please select your gender.'
+      if (!draft.city || !draft.country) return 'Please enter your city and country.'
+    }
+    if (step === 1 && (!draft.religion || !draft.motherTongue || !draft.education || !draft.occupation))
+      return 'Please complete all fields.'
+    if (step === 2) {
+      if (!draft.prefGender) return 'Please select who you are looking for.'
+      if (parseInt(draft.prefAgeMin) >= parseInt(draft.prefAgeMax)) return 'Max age must be greater than min age.'
+      if (!draft.prefReligion) return 'Please select a religion preference.'
+    }
+    if (step === 3 && !voiceBlob) return 'Please record your voice introduction.'
+    if (step === 4) {
+      if (!back1 || !back2) return 'Please upload both back-side photos.'
+      if (!front) return 'Please upload your reveal photo.'
     }
     return ''
   }
@@ -99,25 +83,20 @@ export default function OnboardingPage() {
     const msg = validate()
     if (msg) { setError(msg); return }
     setError('')
+    if (step < 4) { setStep(s => s + 1); return }
 
-    if (step < 4) { setStep((s) => s + 1); return }
-
-    // Final step — upload everything and save profile
     setSaving(true)
     try {
       const supabase = createClient()
 
-      // Upload voice
       let voicePath: string | null = null
       if (voiceBlob) {
         const ext = MediaRecorder.isTypeSupported('audio/webm') ? 'webm' : 'mp4'
-        const { data } = await supabase.storage
-          .from('profile-media')
-          .upload(`${userId}/voice.${ext}`, voiceBlob, { upsert: true })
+        const { data, error: vErr } = await supabase.storage.from('profile-media').upload(`${userId}/voice.${ext}`, voiceBlob, { upsert: true })
+        if (vErr) console.warn('Voice upload:', vErr.message)
         voicePath = data?.path ?? null
       }
 
-      // Upload photos in parallel
       const ext1 = back1!.name.split('.').pop() ?? 'jpg'
       const ext2 = back2!.name.split('.').pop() ?? 'jpg'
       const ext3 = front!.name.split('.').pop() ?? 'jpg'
@@ -128,35 +107,24 @@ export default function OnboardingPage() {
         supabase.storage.from('profile-media').upload(`${userId}/front.${ext3}`, front!, { upsert: true }),
       ])
 
-      // Save profile row
       const { error: dbErr } = await supabase.from('profiles').upsert({
         id: userId,
-        full_name: draft.fullName,
-        age: parseInt(draft.age),
-        gender: draft.gender,
-        city: draft.city,
-        country: draft.country,
-        religion: draft.religion,
-        mother_tongue: draft.motherTongue,
-        education: draft.education,
-        occupation: draft.occupation,
-        pref_gender: draft.prefGender,
-        pref_age_min: parseInt(draft.prefAgeMin),
-        pref_age_max: parseInt(draft.prefAgeMax),
-        pref_location: draft.prefLocation,
-        pref_religion: draft.prefReligion,
-        voice_path: voicePath,
+        full_name: draft.fullName, age: parseInt(draft.age), gender: draft.gender,
+        city: draft.city, country: draft.country, religion: draft.religion,
+        mother_tongue: draft.motherTongue, education: draft.education, occupation: draft.occupation,
+        pref_gender: draft.prefGender, pref_age_min: parseInt(draft.prefAgeMin),
+        pref_age_max: parseInt(draft.prefAgeMax), pref_location: draft.prefLocation,
+        pref_religion: draft.prefReligion, voice_path: voicePath,
         back_photo_1_path: r1.data?.path ?? null,
         back_photo_2_path: r2.data?.path ?? null,
         front_photo_path: r3.data?.path ?? null,
-        onboarding_complete: true,
-        updated_at: new Date().toISOString(),
+        onboarding_complete: true, updated_at: new Date().toISOString(),
       })
 
       if (dbErr) throw dbErr
       router.push('/discover')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -164,120 +132,81 @@ export default function OnboardingPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--oxford-navy)' }}>
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">💘</div>
-          <p className="text-sm" style={{ color: 'var(--ivory-dim)' }}>Preparing your profile…</p>
+      <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💘</div>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: c.sepia }}>Preparing your profile…</p>
         </div>
       </div>
     )
   }
 
+  const progress = ((step + 1) / STEPS.length) * 100
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: 'var(--oxford-navy)' }}>
+    <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
 
-      <div className="pointer-events-none fixed inset-0"
-        style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(201,168,76,0.07) 0%, transparent 70%)' }} />
-
-      <div className="w-full max-w-lg relative">
-
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <span className="text-2xl">💘</span>
-            <span style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)', fontSize: '1.4rem' }}>
-              Soul Mate
-            </span>
+      {/* Logo + Progress */}
+      <div style={{ width: '100%', maxWidth: '540px', marginBottom: '1.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.75rem' }}>💘</span>
+            <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 700, color: c.navy }}>Soul Mate</span>
           </Link>
         </div>
 
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs tracking-widest" style={{ color: 'var(--antique-gold)' }}>
-              STEP {step + 1} OF {STEPS.length}
-            </span>
-            <span className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
-              {STEPS[step]}
-            </span>
-          </div>
-          <div className="h-0.5 rounded-full" style={{ backgroundColor: 'rgba(201,168,76,0.12)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${((step + 1) / STEPS.length) * 100}%`,
-                background: 'linear-gradient(to right, var(--antique-gold-dark), var(--antique-gold-light))',
-              }}
-            />
-          </div>
-          {/* Step dots */}
-          <div className="flex justify-between mt-2">
-            {STEPS.map((_, i) => (
-              <div
-                key={i}
-                className="w-1.5 h-1.5 rounded-full transition-all duration-300"
-                style={{ backgroundColor: i <= step ? 'var(--antique-gold)' : 'rgba(201,168,76,0.2)' }}
-              />
-            ))}
-          </div>
+        {/* Progress bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold }}>
+            Step {step + 1} of {STEPS.length}
+          </span>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia }}>{STEPS[step]}</span>
         </div>
+        <div style={{ height: '3px', background: 'rgba(13,31,60,0.08)', borderRadius: '2px' }}>
+          <div style={{ height: '100%', background: c.gold, borderRadius: '2px', width: `${progress}%`, transition: 'width 0.5s ease' }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.4rem' }}>
+          {STEPS.map((_, i) => (
+            <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: i <= step ? c.gold : 'rgba(13,31,60,0.12)', transition: 'background 0.3s' }} />
+          ))}
+        </div>
+      </div>
 
-        {/* Card */}
-        <div className="rounded-2xl px-8 py-8"
-          style={{ backgroundColor: 'var(--oxford-navy-mid)', border: '1px solid rgba(201,168,76,0.2)', boxShadow: '0 24px 60px rgba(0,0,0,0.5)' }}>
+      {/* Card */}
+      <div style={{ width: '100%', maxWidth: '540px', background: '#fff', borderRadius: '10px', boxShadow: '0 16px 60px rgba(13,31,60,0.12)', border: '1px solid rgba(13,31,60,0.08)', overflow: 'hidden' }}>
 
+        <div style={{ padding: '2rem 2rem 1.25rem' }}>
           {step === 0 && <AboutStep data={draft} onChange={change} />}
           {step === 1 && <BackgroundStep data={draft} onChange={change} />}
           {step === 2 && <PreferencesStep data={draft} onChange={change} />}
           {step === 3 && <VoiceStep onVoiceChange={setVoiceBlob} hasRecording={!!voiceBlob} />}
-          {step === 4 && (
-            <PhotosStep
-              back1={back1} back2={back2} front={front}
-              onPhotosChange={(b1, b2, f) => { setBack1(b1); setBack2(b2); setFront(f) }}
-            />
-          )}
+          {step === 4 && <PhotosStep back1={back1} back2={back2} front={front} onPhotosChange={(b1, b2, f) => { setBack1(b1); setBack2(b2); setFront(f) }} />}
 
           {error && (
-            <p className="mt-5 text-sm text-center rounded-lg px-3 py-2"
-              style={{ color: '#F87171', backgroundColor: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)' }}>
+            <div style={{ marginTop: '1rem', background: 'rgba(158,42,43,0.07)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '4px', padding: '0.65rem 0.9rem', color: c.rose, fontSize: '0.9rem', fontFamily: '"Cormorant Garamond", serif', textAlign: 'center' }}>
               {error}
-            </p>
+            </div>
           )}
-
-          {/* Navigation */}
-          <div className={`flex mt-8 gap-3 ${step > 0 ? 'justify-between' : 'justify-end'}`}>
-            {step > 0 && (
-              <button
-                type="button"
-                onClick={() => { setStep((s) => s - 1); setError('') }}
-                disabled={saving}
-                className="px-6 py-3 rounded-lg text-sm font-medium transition-all"
-                style={{ color: 'var(--ivory-dim)', border: '1px solid rgba(201,168,76,0.2)' }}
-              >
-                ← Back
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={saving}
-              className="px-8 py-3 rounded-lg text-sm font-semibold tracking-wider transition-all duration-200 disabled:opacity-60"
-              style={{
-                background: 'linear-gradient(135deg, var(--antique-gold-light), var(--antique-gold))',
-                color: 'var(--oxford-navy)',
-                boxShadow: '0 4px 20px rgba(201,168,76,0.25)',
-              }}
-            >
-              {saving ? 'Saving…' : step === 4 ? 'Complete Profile ✓' : 'Continue →'}
-            </button>
-          </div>
         </div>
 
-        <p className="text-center text-xs mt-6" style={{ color: 'rgba(189,181,166,0.35)' }}>
-          Your data is encrypted and private
-        </p>
+        {/* Navigation */}
+        <div style={{ padding: '1rem 2rem 1.75rem', display: 'flex', justifyContent: step > 0 ? 'space-between' : 'flex-end', gap: '0.75rem', borderTop: '1px solid rgba(13,31,60,0.06)' }}>
+          {step > 0 && (
+            <button onClick={() => { setStep(s => s - 1); setError('') }} disabled={saving}
+              style={{ padding: '0.75rem 1.5rem', background: 'transparent', border: '1px solid rgba(13,31,60,0.2)', color: c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '4px' }}>
+              ← Back
+            </button>
+          )}
+          <button onClick={handleNext} disabled={saving}
+            style={{ padding: '0.75rem 2rem', background: saving ? c.navyMid : c.navy, color: c.goldLight, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: saving ? 'default' : 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}>
+            {saving ? 'Saving…' : step === 4 ? 'Complete Profile ✓' : 'Continue →'}
+          </button>
+        </div>
       </div>
+
+      <p style={{ marginTop: '1rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', letterSpacing: '0.1em', color: c.sepia, textAlign: 'center' }}>
+        Your data is encrypted and private
+      </p>
     </div>
   )
 }
