@@ -185,7 +185,7 @@
   /* ── STATS ROW ── */
   .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 2rem;
   }
@@ -654,6 +654,11 @@
     .main { margin-left: 0; }
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .profile-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 500px) {
+    .stats-row { grid-template-columns: 1fr; }
   }
 </style>
   <script>
@@ -1292,7 +1297,7 @@
     <!-- ══════════ REVENUE ══════════ -->
     <div class="page" id="page-revenue">
       <div class="section-heading"><h2>Revenue Overview</h2><div class="line"></div></div>
-      <div class="stats-row">
+      <div class="stats-row" style="grid-template-columns:repeat(4,1fr);">
         <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value">$67K</div><div class="stat-change">↑ 31% this month</div></div>
         <div class="stat-card"><div class="stat-label">Starter Plan ($6)</div><div class="stat-value">$31K</div><div class="stat-change">5,160 subscribers</div></div>
         <div class="stat-card"><div class="stat-label">Premium Plan ($9)</div><div class="stat-value">$29K</div><div class="stat-change">3,260 subscribers</div></div>
