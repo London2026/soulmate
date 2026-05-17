@@ -942,6 +942,16 @@
     flex-shrink: 0;
   }
 
+  .pricing-features li.unavailable {
+    color: rgba(245,239,224,0.28);
+    border-bottom-color: rgba(212,168,67,0.07);
+  }
+
+  .pricing-features li.unavailable::before {
+    content: '✕';
+    color: rgba(245,239,224,0.22);
+  }
+
   .btn-gold {
     font-family: 'Raleway', sans-serif;
     font-size: 0.78rem;
@@ -2376,52 +2386,73 @@
       <p class="section-sub" style="color: rgba(245,239,224,0.6);">Pay for meaningful meetings, not idle swiping.</p>
     </div>
 
-    <div class="pricing-grid reveal">
+    <div class="pricing-grid reveal" style="grid-template-columns: repeat(3, 1fr);">
+
+      <!-- FREE -->
       <div class="pricing-card">
+        <div class="pricing-name">Free</div>
+        <div class="pricing-price"><sup>$</sup>0</div>
+        <div class="pricing-period">forever free</div>
+        <ul class="pricing-features">
+          <li>Create profile with voice intro</li>
+          <li>Upload 2 back-side photos</li>
+          <li>Browse &amp; discover all profiles</li>
+          <li>Listen to voice introductions</li>
+          <li class="unavailable">Reveal face photos</li>
+          <li class="unavailable">Video meeting requests</li>
+        </ul>
+        <button class="btn-gold-outline" onclick="openModal()">Start for Free</button>
+      </div>
+
+      <!-- STARTER -->
+      <div class="pricing-card" style="border-color: rgba(212,168,67,0.55);">
         <div class="pricing-name">Starter</div>
         <div class="pricing-price"><sup>$</sup>6</div>
         <div class="pricing-period">per month</div>
         <ul class="pricing-features">
-          <li>2 Arranged Meetings</li>
-          <li>Full Profile Browsing</li>
-          <li>Voice Introductions</li>
-          <li>Photo Reveal Requests</li>
-          <li>WhatsApp &amp; Email Alerts</li>
+          <li>Create profile with voice intro</li>
+          <li>Upload 2 back-side photos</li>
+          <li>Browse &amp; discover all profiles</li>
+          <li>Unlimited photo reveals</li>
+          <li>See who revealed your photo</li>
+          <li>2 video meetings per month</li>
         </ul>
         <button class="btn-gold-outline" onclick="openModal()">Begin with Starter</button>
       </div>
 
+      <!-- STANDARD -->
       <div class="pricing-card featured">
         <div class="pricing-badge">Most Popular</div>
-        <div class="pricing-name">Premium</div>
+        <div class="pricing-name">Standard</div>
         <div class="pricing-price"><sup>$</sup>9</div>
         <div class="pricing-period">per month</div>
         <ul class="pricing-features">
-          <li>4 Arranged Meetings</li>
-          <li>Full Profile Browsing</li>
-          <li>Voice Introductions</li>
-          <li>Photo Reveal Requests</li>
-          <li>Priority Matching</li>
-          <li>Optional Meeting Moderator</li>
+          <li>Create profile with voice intro</li>
+          <li>Upload 2 back-side photos</li>
+          <li>Browse &amp; discover all profiles</li>
+          <li>Unlimited photo reveals</li>
+          <li>See who revealed your photo</li>
+          <li>4 video meetings per month</li>
         </ul>
-        <button class="btn-gold" onclick="openModal()">Begin with Premium</button>
+        <button class="btn-gold" onclick="openModal()">Begin with Standard</button>
       </div>
 
-      <div class="pricing-card">
-        <div class="pricing-name">Extra Meetings</div>
-        <div class="pricing-price"><sup>$</sup>3</div>
-        <div class="pricing-period">per meeting</div>
-        <ul class="pricing-features">
-          <li>Add to any plan</li>
-          <li>Same secure process</li>
-          <li>Staff-arranged</li>
-          <li>No contact sharing</li>
-        </ul>
-        <button class="btn-gold-outline" onclick="showToast('✦ Add-on Meeting', 'Available as an add-on to your existing plan.')">Add Meetings</button>
+    </div>
+
+    <!-- Extra meetings add-on -->
+    <div style="margin-top:2rem; border:1px solid rgba(212,168,67,0.2); padding:1.5rem 2.5rem; display:flex; align-items:center; justify-content:space-between; gap:2rem; flex-wrap:wrap; background:rgba(255,255,255,0.02);">
+      <div>
+        <p style="font-family:'Raleway',sans-serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--light-gold); margin:0 0 0.3rem;">Add-On</p>
+        <p style="font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--cream); margin:0 0 0.2rem;">Need more video meetings?</p>
+        <p style="font-family:'Cormorant Garamond',serif; font-size:0.95rem; font-style:italic; color:rgba(245,239,224,0.5); margin:0;">Purchase additional meeting slots anytime on any paid plan.</p>
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        <span style="font-family:'Playfair Display',serif; font-size:2rem; color:var(--light-gold); font-weight:700;"><sup style="font-size:1rem;vertical-align:top;margin-top:0.4rem;display:inline-block;">$</sup>3</span>
+        <p style="font-family:'Raleway',sans-serif; font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,239,224,0.4); margin:0;">per extra meeting</p>
       </div>
     </div>
 
-    <p style="text-align:center; margin-top:2.5rem; font-family:'Raleway',sans-serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,239,224,0.35);">
+    <p style="text-align:center; margin-top:2rem; font-family:'Raleway',sans-serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,239,224,0.35);">
       All meetings are arranged by the Soul Mate team · No direct contact shared until both parties agree
     </p>
   </div>
