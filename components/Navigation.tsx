@@ -1,15 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-interface AuthUser {
-  name: string
-  onboarded: boolean
-}
+interface AuthUser { name: string; onboarded: boolean; plan: string }
 
 export default function Navigation() {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -18,27 +14,23 @@ export default function Navigation() {
   useEffect(() => {
     const supabase = createClient()
 
-    async function loadUser() {
-      // Use getSession() — reads local cookies without a server round-trip
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) { setUser(null); return }
-      const u = session.user
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (!session?.user) { setUser(null); return }
+        const u = session.user
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, onboarding_complete, plan')
+          .eq('id', u.id)
+          .maybeSingle()
+        setUser({
+          name: profile?.full_name || u.user_metadata?.full_name || u.email?.split('@')[0] || 'Member',
+          onboarded: !!profile?.onboarding_complete,
+          plan: profile?.plan || 'free',
+        })
+      }
+    )
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, onboarding_complete')
-        .eq('id', u.id)
-        .maybeSingle()
-
-      setUser({
-        name: profile?.full_name || u.user_metadata?.full_name || u.email?.split('@')[0] || 'Member',
-        onboarded: !!profile?.onboarding_complete,
-      })
-    }
-
-    loadUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => loadUser())
     return () => subscription.unsubscribe()
   }, [])
 
@@ -48,79 +40,62 @@ export default function Navigation() {
     router.push('/')
   }
 
+  const planLabel = user?.plan === 'standard' ? 'Standard' : user?.plan === 'starter' ? 'Starter' : 'Free'
+
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="fixed top-0 w-full z-50 glass border-b border-white/5 safe-top"
-    >
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 cursor-pointer">
-          <span className="text-2xl">💘</span>
-          <span className="text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)' }}>
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      background: 'rgba(7,17,31,0.95)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderBottom: '1px solid rgba(201,168,76,0.12)',
+    }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+        {/* Logo */}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+          <span style={{ fontSize: '1.5rem' }}>💘</span>
+          <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.3rem', fontWeight: 700, color: '#f5f0e6', letterSpacing: '0.02em' }}>
             Soul Mate
           </span>
         </Link>
 
+        {/* Right side */}
         {user ? (
-          /* Authenticated nav */
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             {/* Name */}
-            <span className="hidden sm:block text-sm" style={{ color: 'var(--ivory-dim)', fontFamily: 'var(--font-playfair)', fontStyle: 'italic' }}>
+            <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#bdb5a6' }}>
               {user.name}
             </span>
-
             {/* Plan badge */}
-            <span
-              className="hidden sm:block text-xs px-2.5 py-0.5 rounded-full font-semibold tracking-wider"
-              style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', color: 'var(--antique-gold)', fontSize: '0.55rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}
-            >
-              Free Plan
+            <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '0.2rem 0.65rem', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', color: '#c9a84c', borderRadius: '20px' }}>
+              {planLabel} Plan
             </span>
-
-            {/* Profile / Create Profile */}
-            <Link
-              href={user.onboarded ? '/profile' : '/onboarding'}
-              className="px-4 py-2 text-sm font-semibold rounded-full transition-all"
-              style={{
-                background: 'linear-gradient(135deg, var(--antique-gold-light, #e8c876), var(--antique-gold, #c9a84c))',
-                color: 'var(--oxford-navy, #0e1a35)',
-                fontSize: '0.75rem',
-              }}
-            >
+            {/* My Profile / Create Profile */}
+            <Link href={user.onboarded ? '/profile' : '/onboarding'}
+              style={{ padding: '0.45rem 1.1rem', background: 'linear-gradient(135deg, #e8c876, #c9a84c)', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: '4px', textDecoration: 'none' }}>
               {user.onboarded ? 'My Profile' : 'Create Profile'}
             </Link>
-
             {/* Sign Out */}
-            <button
-              onClick={handleSignOut}
-              className="hidden sm:block text-xs font-medium px-3 py-1.5 rounded-full border transition-all hover:border-white/40"
-              style={{ color: 'var(--ivory-dim)', borderColor: 'rgba(255,255,255,0.15)', background: 'transparent', cursor: 'pointer', letterSpacing: '0.05em' }}
-            >
+            <button onClick={handleSignOut}
+              style={{ padding: '0.45rem 0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.14)', color: '#bdb5a6', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: '4px', cursor: 'pointer', transition: 'border-color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(201,168,76,0.4)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)')}>
               Sign Out
             </button>
           </div>
         ) : (
-          /* Guest nav */
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-              <Link href="/discover" className="hover:text-white transition-colors">Discover</Link>
-              <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-            </div>
-            <Link href="/login" className="hidden sm:block px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition">
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              className="px-5 py-2 text-sm font-bold text-white rounded-full hover:shadow-lg transition"
-              style={{ background: 'linear-gradient(to right, #ec4899, #8b5cf6)' }}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
+            <Link href="/pricing"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Pricing</Link>
+            <Link href="/login"    style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Sign In</Link>
+            <Link href="/signup"
+              style={{ padding: '0.5rem 1.25rem', background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', color: '#fff', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: '4px', textDecoration: 'none' }}>
               Get Started
             </Link>
           </div>
         )}
       </div>
-    </motion.nav>
+    </nav>
   )
 }
