@@ -3,6 +3,12 @@
 --  Run AFTER fix_profiles_columns.sql
 -- ============================================================
 
+-- Step 1: Drop the FK constraint so demo profiles can be inserted
+--         without matching auth.users entries
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_id_fkey;
+
+-- Step 2: Insert demo profiles
 INSERT INTO public.profiles (
   id, full_name, age, gender, city, country,
   religion, mother_tongue, education, occupation,
@@ -42,3 +48,10 @@ INSERT INTO public.profiles (
   'Man', 24, 32, 'United Kingdom', 'Muslim', 'free', true, null, null, null, null)
 
 ON CONFLICT (id) DO NOTHING;
+
+-- Step 3: Re-add the FK constraint with NOT VALID
+--         New real users will still be checked; existing demo rows are skipped
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_id_fkey
+  FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+  NOT VALID;
