@@ -4,6 +4,7 @@ import BottomNav from '@/components/BottomNav'
 import { createClient } from '@/lib/supabase/server'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import NotificationBanner from './NotificationBanner'
+import DiscoverClient from './DiscoverClient'
 
 export default async function DiscoverPage() {
   const supabase = await createClient()
@@ -115,33 +116,24 @@ export default async function DiscoverPage() {
 
       <Navigation />
 
-      <main style={{ maxWidth: '580px', margin: '0 auto', padding: '6rem 1.25rem 4rem' }}>
+      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '6rem 1.5rem 4rem' }}>
 
         {/* Heading */}
         <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: '#f5f0e6', margin: 0 }}>
-              Discover
-            </h1>
-            <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: '#bdb5a6', letterSpacing: '0.08em' }}>
-              {profiles.length} {profiles.length === 1 ? 'profile' : 'profiles'}
-            </span>
-          </div>
-          <div style={{ marginTop: '0.5rem', height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)' }} />
+          <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.5rem' }}>
+            Discover
+          </h1>
+          <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)' }} />
         </div>
 
         {/* Notifications */}
         <NotificationBanner notifications={notifications ?? []} />
 
-        {/* Feed */}
+        {/* Grid client — search, AI, cards */}
         {profiles.length === 0 ? (
           <EmptyState />
         ) : (
-          <div>
-            {profiles.map((p) => (
-              <ProfileCard key={p.id} profile={p} canReveal={canReveal} canMeet={canMeet} />
-            ))}
-          </div>
+          <DiscoverClient profiles={profiles} canReveal={canReveal} canMeet={canMeet} />
         )}
       </main>
     </div>
