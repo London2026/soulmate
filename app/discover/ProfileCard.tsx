@@ -115,13 +115,25 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
       </div>
 
       {/* ── Back Photos ── */}
-      {backPhotos.length > 0 && (
-        <div
-          className={`grid gap-0.5 ${backPhotos.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}
-        >
+      {backPhotos.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: backPhotos.length === 2 ? '1fr 1fr' : '1fr', gap: '2px' }}>
           {backPhotos.map((url, i) => (
-            <div key={i} className="relative bg-slate-900" style={{ aspectRatio: '4/3' }}>
-              <img src={url} alt={`Back photo ${i + 1}`} className="w-full h-full object-cover" />
+            <div key={i} style={{ position: 'relative', aspectRatio: '4/3', background: '#0a1628' }}>
+              <img src={url} alt={`Back photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* Placeholder when no photos uploaded yet */
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
+          {[0, 1].map(i => (
+            <div key={i} style={{ aspectRatio: '4/3', background: `linear-gradient(135deg, #0d1f3c 0%, #1a2b4a 100%)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '2rem', fontStyle: 'italic', color: 'rgba(201,168,76,0.35)' }}>
+                {profile.full_name.split(' ').map(n => n[0]).join('')}
+              </span>
+              <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.25)' }}>
+                Photo coming soon
+              </span>
             </div>
           ))}
         </div>
@@ -154,7 +166,14 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
 
       {/* ── Reveal Section ── */}
       <div className="px-6 py-5">
-        {!canReveal && !revealed ? (
+        {!profile.front_photo_url && !revealed && canReveal ? (
+          <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', margin: '0 auto 0.5rem' }}>🔒</div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--ivory-dim)', fontStyle: 'italic', fontFamily: '"Cormorant Garamond", serif' }}>
+              {profile.full_name.split(' ')[0]} hasn&apos;t uploaded their reveal photo yet
+            </p>
+          </div>
+        ) : !canReveal && !revealed ? (
           <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
             <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: 'rgba(90,110,130,0.1)', border: '1px solid rgba(90,110,130,0.2)', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', margin: '0 auto 0.75rem' }}>🔒</div>
             <p className="text-xs" style={{ color: 'var(--ivory-dim)', marginBottom: '0.5rem' }}>Face reveal requires a paid plan</p>
