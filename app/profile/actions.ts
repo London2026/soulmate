@@ -2,45 +2,102 @@
 
 import { createClient } from '@/lib/supabase/server'
 
-export async function requestVideoMeeting(recipientId: string): Promise<{ roomId: string }> {
+export async function requestVideoMeeting(
+  recipientId: string,
+  preferredDate: string,
+  preferredTime: string,
+  message: string
+): Promise<{ meetingId: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  // Return existing meeting if one already exists between these two users
+  // Check if a pending/accepted meeting already exists
   const { data: existing } = await supabase
     .from('video_meetings')
-    .select('room_id')
+    .select('id, status')
     .or(
       `and(requester_id.eq.${user.id},recipient_id.eq.${recipientId}),` +
       `and(requester_id.eq.${recipientId},recipient_id.eq.${user.id})`
     )
+    .in('status', ['pending', 'accepted'])
     .maybeSingle()
 
-  if (existing) return { roomId: existing.room_id }
+  if (existing) return { meetingId: existing.id }
 
-  // Generate a short unique room ID
-  const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
+  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const name = me?.full_name ?? 'Someone'
 
-  await supabase.from('video_meetings').insert({
-    room_id: roomId,
+  const { data: meeting, error } = await supabase.from('video_meetings').insert({
+    room_id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`,
     requester_id: user.id,
     recipient_id: recipientId,
     status: 'pending',
-  })
+    preferred_date: preferredDate,
+    preferred_time: preferredTime,
+    message,
+  }).select('id').single()
 
-  const { data: me } = await supabase
-    .from('profiles')
-    .select('full_name')
-    .eq('id', user.id)
-    .single()
+  if (error || !meeting) throw new Error('Failed to create meeting request')
+
+  const dateStr = new Date(preferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
   await supabase.from('notifications').insert({
     recipient_id: recipientId,
     sender_id: user.id,
     type: 'video_meeting_request',
-    message: `${me?.full_name ?? 'Someone'} has sent you a video meeting request. Open Soul Mate to join.`,
+    message: `${name} has requested a video meeting on ${dateStr} at ${preferredTime}. Message: "${message}"`,
   })
 
-  return { roomId }
+  return { meetingId: meeting.id }
+}
+
+export async function acceptMeeting(meetingId: string): Promise<{ roomId: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: meeting } = await supabase
+    .from('video_meetings')
+    .select('*')
+    .eq('id', meetingId)
+    .single()
+
+  if (!meeting) throw new Error('Meeting not found')
+
+  await supabase.from('video_meetings').update({ status: 'accepted' }).eq('id', meetingId)
+
+  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const dateStr = new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  // Notify requester
+  await supabase.from('notifications').insert({
+    recipient_id: meeting.requester_id,
+    sender_id: user.id,
+    type: 'meeting_accepted',
+    message: `${me?.full_name ?? 'Someone'} accepted your video meeting request for ${dateStr} at ${meeting.preferred_time}. Join via the meeting link in your profile.`,
+  })
+
+  return { roomId: meeting.room_id }
+}
+
+export async function declineMeeting(meetingId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: meeting } = await supabase.from('video_meetings').select('requester_id, preferred_date, preferred_time').eq('id', meetingId).single()
+  if (!meeting) return
+
+  await supabase.from('video_meetings').update({ status: 'declined' }).eq('id', meetingId)
+
+  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const dateStr = meeting.preferred_date ? new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : 'your requested date'
+
+  await supabase.from('notifications').insert({
+    recipient_id: meeting.requester_id,
+    sender_id: user.id,
+    type: 'meeting_declined',
+    message: `${me?.full_name ?? 'Someone'} is unavailable for ${dateStr} at ${meeting.preferred_time}. You can send a new request with a different date.`,
+  })
 }

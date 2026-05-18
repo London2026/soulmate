@@ -40,6 +40,11 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
   const [revealError, setRevealError] = useState('')
   const [roomId, setRoomId] = useState<string | null>(profile.meeting_room_id)
   const [requesting, setRequesting] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [meetDate, setMeetDate] = useState('')
+  const [meetTime, setMeetTime] = useState('18:00')
+  const [meetMsg, setMeetMsg] = useState('')
+  const [meetSent, setMeetSent] = useState(false)
 
   const initials = profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase()
 
@@ -54,9 +59,15 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
     finally { setRevealing(false) }
   }
 
-  async function handleRequestMeeting() {
+  async function handleRequestMeeting(e: React.FormEvent) {
+    e.preventDefault()
+    if (!meetDate) return
     setRequesting(true)
-    try { const { roomId: r } = await requestVideoMeeting(profile.id); setRoomId(r) }
+    try {
+      await requestVideoMeeting(profile.id, meetDate, meetTime, meetMsg || `I'd love to connect with you!`)
+      setMeetSent(true)
+      setShowForm(false)
+    } catch (err) { console.error(err) }
     finally { setRequesting(false) }
   }
 
@@ -165,22 +176,64 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
           </div>
         )}
 
-        {/* Meeting button */}
-        {!canMeet ? (
-          <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.75rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.ivoryDim, border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)', boxSizing: 'border-box' }}>
-            🔒 Upgrade to request meetings
-          </a>
-        ) : roomId ? (
-          <a href={`https://meet.jit.si/SoulMate-${roomId}`} target="_blank" rel="noopener noreferrer"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.75rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.navy, background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, textDecoration: 'none', boxSizing: 'border-box', boxShadow: '0 4px 16px rgba(201,168,76,0.25)' }}>
-            🎥 Join Video Meeting
-          </a>
-        ) : (
-          <button onClick={handleRequestMeeting} disabled={requesting}
-            style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem', background: 'transparent', border: `1px solid rgba(201,168,76,0.3)`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: requesting ? 'default' : 'pointer', borderRadius: '6px', opacity: requesting ? 0.6 : 1 }}>
-            {requesting ? 'Sending…' : '📹 Request Video Meeting'}
-          </button>
-        )}
+        {/* Meeting section */}
+        <div style={{ marginTop: '0.75rem' }}>
+          {!canMeet ? (
+            <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.ivoryDim, border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)', boxSizing: 'border-box' }}>
+              🔒 Upgrade to request meetings
+            </a>
+          ) : roomId ? (
+            <a href={`https://meet.jit.si/SoulMate-${roomId}`} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.navy, background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, textDecoration: 'none', boxSizing: 'border-box', boxShadow: '0 4px 16px rgba(201,168,76,0.25)' }}>
+              🎥 Join Meeting
+            </a>
+          ) : meetSent ? (
+            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '6px' }}>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>
+                ✓ Meeting request sent to {profile.full_name.split(' ')[0]}. You'll be notified when they respond.
+              </p>
+            </div>
+          ) : showForm ? (
+            <form onSubmit={handleRequestMeeting} style={{ background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, borderRadius: '8px', padding: '1rem' }}>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem' }}>📅 Request Meeting with {profile.full_name.split(' ')[0]}</p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.65rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.ivoryDim, marginBottom: '0.3rem' }}>Date</label>
+                  <input type="date" required value={meetDate} onChange={e => setMeetDate(e.target.value)} min={new Date().toISOString().split('T')[0]}
+                    style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '4px', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.ivoryDim, marginBottom: '0.3rem' }}>Time</label>
+                  <input type="time" required value={meetTime} onChange={e => setMeetTime(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '4px', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.ivoryDim, marginBottom: '0.3rem' }}>Message</label>
+                <textarea value={meetMsg} onChange={e => setMeetMsg(e.target.value)} placeholder={`Hi ${profile.full_name.split(' ')[0]}, I'd love to connect…`} rows={2}
+                  style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', fontStyle: 'italic', borderRadius: '4px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button type="submit" disabled={requesting || !meetDate}
+                  style={{ flex: 1, padding: '0.65rem', background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, color: c.navy, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: requesting ? 'default' : 'pointer', borderRadius: '4px', opacity: (requesting || !meetDate) ? 0.7 : 1 }}>
+                  {requesting ? 'Sending…' : 'Send Request'}
+                </button>
+                <button type="button" onClick={() => setShowForm(false)}
+                  style={{ padding: '0.65rem 1rem', background: 'transparent', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivoryDim, fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', cursor: 'pointer', borderRadius: '4px' }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button onClick={() => setShowForm(true)}
+              style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid rgba(201,168,76,0.3)`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '6px' }}>
+              📅 Request Video Meeting
+            </button>
+          )}
+        </div>
       </div>
     </article>
   )

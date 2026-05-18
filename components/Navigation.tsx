@@ -53,8 +53,8 @@ export default function Navigation() {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-          <span style={{ fontSize: '1.5rem' }}>💘</span>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
+          <img src="/soulmate-logo.png" alt="Soul Mate" style={{ height: '38px', width: '38px', objectFit: 'contain' }} />
           <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.3rem', fontWeight: 700, color: '#f5f0e6', letterSpacing: '0.02em' }}>
             Soul Mate
           </span>
@@ -62,25 +62,23 @@ export default function Navigation() {
 
         {/* Right side */}
         {user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {/* App nav links */}
+            <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
+            <Link href="/profile"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>My Profile</Link>
+            {/* Divider */}
+            <span style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)' }} />
             {/* Name */}
             <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#bdb5a6' }}>
               {user.name}
             </span>
             {/* Plan badge */}
             <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '0.2rem 0.65rem', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', color: '#c9a84c', borderRadius: '20px' }}>
-              {planLabel} Plan
+              {planLabel}
             </span>
-            {/* My Profile / Create Profile */}
-            <Link href={user.onboarded ? '/profile' : '/onboarding'}
-              style={{ padding: '0.45rem 1.1rem', background: 'linear-gradient(135deg, #e8c876, #c9a84c)', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: '4px', textDecoration: 'none' }}>
-              {user.onboarded ? 'My Profile' : 'Create Profile'}
-            </Link>
             {/* Sign Out */}
             <button onClick={handleSignOut}
-              style={{ padding: '0.45rem 0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.14)', color: '#bdb5a6', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: '4px', cursor: 'pointer', transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(201,168,76,0.4)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)')}>
+              style={{ padding: '0.45rem 0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.14)', color: '#bdb5a6', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: '4px', cursor: 'pointer' }}>
               Sign Out
             </button>
           </div>

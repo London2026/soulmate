@@ -73,7 +73,7 @@ export default async function ProfilePage() {
   // ── Video meetings ───────────────────────────────────────────
   const { data: meetingRows } = await supabase
     .from('video_meetings')
-    .select('id, room_id, requester_id, recipient_id, status, created_at')
+    .select('id, room_id, requester_id, recipient_id, status, created_at, preferred_date, preferred_time, message')
     .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
 
@@ -119,8 +119,10 @@ export default async function ProfilePage() {
     status: m.status,
     created_at: m.created_at,
     i_requested: m.requester_id === user.id,
-    other_name:
-      nameById[m.requester_id === user.id ? m.recipient_id : m.requester_id] ?? 'Member',
+    other_name: nameById[m.requester_id === user.id ? m.recipient_id : m.requester_id] ?? 'Member',
+    preferred_date: m.preferred_date ?? null,
+    preferred_time: m.preferred_time ?? null,
+    message: m.message ?? null,
   }))
 
   const back1Url = profile.back_photo_1_path ? ownUrlMap[profile.back_photo_1_path] ?? null : null
