@@ -188,9 +188,13 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
               🎥 Join Meeting
             </a>
           ) : meetSent ? (
-            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '6px' }}>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>
-                ✓ Meeting request sent to {profile.full_name.split(' ')[0]}. You'll be notified when they respond.
+            <div style={{ textAlign: 'center', padding: '1rem 1.25rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '8px' }}>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>✅</div>
+              <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.35rem' }}>
+                Request Sent!
+              </p>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0, lineHeight: 1.5 }}>
+                Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{profile.full_name}</strong> and is waiting for their confirmation.
               </p>
             </div>
           ) : showForm ? (
