@@ -1,7 +1,6 @@
 -- ============================================================
 --  Soul Mate — Demo Profiles Seed
---  Run in Supabase SQL Editor to populate the discover feed
---  Safe to run multiple times (ON CONFLICT DO NOTHING)
+--  Run AFTER fix_profiles_columns.sql
 -- ============================================================
 
 INSERT INTO public.profiles (
@@ -12,47 +11,34 @@ INSERT INTO public.profiles (
   back_photo_1_path, back_photo_2_path, front_photo_path, voice_path
 ) VALUES
 
-(
-  '00000000-demo-0000-0000-000000000001',
+('a0000000-0000-0000-0000-000000000001',
   'Priya Sharma', 26, 'Woman', 'London', 'United Kingdom',
   'Hindu', 'Gujarati', 'Master''s Degree', 'Software Engineer',
-  'Man', 24, 36, 'London', 'Hindu',
-  'standard', true, null, null, null, null
-),
-(
-  '00000000-demo-0000-0000-000000000002',
+  'Man', 24, 36, 'London', 'Hindu', 'standard', true, null, null, null, null),
+
+('a0000000-0000-0000-0000-000000000002',
   'Anita Patel', 28, 'Woman', 'Manchester', 'United Kingdom',
   'Hindu', 'Punjabi', 'Bachelor''s Degree', 'Doctor',
-  'Man', 26, 38, 'United Kingdom', 'Any',
-  'starter', true, null, null, null, null
-),
-(
-  '00000000-demo-0000-0000-000000000003',
+  'Man', 26, 38, 'United Kingdom', 'Any', 'starter', true, null, null, null, null),
+
+('a0000000-0000-0000-0000-000000000003',
   'James Mitchell', 30, 'Man', 'Edinburgh', 'United Kingdom',
   'Christian', 'English', 'Master''s Degree', 'Architect',
-  'Woman', 25, 35, 'United Kingdom', 'Any',
-  'standard', true, null, null, null, null
-),
-(
-  '00000000-demo-0000-0000-000000000004',
+  'Woman', 25, 35, 'United Kingdom', 'Any', 'standard', true, null, null, null, null),
+
+('a0000000-0000-0000-0000-000000000004',
   'Sophie Williams', 27, 'Woman', 'Bristol', 'United Kingdom',
   'Christian', 'English', 'Bachelor''s Degree', 'Nurse',
-  'Man', 25, 36, 'United Kingdom', 'Christian',
-  'starter', true, null, null, null, null
-),
-(
-  '00000000-demo-0000-0000-000000000005',
+  'Man', 25, 36, 'United Kingdom', 'Christian', 'starter', true, null, null, null, null),
+
+('a0000000-0000-0000-0000-000000000005',
   'Rahul Mehta', 31, 'Man', 'Birmingham', 'United Kingdom',
   'Hindu', 'Hindi', 'Master''s Degree', 'Finance Manager',
-  'Woman', 26, 34, 'United Kingdom', 'Hindu',
-  'standard', true, null, null, null, null
-),
-(
-  '00000000-demo-0000-0000-000000000006',
+  'Woman', 26, 34, 'United Kingdom', 'Hindu', 'standard', true, null, null, null, null),
+
+('a0000000-0000-0000-0000-000000000006',
   'Fatima Khan', 25, 'Woman', 'Leeds', 'United Kingdom',
   'Muslim', 'Urdu', 'Bachelor''s Degree', 'Teacher',
-  'Man', 24, 32, 'United Kingdom', 'Muslim',
-  'free', true, null, null, null, null
-)
+  'Man', 24, 32, 'United Kingdom', 'Muslim', 'free', true, null, null, null, null)
 
 ON CONFLICT (id) DO NOTHING;
