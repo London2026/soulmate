@@ -1,92 +1,192 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-interface AuthUser { name: string; onboarded: boolean; plan: string }
+interface MeetingStats {
+  requested: number
+  accepted: number
+  declined: number
+  waiting: number
+}
+
+interface AuthUser {
+  id: string
+  name: string
+  plan: string
+  stats: MeetingStats
+}
+
+const c = {
+  nav: 'rgba(7,17,31,0.96)',
+  border: 'rgba(201,168,76,0.12)',
+  ivory: '#f5f0e6',
+  ivoryDim: '#bdb5a6',
+  gold: '#c9a84c',
+  navy: '#0d1f3c',
+  sepia: '#5a6e82',
+}
 
 export default function Navigation() {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [open, setOpen] = useState(false)
+  const dropRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   useEffect(() => {
     const supabase = createClient()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!session?.user) { setUser(null); return }
-        const u = session.user
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, onboarding_complete, plan')
-          .eq('id', u.id)
-          .maybeSingle()
-        setUser({
-          name: profile?.full_name || u.user_metadata?.full_name || u.email?.split('@')[0] || 'Member',
-          onboarded: !!profile?.onboarding_complete,
-          plan: profile?.plan || 'free',
-        })
-      }
-    )
+    async function loadUser(userId: string, email?: string, fullName?: string) {
+      const [profileRes, meetingsRes] = await Promise.all([
+        supabase.from('profiles').select('full_name, plan').eq('id', userId).maybeSingle(),
+        supabase.from('video_meetings')
+          .select('status, requester_id')
+          .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`),
+      ])
 
-    return () => subscription.unsubscribe()
+      const profile = profileRes.data
+      const meetings = meetingsRes.data ?? []
+
+      const myRequests = meetings.filter(m => m.requester_id === userId)
+      const stats: MeetingStats = {
+        requested: myRequests.length,
+        accepted:  meetings.filter(m => m.status === 'accepted').length,
+        declined:  meetings.filter(m => m.status === 'declined').length,
+        waiting:   myRequests.filter(m => m.status === 'pending').length,
+      }
+
+      setUser({
+        id: userId,
+        name: profile?.full_name || fullName || email?.split('@')[0] || 'Member',
+        plan: profile?.plan || 'free',
+        stats,
+      })
+    }
+
+    // 1. Immediate check via getSession (reads local cookies — no server round-trip)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        loadUser(session.user.id, session.user.email, session.user.user_metadata?.full_name)
+      }
+    })
+
+    // 2. Subscribe for future changes (sign in / sign out)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        loadUser(session.user.id, session.user.email, session.user.user_metadata?.full_name)
+      } else {
+        setUser(null)
+      }
+    })
+
+    // Close dropdown on outside click
+    function handleClick(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+
+    return () => {
+      subscription.unsubscribe()
+      document.removeEventListener('mousedown', handleClick)
+    }
   }, [])
 
   async function handleSignOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
+    setUser(null)
     router.push('/')
   }
 
   const planLabel = user?.plan === 'standard' ? 'Standard' : user?.plan === 'starter' ? 'Starter' : 'Free'
 
+  const initials = user?.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() ?? ''
+
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      background: 'rgba(7,17,31,0.95)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(201,168,76,0.12)',
-    }}>
+    <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: c.nav, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: `1px solid ${c.border}` }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
         {/* Logo */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
           <img src="/soulmate-logo.png" alt="Soul Mate" style={{ height: '38px', width: '38px', objectFit: 'contain' }} />
-          <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.3rem', fontWeight: 700, color: '#f5f0e6', letterSpacing: '0.02em' }}>
-            Soul Mate
-          </span>
+          <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.3rem', fontWeight: 700, color: c.ivory, letterSpacing: '0.02em' }}>Soul Mate</span>
         </Link>
 
-        {/* Right side */}
         {user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            {/* App nav links */}
-            <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
-            <Link href="/profile"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>My Profile</Link>
-            {/* Divider */}
-            <span style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)' }} />
-            {/* Name */}
-            <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#bdb5a6' }}>
-              {user.name}
-            </span>
-            {/* Plan badge */}
-            <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '0.2rem 0.65rem', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', color: '#c9a84c', borderRadius: '20px' }}>
-              {planLabel}
-            </span>
-            {/* Sign Out */}
-            <button onClick={handleSignOut}
-              style={{ padding: '0.45rem 0.9rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.14)', color: '#bdb5a6', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: '4px', cursor: 'pointer' }}>
-              Sign Out
-            </button>
+          /* ── Logged-in nav ── */
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
+            <Link href="/profile"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>My Profile</Link>
+
+            {/* User dropdown */}
+            <div ref={dropRef} style={{ position: 'relative' }}>
+              <button onClick={() => setOpen(o => !o)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, borderRadius: '24px', padding: '0.3rem 0.75rem 0.3rem 0.3rem', cursor: 'pointer', transition: 'background 0.2s' }}>
+                {/* Avatar */}
+                <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(135deg, #1e3358, #253f6a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Playfair Display", serif', fontSize: '0.7rem', fontWeight: 700, color: c.gold, flexShrink: 0 }}>
+                  {initials}
+                </div>
+                <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivory }}>
+                  {user.name.split(' ')[0]}
+                </span>
+                <span style={{ color: c.ivoryDim, fontSize: '0.65rem' }}>▾</span>
+              </button>
+
+              {/* Dropdown panel */}
+              {open && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '280px', background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: '12px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)', overflow: 'hidden', zIndex: 200 }}>
+
+                  {/* Profile header */}
+                  <div style={{ padding: '1.1rem 1.25rem', borderBottom: `1px solid ${c.border}`, background: 'rgba(30,51,88,0.5)' }}>
+                    <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.05rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem' }}>{user.name}</p>
+                    <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '0.18rem 0.6rem', background: 'rgba(201,168,76,0.12)', border: `1px solid rgba(201,168,76,0.3)`, color: c.gold, borderRadius: '20px' }}>
+                      {planLabel} Plan
+                    </span>
+                  </div>
+
+                  {/* Meeting stats */}
+                  <div style={{ padding: '0.9rem 1.25rem', borderBottom: `1px solid ${c.border}` }}>
+                    <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.65rem' }}>Meeting Activity</p>
+                    {[
+                      { label: 'Requests Sent',          value: user.stats.requested, color: '#93c5fd' },
+                      { label: 'Accepted',               value: user.stats.accepted,  color: '#4ade80' },
+                      { label: 'Declined',               value: user.stats.declined,  color: '#f87171' },
+                      { label: 'Awaiting Confirmation',  value: user.stats.waiting,   color: c.gold },
+                    ].map(stat => (
+                      <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                        <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.92rem', color: c.ivoryDim }}>{stat.label}</span>
+                        <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', fontWeight: 600, color: stat.color, minWidth: '24px', textAlign: 'right' }}>{stat.value}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ padding: '0.75rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <Link href="/profile" onClick={() => setOpen(false)}
+                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.08em', color: c.ivoryDim, textDecoration: 'none', padding: '0.45rem 0' }}>
+                      👤 My Profile
+                    </Link>
+                    <Link href="/pricing" onClick={() => setOpen(false)}
+                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.08em', color: c.ivoryDim, textDecoration: 'none', padding: '0.45rem 0' }}>
+                      💳 Upgrade Plan
+                    </Link>
+                    <button onClick={handleSignOut}
+                      style={{ textAlign: 'left', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.08em', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: '0.45rem 0' }}>
+                      → Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
+          /* ── Guest nav ── */
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
-            <Link href="/pricing"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Pricing</Link>
-            <Link href="/login"    style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: '#bdb5a6', textDecoration: 'none', letterSpacing: '0.06em' }}>Sign In</Link>
+            <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
+            <Link href="/pricing"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Pricing</Link>
+            <Link href="/login"    style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Sign In</Link>
             <Link href="/signup"
               style={{ padding: '0.5rem 1.25rem', background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', color: '#fff', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: '4px', textDecoration: 'none' }}>
               Get Started
