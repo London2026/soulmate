@@ -28,17 +28,35 @@ export async function requestVideoMeeting(
   const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
   const name = me?.full_name ?? 'Someone'
 
-  const { data: meeting, error } = await supabase.from('video_meetings').insert({
-    room_id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`,
+  const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
+
+  // Try inserting with optional fields; fall back to base insert if columns don't exist yet
+  let meeting: { id: string } | null = null
+  const fullInsert = await supabase.from('video_meetings').insert({
+    room_id: roomId,
     requester_id: user.id,
     recipient_id: recipientId,
     status: 'pending',
-    preferred_date: preferredDate,
-    preferred_time: preferredTime,
-    message,
+    preferred_date: preferredDate || null,
+    preferred_time: preferredTime || null,
+    message: message || null,
   }).select('id').single()
 
-  if (error || !meeting) throw new Error('Failed to create meeting request')
+  if (fullInsert.error) {
+    // Columns might not exist yet — insert without them
+    const baseInsert = await supabase.from('video_meetings').insert({
+      room_id: roomId,
+      requester_id: user.id,
+      recipient_id: recipientId,
+      status: 'pending',
+    }).select('id').single()
+    if (baseInsert.error || !baseInsert.data) throw new Error(baseInsert.error?.message ?? 'Failed to create meeting request')
+    meeting = baseInsert.data
+  } else {
+    meeting = fullInsert.data
+  }
+
+  if (!meeting) throw new Error('Failed to create meeting request')
 
   const dateStr = new Date(preferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 

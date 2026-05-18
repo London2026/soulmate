@@ -45,6 +45,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
   const [meetTime, setMeetTime] = useState('18:00')
   const [meetMsg, setMeetMsg] = useState('')
   const [meetSent, setMeetSent] = useState(false)
+  const [meetError, setMeetError] = useState('')
 
   const initials = profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase()
 
@@ -61,14 +62,18 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
 
   async function handleRequestMeeting(e: React.FormEvent) {
     e.preventDefault()
-    if (!meetDate) return
+    if (!meetDate) { setMeetError('Please select a preferred date.'); return }
     setRequesting(true)
+    setMeetError('')
     try {
       await requestVideoMeeting(profile.id, meetDate, meetTime, meetMsg || `I'd love to connect with you!`)
       setMeetSent(true)
       setShowForm(false)
-    } catch (err) { console.error(err) }
-    finally { setRequesting(false) }
+    } catch (err) {
+      setMeetError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    } finally {
+      setRequesting(false)
+    }
   }
 
   const tags = [profile.occupation, profile.education, profile.mother_tongue].filter(Boolean)
@@ -219,6 +224,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
                 <textarea value={meetMsg} onChange={e => setMeetMsg(e.target.value)} placeholder={`Hi ${profile.full_name.split(' ')[0]}, I'd love to connect…`} rows={2}
                   style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', fontStyle: 'italic', borderRadius: '4px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
               </div>
+
+              {meetError && (
+                <div style={{ marginBottom: '0.65rem', padding: '0.5rem 0.75rem', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '4px', color: '#f87171', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem' }}>
+                  {meetError}
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button type="submit" disabled={requesting || !meetDate}
