@@ -23,7 +23,16 @@ export interface ProfileData {
   meeting_room_id: string | null
 }
 
-export default function ProfileCard({ profile, canReveal = true, canMeet = true }: { profile: ProfileData; canReveal?: boolean; canMeet?: boolean }) {
+const c = {
+  navy: '#0d1f3c', navyMid: '#152240', navyLight: '#1a2b4a',
+  ivory: '#f5f0e6', ivoryDim: '#bdb5a6',
+  gold: '#8b6914', goldLight: '#c9a84c',
+  border: 'rgba(201,168,76,0.18)',
+}
+
+export default function ProfileCard({ profile, canReveal = true, canMeet = true }: {
+  profile: ProfileData; canReveal?: boolean; canMeet?: boolean
+}) {
   const [revealed, setRevealed] = useState(profile.already_revealed)
   const [frontUrl, setFrontUrl] = useState<string | null>(profile.front_photo_url)
   const [revealing, setRevealing] = useState(false)
@@ -32,240 +41,145 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
   const [roomId, setRoomId] = useState<string | null>(profile.meeting_room_id)
   const [requesting, setRequesting] = useState(false)
 
+  const initials = profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase()
+
   async function handleReveal() {
     if (revealed || revealing) return
-    setRevealing(true)
-    setRevealError('')
+    setRevealing(true); setRevealError('')
     try {
       const { signedUrl } = await revealPhoto(profile.id)
-      setFrontUrl(signedUrl)
-      setRevealed(true)
-      setRevealMsg(`${profile.full_name} has been notified that you revealed their photo.`)
-    } catch (err) {
-      setRevealError(err instanceof Error ? err.message : 'Something went wrong.')
-    } finally {
-      setRevealing(false)
-    }
+      setFrontUrl(signedUrl); setRevealed(true)
+      setRevealMsg(`${profile.full_name.split(' ')[0]} has been notified.`)
+    } catch (err) { setRevealError(err instanceof Error ? err.message : 'Something went wrong.') }
+    finally { setRevealing(false) }
   }
 
   async function handleRequestMeeting() {
     setRequesting(true)
-    try {
-      const { roomId: newRoom } = await requestVideoMeeting(profile.id)
-      setRoomId(newRoom)
-    } finally {
-      setRequesting(false)
-    }
+    try { const { roomId: r } = await requestVideoMeeting(profile.id); setRoomId(r) }
+    finally { setRequesting(false) }
   }
 
-  const backPhotos = [profile.back_photo_1_url, profile.back_photo_2_url].filter(Boolean) as string[]
+  const tags = [profile.occupation, profile.education, profile.mother_tongue].filter(Boolean)
 
   return (
-    <article
-      className="rounded-2xl overflow-hidden"
-      style={{
-        backgroundColor: 'var(--oxford-navy-mid)',
-        border: '1px solid rgba(201,168,76,0.18)',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.45)',
-      }}
-    >
-      {/* ── Header ── */}
-      <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(201,168,76,0.08)' }}>
-        <div className="flex items-start justify-between gap-4">
+    <article style={{ background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.45)', marginBottom: '2rem' }}>
+
+      {/* Header */}
+      <div style={{ padding: '1.5rem 1.5rem 1.25rem', borderBottom: `1px solid rgba(201,168,76,0.08)` }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}>
           <div>
-            <h2
-              className="text-xl leading-tight"
-              style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}
-            >
+            <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.25rem' }}>
               {profile.full_name}
             </h2>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--ivory-dim)' }}>
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivoryDim, margin: 0 }}>
               {profile.age} yrs · {profile.city}, {profile.country}
             </p>
           </div>
-          <span
-            className="shrink-0 text-xs px-3 py-1 rounded-full"
-            style={{
-              backgroundColor: 'rgba(201,168,76,0.08)',
-              color: 'var(--antique-gold)',
-              border: '1px solid rgba(201,168,76,0.2)',
-            }}
-          >
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, color: c.goldLight, borderRadius: '20px', flexShrink: 0, whiteSpace: 'nowrap' }}>
             {profile.religion}
           </span>
         </div>
-
-        <div className="flex flex-wrap gap-2 mt-3">
-          {[profile.occupation, profile.education, profile.mother_tongue]
-            .filter(Boolean)
-            .map((tag) => (
-              <span
-                key={tag}
-                className="text-xs px-2.5 py-1 rounded"
-                style={{
-                  backgroundColor: 'rgba(14,26,53,0.7)',
-                  color: 'var(--ivory-dim)',
-                  border: '1px solid rgba(201,168,76,0.1)',
-                }}
-              >
-                {tag}
-              </span>
-            ))}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+          {tags.map(tag => (
+            <span key={tag} style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', letterSpacing: '0.08em', padding: '0.2rem 0.6rem', background: 'rgba(14,26,53,0.7)', border: '1px solid rgba(201,168,76,0.1)', color: c.ivoryDim, borderRadius: '3px' }}>
+              {tag}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* ── Back Photos ── */}
-      {backPhotos.length > 0 ? (
-        <div style={{ display: 'grid', gridTemplateColumns: backPhotos.length === 2 ? '1fr 1fr' : '1fr', gap: '2px' }}>
-          {backPhotos.map((url, i) => (
-            <div key={i} style={{ position: 'relative', aspectRatio: '4/3', background: '#0a1628' }}>
-              <img src={url} alt={`Back photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-          ))}
+      {/* Back Photos */}
+      {profile.back_photo_1_url || profile.back_photo_2_url ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
+          {[profile.back_photo_1_url, profile.back_photo_2_url].map((url, i) =>
+            url ? (
+              <div key={i} style={{ aspectRatio: '4/3', background: c.navy, overflow: 'hidden' }}>
+                <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              </div>
+            ) : null
+          )}
         </div>
       ) : (
-        /* Placeholder when no photos uploaded yet */
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
           {[0, 1].map(i => (
-            <div key={i} style={{ aspectRatio: '4/3', background: `linear-gradient(135deg, #0d1f3c 0%, #1a2b4a 100%)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-              <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '2rem', fontStyle: 'italic', color: 'rgba(201,168,76,0.35)' }}>
-                {profile.full_name.split(' ').map(n => n[0]).join('')}
-              </span>
-              <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.25)' }}>
-                Photo coming soon
-              </span>
+            <div key={i} style={{ aspectRatio: '4/3', background: `linear-gradient(135deg, ${c.navy} 0%, ${c.navyLight} 100%)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '2rem', fontStyle: 'italic', color: 'rgba(201,168,76,0.3)' }}>{initials}</span>
+              <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.2)' }}>Photo coming soon</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* ── Voice Introduction ── */}
+      {/* Voice */}
       {profile.voice_url && (
-        <div className="px-6 py-4" style={{ borderTop: '1px solid rgba(201,168,76,0.07)' }}>
-          <p
-            className="text-xs mb-2 tracking-widest uppercase"
-            style={{ color: 'var(--antique-gold)' }}
-          >
-            🎙 Voice Introduction
-          </p>
-          <audio
-            controls
-            src={profile.voice_url}
-            preload="none"
-            className="w-full"
-            style={{ accentColor: 'var(--antique-gold)', height: '36px' }}
-          />
+        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem' }}>🎙 Voice Introduction</p>
+          <audio controls src={profile.voice_url} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
         </div>
       )}
 
-      {/* ── Gold Divider ── */}
-      <div
-        className="mx-6"
-        style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.2), transparent)' }}
-      />
+      {/* Gold divider */}
+      <div style={{ height: '1px', margin: '0 1.5rem', background: `linear-gradient(to right, transparent, ${c.border}, transparent)` }} />
 
-      {/* ── Reveal Section ── */}
-      <div className="px-6 py-5">
-        {!profile.front_photo_url && !revealed && canReveal ? (
+      {/* Reveal section */}
+      <div style={{ padding: '1.25rem 1.5rem' }}>
+        {!canReveal && !revealed ? (
           <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', margin: '0 auto 0.5rem' }}>🔒</div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--ivory-dim)', fontStyle: 'italic', fontFamily: '"Cormorant Garamond", serif' }}>
-              {profile.full_name.split(' ')[0]} hasn&apos;t uploaded their reveal photo yet
-            </p>
-          </div>
-        ) : !canReveal && !revealed ? (
-          <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
-            <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: 'rgba(90,110,130,0.1)', border: '1px solid rgba(90,110,130,0.2)', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', margin: '0 auto 0.75rem' }}>🔒</div>
-            <p className="text-xs" style={{ color: 'var(--ivory-dim)', marginBottom: '0.5rem' }}>Face reveal requires a paid plan</p>
-            <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--antique-gold)', textDecoration: 'none', border: '1px solid rgba(201,168,76,0.35)', padding: '0.5rem 1rem', borderRadius: '4px', display: 'inline-block' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(90,110,130,0.1)', border: '1px solid rgba(90,110,130,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.5rem' }}>🔒</div>
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>Face reveal requires a paid plan</p>
+            <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0.5rem 1.25rem', borderRadius: '4px' }}>
               Upgrade Plan →
             </a>
           </div>
-        ) : revealed && frontUrl ? (
-          <div className="space-y-4">
-            <p
-              className="text-xs text-center tracking-widest uppercase"
-              style={{ color: 'var(--antique-gold)' }}
-            >
-              ✦ Reveal Photo
+        ) : !profile.front_photo_url && !revealed && canReveal ? (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.5rem' }}>🔒</div>
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>
+              {profile.full_name.split(' ')[0]} hasn&apos;t uploaded their reveal photo yet
             </p>
-            <div className="rounded-xl overflow-hidden" style={{ aspectRatio: '3/4' }}>
-              <img
-                src={frontUrl}
-                alt={`${profile.full_name}`}
-                className="w-full h-full object-cover"
-              />
+          </div>
+        ) : revealed && frontUrl ? (
+          <div>
+            <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, textAlign: 'center', margin: '0 0 0.75rem' }}>✦ Reveal Photo</p>
+            <div style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4' }}>
+              <img src={frontUrl} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
             {revealMsg && (
-              <p className="text-xs text-center py-2 rounded-lg"
-                style={{ color: 'var(--ivory-dim)', backgroundColor: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.15)' }}>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, textAlign: 'center', margin: '0.75rem 0 0', padding: '0.65rem', background: 'rgba(201,168,76,0.06)', borderRadius: '4px' }}>
                 ✓ {revealMsg}
               </p>
             )}
-
-            {/* Video meeting button — appears after reveal */}
-            <div className="pt-1">
-              {!canMeet ? (
-                <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '8px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ivory-dim)', border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)' }}>
-                  🔒 Upgrade to request meetings
-                </a>
-              ) : roomId ? (
-                <a
-                  href={`https://meet.jit.si/SoulMate-${roomId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold tracking-wider transition-all"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--antique-gold-light), var(--antique-gold))',
-                    color: 'var(--oxford-navy)',
-                    boxShadow: '0 4px 16px rgba(201,168,76,0.25)',
-                  }}
-                >
-                  🎥 Join Video Meeting
-                </a>
-              ) : (
-                <button
-                  onClick={handleRequestMeeting}
-                  disabled={requesting}
-                  className="w-full py-3 rounded-xl text-sm font-medium tracking-wider transition-all disabled:opacity-60"
-                  style={{ border: '1px solid rgba(201,168,76,0.3)', color: 'var(--antique-gold)', backgroundColor: 'rgba(201,168,76,0.04)' }}
-                >
-                  {requesting ? 'Sending request…' : '📹 Request Video Meeting'}
-                </button>
-              )}
-            </div>
           </div>
         ) : (
-          <div className="text-center space-y-3">
-            <div
-              className="mx-auto w-14 h-14 rounded-full flex items-center justify-center text-2xl"
-              style={{ backgroundColor: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.18)' }}
-            >
-              🔒
-            </div>
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--ivory-dim)' }}>
-              Face photo is hidden. Revealing it will send {profile.full_name} an instant notification.
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.75rem' }}>🔒</div>
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
+              Face photo is hidden. Revealing notifies {profile.full_name.split(' ')[0]} instantly.
             </p>
-
-            {revealError && (
-              <p className="text-xs" style={{ color: '#F87171' }}>{revealError}</p>
-            )}
-
-            <button
-              onClick={handleReveal}
-              disabled={revealing}
-              className="w-full py-3 rounded-xl text-sm font-semibold tracking-wider transition-all duration-200 disabled:opacity-60"
-              style={{
-                border: '1px solid var(--antique-gold)',
-                color: 'var(--antique-gold)',
-                backgroundColor: revealing ? 'rgba(201,168,76,0.1)' : 'transparent',
-              }}
-              onMouseEnter={(e) => { if (!revealing) e.currentTarget.style.backgroundColor = 'rgba(201,168,76,0.1)' }}
-              onMouseLeave={(e) => { if (!revealing) e.currentTarget.style.backgroundColor = 'transparent' }}
-            >
+            {revealError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{revealError}</p>}
+            <button onClick={handleReveal} disabled={revealing}
+              style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: revealing ? 'default' : 'pointer', borderRadius: '6px', transition: 'all 0.2s', opacity: revealing ? 0.6 : 1 }}>
               {revealing ? 'Revealing…' : '🔓 Reveal Photo'}
             </button>
           </div>
+        )}
+
+        {/* Meeting button */}
+        {!canMeet ? (
+          <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.75rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.ivoryDim, border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)', boxSizing: 'border-box' }}>
+            🔒 Upgrade to request meetings
+          </a>
+        ) : roomId ? (
+          <a href={`https://meet.jit.si/SoulMate-${roomId}`} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.75rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.navy, background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, textDecoration: 'none', boxSizing: 'border-box', boxShadow: '0 4px 16px rgba(201,168,76,0.25)' }}>
+            🎥 Join Video Meeting
+          </a>
+        ) : (
+          <button onClick={handleRequestMeeting} disabled={requesting}
+            style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem', background: 'transparent', border: `1px solid rgba(201,168,76,0.3)`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: requesting ? 'default' : 'pointer', borderRadius: '6px', opacity: requesting ? 0.6 : 1 }}>
+            {requesting ? 'Sending…' : '📹 Request Video Meeting'}
+          </button>
         )}
       </div>
     </article>

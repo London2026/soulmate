@@ -110,73 +110,54 @@ export default async function DiscoverPage() {
     .limit(5)
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--oxford-navy)' }}>
-      <div
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%)',
-        }}
-      />
+    <div style={{ minHeight: '100vh', backgroundColor: '#0d1f3c' }}>
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%)' }} />
 
       <Navigation />
 
-      <main className="mx-auto pt-24 pb-28 px-4 max-w-xl">
+      <main style={{ maxWidth: '580px', margin: '0 auto', padding: '6rem 1.25rem 4rem' }}>
 
-        {/* Page heading */}
-        <div className="mb-6">
-          <div className="flex items-baseline justify-between">
-            <h1
-              className="text-3xl"
-              style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}
-            >
+        {/* Heading */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: '#f5f0e6', margin: 0 }}>
               Discover
             </h1>
-            <span className="text-xs" style={{ color: 'var(--ivory-dim)' }}>
+            <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: '#bdb5a6', letterSpacing: '0.08em' }}>
               {profiles.length} {profiles.length === 1 ? 'profile' : 'profiles'}
             </span>
           </div>
-          <div
-            className="mt-2 h-px"
-            style={{ background: 'linear-gradient(to right, var(--antique-gold), transparent)' }}
-          />
+          <div style={{ marginTop: '0.5rem', height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)' }} />
         </div>
 
-        {/* Unread notifications */}
+        {/* Notifications */}
         <NotificationBanner notifications={notifications ?? []} />
 
-        {/* Profile feed */}
+        {/* Feed */}
         {profiles.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="space-y-8">
+          <div>
             {profiles.map((p) => (
               <ProfileCard key={p.id} profile={p} canReveal={canReveal} canMeet={canMeet} />
             ))}
           </div>
         )}
       </main>
-
-      <BottomNav />
     </div>
   )
 }
 
 function EmptyState() {
   return (
-    <div className="text-center py-24">
-      <div
-        className="mx-auto mb-6 w-20 h-20 rounded-full flex items-center justify-center text-3xl"
-        style={{ backgroundColor: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)' }}
-      >
+    <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+      <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', margin: '0 auto 1.25rem' }}>
         💘
       </div>
-      <h2
-        className="text-2xl mb-2"
-        style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}
-      >
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', color: '#f5f0e6', margin: '0 0 0.5rem' }}>
         No profiles yet
       </h2>
-      <p className="text-sm" style={{ color: 'var(--ivory-dim)' }}>
+      <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: '#bdb5a6' }}>
         Be the first to invite someone to Soul Mate.
       </p>
     </div>
