@@ -3,6 +3,14 @@
 --  Run this FIRST in Supabase SQL Editor, then run the seed
 -- ============================================================
 
+-- Drop NOT NULL constraints from legacy columns created by register.html
+ALTER TABLE public.profiles
+  ALTER COLUMN first_name DROP NOT NULL;
+
+ALTER TABLE public.profiles
+  ALTER COLUMN last_name DROP NOT NULL;
+
+-- Add our app columns
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS full_name        text,
   ADD COLUMN IF NOT EXISTS age              integer,
