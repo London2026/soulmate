@@ -19,8 +19,10 @@ export default function Navigation() {
     const supabase = createClient()
 
     async function loadUser() {
-      const { data: { user: u } } = await supabase.auth.getUser()
-      if (!u) { setUser(null); return }
+      // Use getSession() — reads local cookies without a server round-trip
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) { setUser(null); return }
+      const u = session.user
 
       const { data: profile } = await supabase
         .from('profiles')

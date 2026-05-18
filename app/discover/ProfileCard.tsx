@@ -24,10 +24,10 @@ export interface ProfileData {
 }
 
 const c = {
-  navy: '#0d1f3c', navyMid: '#152240', navyLight: '#1a2b4a',
+  navy: '#0d1f3c', navyMid: '#1e3358', navyLight: '#253f6a',
   ivory: '#f5f0e6', ivoryDim: '#bdb5a6',
   gold: '#8b6914', goldLight: '#c9a84c',
-  border: 'rgba(201,168,76,0.18)',
+  border: 'rgba(201,168,76,0.28)',
 }
 
 export default function ProfileCard({ profile, canReveal = true, canMeet = true }: {
@@ -63,7 +63,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
   const tags = [profile.occupation, profile.education, profile.mother_tongue].filter(Boolean)
 
   return (
-    <article style={{ background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.45)', marginBottom: '2rem' }}>
+    <article style={{ background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.1)', marginBottom: '2rem' }}>
 
       {/* Header */}
       <div style={{ padding: '1.5rem 1.5rem 1.25rem', borderBottom: `1px solid rgba(201,168,76,0.08)` }}>
@@ -103,7 +103,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
           {[0, 1].map(i => (
-            <div key={i} style={{ aspectRatio: '4/3', background: `linear-gradient(135deg, ${c.navy} 0%, ${c.navyLight} 100%)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+            <div key={i} style={{ aspectRatio: '4/3', background: `linear-gradient(135deg, #152d4e 0%, #1e3d66 100%)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
               <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '2rem', fontStyle: 'italic', color: 'rgba(201,168,76,0.3)' }}>{initials}</span>
               <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.2)' }}>Photo coming soon</span>
             </div>

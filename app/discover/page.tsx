@@ -110,7 +110,7 @@ export default async function DiscoverPage() {
     .limit(5)
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0d1f3c' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#07111f' }}>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%)' }} />
 
       <Navigation />
