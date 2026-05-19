@@ -796,6 +796,26 @@
     z-index: 2;
   }
 
+  .sophie-card-top {
+    background: url('/members/sophie-b.jpg') center/cover no-repeat !important;
+  }
+
+  .sophie-card-top::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(13,31,60,0.85) 0%, rgba(13,31,60,0.2) 60%, transparent 100%);
+    z-index: 1;
+  }
+
+  .sophie-card-top .reveal-locked,
+  .sophie-card-top .profile-avatar,
+  .sophie-card-top .profile-name,
+  .sophie-card-top .profile-meta {
+    position: relative;
+    z-index: 2;
+  }
+
   /* PERSONALITY */
   .personality-section { background: var(--parchment); }
 
@@ -2059,18 +2079,10 @@
 
       <!-- Profile 4 -->
       <div class="profile-card reveal">
-        <div class="profile-card-top">
+        <div class="profile-card-top oliver-card-top sophie-card-top">
           <div class="reveal-locked">🔒 Face Hidden</div>
-          <div class="profile-avatar">
-            <svg class="avatar-silhouette" viewBox="0 0 60 80" fill="none">
-              <ellipse cx="30" cy="20" rx="11" ry="13" fill="#f4f1eb"/>
-              <path d="M12 75 Q12 46 30 44 Q48 46 48 75" fill="#f4f1eb"/>
-              <path d="M19 17 Q22 6 30 6 Q40 8 40 19" fill="none" stroke="#f4f1eb" stroke-width="2.5"/>
-              <path d="M40 19 Q46 22 44 28" fill="none" stroke="#f4f1eb" stroke-width="2"/>
-            </svg>
-          </div>
-          <div class="profile-name">Sophie B.</div>
-          <div class="profile-meta">27 · Bristol, England · Nurse</div>
+          <div class="profile-name" style="position:relative;z-index:2;color:#f5efe0;">Sophie B.</div>
+          <div class="profile-meta" style="position:relative;z-index:2;">27 · Bristol, England · Nurse</div>
         </div>
         <div class="profile-card-body">
           <div class="profile-field">
