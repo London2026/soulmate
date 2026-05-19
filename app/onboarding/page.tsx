@@ -9,8 +9,9 @@ import BackgroundStep from './steps/BackgroundStep'
 import PreferencesStep from './steps/PreferencesStep'
 import VoiceStep from './steps/VoiceStep'
 import PhotosStep from './steps/PhotosStep'
+import PersonalityStep from './steps/PersonalityStep'
 
-const STEPS = ['About You', 'Your Heritage', 'Preferences', 'Voice Intro', 'Your Photos']
+const STEPS = ['About You', 'Your Heritage', 'Preferences', 'Voice Intro', 'Your Photos', 'Personality']
 
 const c = {
   cream: '#f4f1eb', navy: '#0d1f3c', navyMid: '#1a3a5c',
@@ -21,12 +22,14 @@ interface Draft {
   fullName: string; age: string; gender: string; city: string; country: string
   religion: string; motherTongue: string; education: string; occupation: string
   prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string
+  favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string
 }
 
 const EMPTY: Draft = {
   fullName: '', age: '', gender: '', city: '', country: '',
   religion: '', motherTongue: '', education: '', occupation: '',
   prefGender: '', prefAgeMin: '18', prefAgeMax: '50', prefLocation: '', prefReligion: '',
+  favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '',
 }
 
 export default function OnboardingPage() {
@@ -76,6 +79,7 @@ export default function OnboardingPage() {
       if (!back1 || !back2) return 'Please upload both back-side photos.'
       if (!front) return 'Please upload your reveal photo.'
     }
+    // Step 5 (personality) is optional — no validation required
     return ''
   }
 
@@ -83,7 +87,7 @@ export default function OnboardingPage() {
     const msg = validate()
     if (msg) { setError(msg); return }
     setError('')
-    if (step < 4) { setStep(s => s + 1); return }
+    if (step < 5) { setStep(s => s + 1); return }
 
     setSaving(true)
     try {
@@ -114,7 +118,11 @@ export default function OnboardingPage() {
         mother_tongue: draft.motherTongue, education: draft.education, occupation: draft.occupation,
         pref_gender: draft.prefGender, pref_age_min: parseInt(draft.prefAgeMin),
         pref_age_max: parseInt(draft.prefAgeMax), pref_location: draft.prefLocation,
-        pref_religion: draft.prefReligion, voice_path: voicePath,
+        pref_religion: draft.prefReligion,
+        fav_reels: draft.favReels || null, fav_youtube: draft.favYoutube || null,
+        fav_web_series: draft.favWebSeries || null, fav_travel: draft.favTravel || null,
+        fav_foods: draft.favFoods || null, fav_ai_tools: draft.favAiTools || null,
+        voice_path: voicePath,
         back_photo_1_path: r1.data?.path ?? null,
         back_photo_2_path: r2.data?.path ?? null,
         front_photo_path: r3.data?.path ?? null,
@@ -181,6 +189,7 @@ export default function OnboardingPage() {
           {step === 2 && <PreferencesStep data={draft} onChange={change} />}
           {step === 3 && <VoiceStep onVoiceChange={setVoiceBlob} hasRecording={!!voiceBlob} />}
           {step === 4 && <PhotosStep back1={back1} back2={back2} front={front} onPhotosChange={(b1, b2, f) => { setBack1(b1); setBack2(b2); setFront(f) }} />}
+          {step === 5 && <PersonalityStep data={{ favReels: draft.favReels, favYoutube: draft.favYoutube, favWebSeries: draft.favWebSeries, favTravel: draft.favTravel, favFoods: draft.favFoods, favAiTools: draft.favAiTools }} onChange={change} />}
 
           {error && (
             <div style={{ marginTop: '1rem', background: 'rgba(158,42,43,0.07)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '4px', padding: '0.65rem 0.9rem', color: c.rose, fontSize: '0.9rem', fontFamily: '"Cormorant Garamond", serif', textAlign: 'center' }}>
@@ -199,7 +208,7 @@ export default function OnboardingPage() {
           )}
           <button onClick={handleNext} disabled={saving}
             style={{ padding: '0.75rem 2rem', background: saving ? c.navyMid : c.navy, color: c.goldLight, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: saving ? 'default' : 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}>
-            {saving ? 'Saving…' : step === 4 ? 'Complete Profile ✓' : 'Continue →'}
+            {saving ? 'Saving…' : step === 5 ? 'Complete Profile ✓' : 'Continue →'}
           </button>
         </div>
       </div>

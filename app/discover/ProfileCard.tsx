@@ -21,6 +21,13 @@ export interface ProfileData {
   front_photo_url: string | null
   already_revealed: boolean
   meeting_room_id: string | null
+  meeting_status: string | null
+  fav_reels?: string | null
+  fav_youtube?: string | null
+  fav_web_series?: string | null
+  fav_travel?: string | null
+  fav_foods?: string | null
+  fav_ai_tools?: string | null
 }
 
 const c = {
@@ -38,7 +45,10 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
   const [revealing, setRevealing] = useState(false)
   const [revealMsg, setRevealMsg] = useState('')
   const [revealError, setRevealError] = useState('')
-  const [roomId, setRoomId] = useState<string | null>(profile.meeting_room_id)
+  const [roomId, setRoomId] = useState<string | null>(
+    profile.meeting_status === 'accepted' ? profile.meeting_room_id : null
+  )
+  const [meetPending] = useState(profile.meeting_status === 'pending')
   const [requesting, setRequesting] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [meetDate, setMeetDate] = useState('')
@@ -135,6 +145,42 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
         </div>
       )}
 
+      {/* Personality section */}
+      {[
+        { icon: '🎬', label: 'Favourite Reels',    value: profile.fav_reels },
+        { icon: '▶️', label: 'YouTube Channels',    value: profile.fav_youtube },
+        { icon: '📺', label: 'Web Series',          value: profile.fav_web_series },
+        { icon: '✈️', label: 'Travel',              value: profile.fav_travel },
+        { icon: '🍽️', label: 'Favourite Foods',     value: profile.fav_foods },
+        { icon: '🤖', label: 'AI Tools',            value: profile.fav_ai_tools },
+      ].some(p => p.value) && (
+        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem' }}>✦ Personality</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {[
+              { icon: '🎬', label: 'Reels',    value: profile.fav_reels },
+              { icon: '▶️', label: 'YouTube',   value: profile.fav_youtube },
+              { icon: '📺', label: 'Series',    value: profile.fav_web_series },
+              { icon: '✈️', label: 'Travel',    value: profile.fav_travel },
+              { icon: '🍽️', label: 'Foods',     value: profile.fav_foods },
+              { icon: '🤖', label: 'AI Tools',  value: profile.fav_ai_tools },
+            ].filter(p => p.value).map(p => (
+              <div key={p.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.85rem', flexShrink: 0, marginTop: '0.05rem' }}>{p.icon}</span>
+                <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.ivoryDim, flexShrink: 0, minWidth: '52px' }}>{p.label}</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                  {p.value!.split(',').map(s => s.trim()).filter(Boolean).map((tag, i) => (
+                    <span key={i} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.88rem', color: c.ivory, padding: '0.1rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px' }}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Gold divider */}
       <div style={{ height: '1px', margin: '0 1.5rem', background: `linear-gradient(to right, transparent, ${c.border}, transparent)` }} />
 
@@ -192,6 +238,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.navy, background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, textDecoration: 'none', boxSizing: 'border-box', boxShadow: '0 4px 16px rgba(201,168,76,0.25)' }}>
               🎥 Join Meeting
             </a>
+          ) : meetPending && !meetSent ? (
+            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '6px' }}>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>
+                ✓ Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{profile.full_name}</strong> and is waiting for their confirmation.
+              </p>
+            </div>
           ) : meetSent ? (
             <div style={{ textAlign: 'center', padding: '1rem 1.25rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '8px' }}>
               <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>✅</div>

@@ -30,7 +30,8 @@ export default async function DiscoverPage() {
     .select(`
       id, full_name, age, gender, city, country,
       religion, mother_tongue, education, occupation,
-      back_photo_1_path, back_photo_2_path, voice_path, front_photo_path
+      back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
+      fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools
     `)
     .eq('onboarding_complete', true)
     .neq('id', user.id)
@@ -48,13 +49,13 @@ export default async function DiscoverPage() {
   // Existing video meetings
   const { data: meetingRows } = await supabase
     .from('video_meetings')
-    .select('room_id, requester_id, recipient_id')
+    .select('room_id, requester_id, recipient_id, status')
     .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
 
-  const meetingByOther: Record<string, string> = {}
+  const meetingByOther: Record<string, { room_id: string; status: string }> = {}
   for (const m of meetingRows ?? []) {
     const other = m.requester_id === user.id ? m.recipient_id : m.requester_id
-    meetingByOther[other] = m.room_id
+    meetingByOther[other] = { room_id: m.room_id, status: m.status }
   }
 
   // Collect all storage paths we need signed URLs for
@@ -98,7 +99,14 @@ export default async function DiscoverPage() {
         ? (urlMap[p.front_photo_path] ?? null)
         : null,
     already_revealed: revealedSet.has(p.id),
-    meeting_room_id: meetingByOther[p.id] ?? null,
+    meeting_room_id: meetingByOther[p.id]?.room_id ?? null,
+    meeting_status: meetingByOther[p.id]?.status ?? null,
+    fav_reels: p.fav_reels ?? null,
+    fav_youtube: p.fav_youtube ?? null,
+    fav_web_series: p.fav_web_series ?? null,
+    fav_travel: p.fav_travel ?? null,
+    fav_foods: p.fav_foods ?? null,
+    fav_ai_tools: p.fav_ai_tools ?? null,
   }))
 
   // Fetch unread notifications for the current user
