@@ -64,9 +64,7 @@ export default function SignupPage() {
     return (
       <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>💘</div>
-          <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2.4rem', fontWeight: 700, color: c.navy, margin: '0 0 0.3rem' }}>Soul Mate</h1>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: c.gold, margin: 0 }}>✦ Find Your Forever ✦</p>
+          <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ width: '170px', height: '170px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 6px 30px rgba(13,31,60,0.13)' }} />
         </div>
 
         <div style={{ width: '100%', maxWidth: '440px', background: '#fff', borderRadius: '10px', boxShadow: '0 16px 60px rgba(13,31,60,0.12)', border: `1px solid rgba(13,31,60,0.08)`, overflow: 'hidden' }}>
@@ -101,13 +99,7 @@ export default function SignupPage() {
 
       {/* Brand */}
       <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>💘</div>
-        <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2.4rem', fontWeight: 700, color: c.navy, margin: '0 0 0.3rem', letterSpacing: '0.02em' }}>
-          Soul Mate
-        </h1>
-        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: c.gold, margin: 0 }}>
-          ✦ Find Your Forever ✦
-        </p>
+        <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ width: '170px', height: '170px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 6px 30px rgba(13,31,60,0.13)' }} />
       </div>
 
       {/* Card */}
