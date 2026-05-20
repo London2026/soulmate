@@ -109,9 +109,8 @@ export default function Navigation() {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
-          <img src="/soulmate-logo.png" alt="Soul Mate" style={{ height: '38px', width: '38px', objectFit: 'contain' }} />
-          <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.3rem', fontWeight: 700, color: c.ivory, letterSpacing: '0.02em' }}>Soul Mate</span>
+        <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+          <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ height: '52px', width: '52px', objectFit: 'contain', borderRadius: '8px', display: 'block' }} />
         </Link>
 
         {user ? (
