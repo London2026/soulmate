@@ -177,6 +177,7 @@ function OnboardingPage() {
       const { error: dbErr } = await supabase.from('profiles').upsert(update)
 
       if (dbErr) throw dbErr
+      router.refresh()
       router.push(isEdit ? '/profile' : '/discover')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')

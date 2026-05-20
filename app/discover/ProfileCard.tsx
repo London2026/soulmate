@@ -37,6 +37,26 @@ const c = {
   border: 'rgba(201,168,76,0.28)',
 }
 
+function isPersonalityUrl(s: string): boolean {
+  return /^https?:\/\//i.test(s.trim())
+}
+
+function shortPersonalityLabel(url: string): string {
+  try {
+    const u = new URL(url)
+    const path = u.pathname.length > 22 ? u.pathname.slice(0, 22) + '…' : u.pathname
+    return (u.hostname.replace('www.', '') + path).replace(/\/$/, '')
+  } catch {
+    return url.length > 34 ? url.slice(0, 34) + '…' : url
+  }
+}
+
+function splitPersonalityChips(value: string): string[] {
+  if (!value) return []
+  if (value.includes(' | ')) return value.split(' | ').map(s => s.trim()).filter(Boolean)
+  return value.split(',').map(s => s.trim()).filter(Boolean)
+}
+
 export default function ProfileCard({ profile, canReveal = true, canMeet = true }: {
   profile: ProfileData; canReveal?: boolean; canMeet?: boolean
 }) {
@@ -168,11 +188,18 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
               <div key={p.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.85rem', flexShrink: 0, marginTop: '0.05rem' }}>{p.icon}</span>
                 <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.ivoryDim, flexShrink: 0, minWidth: '52px' }}>{p.label}</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                  {p.value!.split(',').map(s => s.trim()).filter(Boolean).map((tag, i) => (
-                    <span key={i} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.88rem', color: c.ivory, padding: '0.1rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px' }}>
-                      {tag}
-                    </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: 0, flex: 1 }}>
+                  {splitPersonalityChips(p.value!).map((tag, i) => (
+                    isPersonalityUrl(tag) ? (
+                      <a key={i} href={tag} target="_blank" rel="noopener noreferrer" title={tag}
+                        style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.88rem', color: '#7fb3f5', textDecoration: 'underline', padding: '0.1rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                        {shortPersonalityLabel(tag)}
+                      </a>
+                    ) : (
+                      <span key={i} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.88rem', color: c.ivory, padding: '0.1rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {tag}
+                      </span>
+                    )
                   ))}
                 </div>
               </div>

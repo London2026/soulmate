@@ -19,6 +19,27 @@ const c = {
   borderSub: 'rgba(201,168,76,0.08)',
 }
 
+function isProfileUrl(s: string): boolean {
+  return /^https?:\/\//i.test(s.trim())
+}
+
+function shortProfileLabel(url: string): string {
+  try {
+    const u = new URL(url)
+    const path = u.pathname.length > 22 ? u.pathname.slice(0, 22) + '…' : u.pathname
+    return (u.hostname.replace('www.', '') + path).replace(/\/$/, '')
+  } catch {
+    return url.length > 34 ? url.slice(0, 34) + '…' : url
+  }
+}
+
+function splitChips(value: string): string[] {
+  if (!value) return []
+  // Support both " | " (new format) and "," (legacy format)
+  if (value.includes(' | ')) return value.split(' | ').map(s => s.trim()).filter(Boolean)
+  return value.split(',').map(s => s.trim()).filter(Boolean)
+}
+
 export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -221,11 +242,20 @@ export default async function ProfilePage() {
                   <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.4rem' }}>
                     {f.label}
                   </p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                    {(f.value!.split(',').map((v: string) => v.trim()).filter(Boolean) as string[]).map((chip) => (
-                      <span key={chip} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.ivory, padding: '0.15rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '20px' }}>
-                        {chip}
-                      </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    {splitChips(f.value!).map((chip) => (
+                      <div key={chip} style={{ display: 'flex', alignItems: 'center', padding: '0.2rem 0.55rem', background: 'rgba(201,168,76,0.08)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '20px', minWidth: 0, overflow: 'hidden' }}>
+                        {isProfileUrl(chip) ? (
+                          <a href={chip} target="_blank" rel="noopener noreferrer" title={chip}
+                            style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.goldLight, textDecoration: 'underline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                            {shortProfileLabel(chip)}
+                          </a>
+                        ) : (
+                          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.ivory, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {chip}
+                          </span>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
