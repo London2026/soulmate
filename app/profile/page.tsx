@@ -6,6 +6,19 @@ import { createClient } from '@/lib/supabase/server'
 import RevealedByCard, { type Viewer } from './RevealedByCard'
 import MeetingCard from './MeetingCard'
 
+const c = {
+  bg: '#07111f',
+  navy: '#0d1f3c',
+  navyMid: '#1a3a5c',
+  gold: '#8b6914',
+  goldLight: '#c9a84c',
+  sepia: '#5a6e82',
+  ivory: '#f5f0e6',
+  ivoryDim: '#bdb5a6',
+  border: 'rgba(201,168,76,0.18)',
+  borderSub: 'rgba(201,168,76,0.08)',
+}
+
 export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -19,7 +32,7 @@ export default async function ProfilePage() {
 
   if (!profile?.onboarding_complete) redirect('/onboarding')
 
-  // ── Own media signed URLs ────────────────────────────────────
+  // Own media signed URLs
   const ownPaths = [
     profile.back_photo_1_path,
     profile.back_photo_2_path,
@@ -36,7 +49,7 @@ export default async function ProfilePage() {
     }
   }
 
-  // ── Who revealed YOUR photo ──────────────────────────────────
+  // Who revealed YOUR photo
   const { data: revealRows } = await supabase
     .from('photo_reveals')
     .select('viewer_id, revealed_at')
@@ -55,7 +68,6 @@ export default async function ProfilePage() {
         ).data ?? []
       : []
 
-  // Sign viewer thumbnails in one batch
   const thumbPaths = viewerProfiles
     .map((v) => v.back_photo_1_path)
     .filter((p): p is string => !!p)
@@ -70,21 +82,19 @@ export default async function ProfilePage() {
     }
   }
 
-  // ── Video meetings ───────────────────────────────────────────
+  // Video meetings
   const { data: meetingRows } = await supabase
     .from('video_meetings')
     .select('id, room_id, requester_id, recipient_id, status, created_at, preferred_date, preferred_time, message')
     .or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
 
-  // Build a map: other_user_id → room_id (for revealed-by cards)
   const meetingByOther: Record<string, string> = {}
   for (const m of meetingRows ?? []) {
     const other = m.requester_id === user.id ? m.recipient_id : m.requester_id
     meetingByOther[other] = m.room_id
   }
 
-  // Collect names for meeting cards
   const meetingOtherIds = (meetingRows ?? []).map((m) =>
     m.requester_id === user.id ? m.recipient_id : m.requester_id
   )
@@ -100,7 +110,6 @@ export default async function ProfilePage() {
     (meetingProfiles ?? []).map((p) => [p.id, p.full_name])
   )
 
-  // ── Assemble viewer data ─────────────────────────────────────
   const viewers: Viewer[] = viewerProfiles.map((v) => ({
     id: v.id,
     full_name: v.full_name,
@@ -109,8 +118,7 @@ export default async function ProfilePage() {
     religion: v.religion,
     thumbnail_url: v.back_photo_1_path ? (thumbUrlMap[v.back_photo_1_path] ?? null) : null,
     meeting_room_id: meetingByOther[v.id] ?? null,
-    revealed_at:
-      revealRows?.find((r) => r.viewer_id === v.id)?.revealed_at ?? '',
+    revealed_at: revealRows?.find((r) => r.viewer_id === v.id)?.revealed_at ?? '',
   }))
 
   const meetings = (meetingRows ?? []).map((m) => ({
@@ -129,61 +137,52 @@ export default async function ProfilePage() {
   const back2Url = profile.back_photo_2_path ? ownUrlMap[profile.back_photo_2_path] ?? null : null
   const voiceUrl = profile.voice_path ? ownUrlMap[profile.voice_path] ?? null : null
 
+  const personalityFields = [
+    { label: 'Favourite Reels', value: profile.fav_reels },
+    { label: 'YouTube Channels', value: profile.fav_youtube },
+    { label: 'Web Series', value: profile.fav_web_series },
+    { label: 'Travel', value: profile.fav_travel },
+    { label: 'Foods', value: profile.fav_foods },
+    { label: 'AI Tools', value: profile.fav_ai_tools },
+  ].filter((f) => f.value)
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--oxford-navy)' }}>
-      <div
-        className="pointer-events-none fixed inset-0"
-        style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%)' }}
-      />
+    <div style={{ minHeight: '100vh', backgroundColor: c.bg }}>
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%)' }} />
 
       <Navigation />
 
-      <main className="mx-auto pt-24 pb-28 px-4 max-w-xl">
+      <main style={{ maxWidth: '600px', margin: '0 auto', padding: '6rem 1.5rem 5rem' }}>
 
-        {/* ── Header ── */}
-        <div className="flex items-baseline justify-between mb-2">
-          <h1
-            className="text-3xl"
-            style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}
-          >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: c.ivory, margin: 0 }}>
             My Profile
           </h1>
-          <Link
-            href="/onboarding"
-            className="text-xs font-medium transition-opacity hover:opacity-70"
-            style={{ color: 'var(--antique-gold)' }}
-          >
+          <Link href="/onboarding?edit=true"
+            style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none' }}>
             Edit Profile →
           </Link>
         </div>
-        <div className="mb-6 h-px" style={{ background: 'linear-gradient(to right, var(--antique-gold), transparent)' }} />
+        <div style={{ height: '1px', background: `linear-gradient(to right, ${c.goldLight}, transparent)`, marginBottom: '2rem' }} />
 
-        {/* ── Profile card ── */}
-        <div
-          className="rounded-2xl overflow-hidden mb-8"
-          style={{ backgroundColor: 'var(--oxford-navy-mid)', border: '1px solid rgba(201,168,76,0.18)', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}
-        >
-          {/* Info */}
-          <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(201,168,76,0.08)' }}>
-            <h2
-              className="text-xl mb-0.5"
-              style={{ fontFamily: 'var(--font-playfair), serif', color: 'var(--ivory)' }}
-            >
+        {/* Profile card */}
+        <div style={{ background: 'rgba(26,58,92,0.25)', border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '2rem', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
+
+          {/* Info section */}
+          <div style={{ padding: '1.5rem 1.5rem 1.25rem', borderBottom: `1px solid ${c.borderSub}` }}>
+            <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.25rem' }}>
               {profile.full_name}
             </h2>
-            <p className="text-sm" style={{ color: 'var(--ivory-dim)' }}>
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
               {profile.age} yrs · {profile.gender} · {profile.city}, {profile.country}
             </p>
 
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
               {[profile.religion, profile.mother_tongue, profile.education, profile.occupation]
                 .filter(Boolean)
                 .map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs px-2.5 py-1 rounded"
-                    style={{ backgroundColor: 'rgba(14,26,53,0.7)', color: 'var(--ivory-dim)', border: '1px solid rgba(201,168,76,0.1)' }}
-                  >
+                  <span key={tag} style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.08em', padding: '0.25rem 0.65rem', background: 'rgba(201,168,76,0.08)', border: `1px solid rgba(201,168,76,0.18)`, borderRadius: '20px', color: c.goldLight }}>
                     {tag}
                   </span>
                 ))}
@@ -192,61 +191,80 @@ export default async function ProfilePage() {
 
           {/* Back photos */}
           {(back1Url || back2Url) && (
-            <div className={`grid gap-0.5 ${back1Url && back2Url ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div style={{ display: 'grid', gridTemplateColumns: back1Url && back2Url ? '1fr 1fr' : '1fr', gap: '2px' }}>
               {[back1Url, back2Url].filter(Boolean).map((url, i) => (
-                <div key={i} className="relative bg-slate-900" style={{ aspectRatio: '4/3' }}>
-                  <img src={url!} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                <div key={i} style={{ aspectRatio: '4/3', backgroundColor: c.navy, overflow: 'hidden' }}>
+                  <img src={url!} alt={`Photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </div>
               ))}
             </div>
           )}
 
-          {/* Voice */}
+          {/* Voice intro */}
           {voiceUrl && (
-            <div className="px-6 py-4" style={{ borderTop: '1px solid rgba(201,168,76,0.07)' }}>
-              <p className="text-xs mb-2 tracking-widest uppercase" style={{ color: 'var(--antique-gold)' }}>
+            <div style={{ padding: '1.25rem 1.5rem', borderTop: `1px solid ${c.borderSub}` }}>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.6rem' }}>
                 🎙 Voice Introduction
               </p>
-              <audio
-                controls
-                src={voiceUrl}
-                preload="none"
-                className="w-full"
-                style={{ accentColor: 'var(--antique-gold)', height: '36px' }}
-              />
+              <audio controls src={voiceUrl} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
             </div>
           )}
         </div>
 
-        {/* ── Who revealed your photo ── */}
-        <Section
-          title="Who Revealed Your Photo"
-          count={viewers.length}
-          empty="No one has revealed your photo yet."
-        >
-          {viewers.length > 0 && (
-            <div className="grid grid-cols-2 gap-4">
+        {/* Personality section */}
+        {personalityFields.length > 0 && (
+          <div style={{ marginBottom: '2rem' }}>
+            <SectionHeader title="My Personality" count={0} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              {personalityFields.map((f) => (
+                <div key={f.label} style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem' }}>
+                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.4rem' }}>
+                    {f.label}
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                    {(f.value!.split(',').map((v: string) => v.trim()).filter(Boolean) as string[]).map((chip) => (
+                      <span key={chip} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.ivory, padding: '0.15rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '20px' }}>
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Who revealed your photo */}
+        <div style={{ marginBottom: '2rem' }}>
+          <SectionHeader title="Who Revealed Your Photo" count={viewers.length} />
+          {viewers.length === 0 ? (
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.sepia }}>
+              No one has revealed your photo yet.
+            </p>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {viewers.map((v) => (
                 <RevealedByCard key={v.id} viewer={v} />
               ))}
             </div>
           )}
-        </Section>
+        </div>
 
-        {/* ── Video meetings ── */}
-        <Section
-          title="Video Meetings"
-          count={meetings.length}
-          empty="No video meeting requests yet."
-        >
-          {meetings.length > 0 && (
-            <div className="space-y-3">
+        {/* Video meetings */}
+        <div style={{ marginBottom: '2rem' }}>
+          <SectionHeader title="Video Meetings" count={meetings.length} />
+          {meetings.length === 0 ? (
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.sepia }}>
+              No video meeting requests yet.
+            </p>
+          ) : (
+            <div>
               {meetings.map((m) => (
                 <MeetingCard key={m.id} meeting={m} />
               ))}
             </div>
           )}
-        </Section>
+        </div>
 
       </main>
 
@@ -255,36 +273,16 @@ export default async function ProfilePage() {
   )
 }
 
-function Section({
-  title,
-  count,
-  empty,
-  children,
-}: {
-  title: string
-  count: number
-  empty: string
-  children: React.ReactNode
-}) {
+function SectionHeader({ title, count }: { title: string; count: number }) {
   return (
-    <div className="mb-8">
-      <div className="flex items-center gap-3 mb-4">
-        <p className="text-xs tracking-widest uppercase" style={{ color: 'var(--antique-gold)' }}>
-          ✦ {title}
-        </p>
-        {count > 0 && (
-          <span
-            className="text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold"
-            style={{ backgroundColor: 'var(--antique-gold)', color: 'var(--oxford-navy)' }}
-          >
-            {count}
-          </span>
-        )}
-      </div>
-      {count === 0 ? (
-        <p className="text-sm" style={{ color: 'var(--ivory-dim)' }}>{empty}</p>
-      ) : (
-        children
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+      <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#c9a84c', margin: 0 }}>
+        ✦ {title}
+      </p>
+      {count > 0 && (
+        <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#c9a84c', color: '#0d1f3c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700 }}>
+          {count}
+        </span>
       )}
     </div>
   )

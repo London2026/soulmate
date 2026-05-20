@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AboutStep from './steps/AboutStep'
 import BackgroundStep from './steps/BackgroundStep'
@@ -32,7 +32,15 @@ const EMPTY: Draft = {
   favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '',
 }
 
-export default function OnboardingPage() {
+export default function OnboardingPageWrapper() {
+  return (
+    <Suspense>
+      <OnboardingPage />
+    </Suspense>
+  )
+}
+
+function OnboardingPage() {
   const [step, setStep] = useState(0)
   const [ready, setReady] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -44,20 +52,48 @@ export default function OnboardingPage() {
   const [back2, setBack2] = useState<File | null>(null)
   const [front, setFront] = useState<File | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isEdit = searchParams.get('edit') === 'true'
 
   useEffect(() => {
     async function init() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
-      const { data: profile } = await supabase.from('profiles').select('onboarding_complete, full_name').eq('id', user.id).maybeSingle()
-      if (profile?.onboarding_complete) { router.replace('/discover'); return }
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+      if (profile?.onboarding_complete && !isEdit) { router.replace('/discover'); return }
       setUserId(user.id)
-      setDraft(d => ({ ...d, fullName: profile?.full_name ?? user.user_metadata?.full_name ?? '' }))
+      // Pre-fill draft with existing profile data when editing
+      if (profile) {
+        setDraft({
+          fullName: profile.full_name ?? user.user_metadata?.full_name ?? '',
+          age: profile.age ? String(profile.age) : '',
+          gender: profile.gender ?? '',
+          city: profile.city ?? '',
+          country: profile.country ?? '',
+          religion: profile.religion ?? '',
+          motherTongue: profile.mother_tongue ?? '',
+          education: profile.education ?? '',
+          occupation: profile.occupation ?? '',
+          prefGender: profile.pref_gender ?? '',
+          prefAgeMin: profile.pref_age_min ? String(profile.pref_age_min) : '18',
+          prefAgeMax: profile.pref_age_max ? String(profile.pref_age_max) : '50',
+          prefLocation: profile.pref_location ?? '',
+          prefReligion: profile.pref_religion ?? '',
+          favReels: profile.fav_reels ?? '',
+          favYoutube: profile.fav_youtube ?? '',
+          favWebSeries: profile.fav_web_series ?? '',
+          favTravel: profile.fav_travel ?? '',
+          favFoods: profile.fav_foods ?? '',
+          favAiTools: profile.fav_ai_tools ?? '',
+        })
+      } else {
+        setDraft(d => ({ ...d, fullName: user.user_metadata?.full_name ?? '' }))
+      }
       setReady(true)
     }
     init()
-  }, [router])
+  }, [router, isEdit])
 
   function change(key: string, value: string) { setDraft(d => ({ ...d, [key]: value })); setError('') }
 
@@ -74,8 +110,8 @@ export default function OnboardingPage() {
       if (parseInt(draft.prefAgeMin) >= parseInt(draft.prefAgeMax)) return 'Max age must be greater than min age.'
       if (!draft.prefReligion) return 'Please select a religion preference.'
     }
-    if (step === 3 && !voiceBlob) return 'Please record your voice introduction.'
-    if (step === 4) {
+    if (step === 3 && !voiceBlob && !isEdit) return 'Please record your voice introduction.'
+    if (step === 4 && !isEdit) {
       if (!back1 || !back2) return 'Please upload both back-side photos.'
       if (!front) return 'Please upload your reveal photo.'
     }
@@ -101,17 +137,26 @@ export default function OnboardingPage() {
         voicePath = data?.path ?? null
       }
 
-      const ext1 = back1!.name.split('.').pop() ?? 'jpg'
-      const ext2 = back2!.name.split('.').pop() ?? 'jpg'
-      const ext3 = front!.name.split('.').pop() ?? 'jpg'
+      // Only upload photos if new ones were selected
+      let back1Path: string | null = null
+      let back2Path: string | null = null
+      let frontPath: string | null = null
 
-      const [r1, r2, r3] = await Promise.all([
-        supabase.storage.from('profile-media').upload(`${userId}/back-1.${ext1}`, back1!, { upsert: true }),
-        supabase.storage.from('profile-media').upload(`${userId}/back-2.${ext2}`, back2!, { upsert: true }),
-        supabase.storage.from('profile-media').upload(`${userId}/front.${ext3}`, front!, { upsert: true }),
-      ])
+      if (back1 && back2 && front) {
+        const ext1 = back1.name.split('.').pop() ?? 'jpg'
+        const ext2 = back2.name.split('.').pop() ?? 'jpg'
+        const ext3 = front.name.split('.').pop() ?? 'jpg'
+        const [r1, r2, r3] = await Promise.all([
+          supabase.storage.from('profile-media').upload(`${userId}/back-1.${ext1}`, back1, { upsert: true }),
+          supabase.storage.from('profile-media').upload(`${userId}/back-2.${ext2}`, back2, { upsert: true }),
+          supabase.storage.from('profile-media').upload(`${userId}/front.${ext3}`, front, { upsert: true }),
+        ])
+        back1Path = r1.data?.path ?? null
+        back2Path = r2.data?.path ?? null
+        frontPath = r3.data?.path ?? null
+      }
 
-      const { error: dbErr } = await supabase.from('profiles').upsert({
+      const update: Record<string, unknown> = {
         id: userId,
         full_name: draft.fullName, age: parseInt(draft.age), gender: draft.gender,
         city: draft.city, country: draft.country, religion: draft.religion,
@@ -122,15 +167,17 @@ export default function OnboardingPage() {
         fav_reels: draft.favReels || null, fav_youtube: draft.favYoutube || null,
         fav_web_series: draft.favWebSeries || null, fav_travel: draft.favTravel || null,
         fav_foods: draft.favFoods || null, fav_ai_tools: draft.favAiTools || null,
-        voice_path: voicePath,
-        back_photo_1_path: r1.data?.path ?? null,
-        back_photo_2_path: r2.data?.path ?? null,
-        front_photo_path: r3.data?.path ?? null,
         onboarding_complete: true, updated_at: new Date().toISOString(),
-      })
+      }
+      if (voicePath) update.voice_path = voicePath
+      if (back1Path) update.back_photo_1_path = back1Path
+      if (back2Path) update.back_photo_2_path = back2Path
+      if (frontPath) update.front_photo_path = frontPath
+
+      const { error: dbErr } = await supabase.from('profiles').upsert(update)
 
       if (dbErr) throw dbErr
-      router.push('/discover')
+      router.push(isEdit ? '/profile' : '/discover')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -208,7 +255,7 @@ export default function OnboardingPage() {
           )}
           <button onClick={handleNext} disabled={saving}
             style={{ padding: '0.75rem 2rem', background: saving ? c.navyMid : c.navy, color: c.goldLight, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: saving ? 'default' : 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}>
-            {saving ? 'Saving…' : step === 5 ? 'Complete Profile ✓' : 'Continue →'}
+            {saving ? 'Saving…' : step === 5 ? (isEdit ? 'Save Changes ✓' : 'Complete Profile ✓') : 'Continue →'}
           </button>
         </div>
       </div>
