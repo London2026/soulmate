@@ -890,9 +890,26 @@
 
   .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     margin-top: 3rem;
+  }
+
+  .pricing-addon {
+    margin-top: 2rem;
+    border: 1px solid rgba(212,168,67,0.2);
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .pricing-addon-price {
+    text-align: right;
+    flex-shrink: 0;
   }
 
   .pricing-card {
@@ -1727,7 +1744,8 @@
     .nav-cta { display: none; }
     .hamburger { display: flex; }
 
-    .pricing-grid { grid-template-columns: 1fr 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
+    .pricing-card.featured { order: -1; }
     .usp-cards { grid-template-columns: 1fr 1fr; }
     .safety-grid { grid-template-columns: 1fr 1fr; }
     .personality-grid { grid-template-columns: 1fr 1fr; }
@@ -1769,9 +1787,12 @@
     .personality-grid { grid-template-columns: 1fr; }
 
     /* PRICING */
-    .pricing-grid { grid-template-columns: 1fr; }
-    .pricing-card { padding: 2rem 1.5rem; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 100%; }
+    .pricing-card { padding: 2rem 1.25rem; }
     .pricing-card.featured { order: -1; }
+    .pricing-price { font-size: 2.8rem; }
+    .pricing-addon { padding: 1.25rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .pricing-addon-price { text-align: left; }
 
     /* USP */
     .usp-cards { grid-template-columns: 1fr; }
@@ -2409,7 +2430,7 @@
       <p class="section-sub" style="color: rgba(245,239,224,0.6);">Pay for meaningful meetings, not idle swiping.</p>
     </div>
 
-    <div class="pricing-grid reveal" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="pricing-grid reveal">
 
       <!-- FREE -->
       <div class="pricing-card">
@@ -2463,13 +2484,13 @@
     </div>
 
     <!-- Extra meetings add-on -->
-    <div style="margin-top:2rem; border:1px solid rgba(212,168,67,0.2); padding:1.5rem 2.5rem; display:flex; align-items:center; justify-content:space-between; gap:2rem; flex-wrap:wrap; background:rgba(255,255,255,0.02);">
-      <div>
+    <div class="pricing-addon">
+      <div class="pricing-addon-text">
         <p style="font-family:'Raleway',sans-serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--light-gold); margin:0 0 0.3rem;">Add-On</p>
         <p style="font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--cream); margin:0 0 0.2rem;">Need more video meetings?</p>
         <p style="font-family:'Cormorant Garamond',serif; font-size:0.95rem; font-style:italic; color:rgba(245,239,224,0.5); margin:0;">Purchase additional meeting slots anytime on any paid plan.</p>
       </div>
-      <div style="text-align:right; flex-shrink:0;">
+      <div class="pricing-addon-price">
         <span style="font-family:'Playfair Display',serif; font-size:2rem; color:var(--light-gold); font-weight:700;"><sup style="font-size:1rem;vertical-align:top;margin-top:0.4rem;display:inline-block;">$</sup>3</span>
         <p style="font-family:'Raleway',sans-serif; font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,239,224,0.4); margin:0;">per extra meeting</p>
       </div>
