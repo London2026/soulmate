@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { revealPhoto } from './actions'
 import { requestVideoMeeting } from '@/app/profile/actions'
+import { maskName, firstNameOnly } from '@/lib/maskName'
 
 export interface ProfileData {
   id: string
@@ -85,7 +86,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
     try {
       const { signedUrl } = await revealPhoto(profile.id)
       setFrontUrl(signedUrl); setRevealed(true)
-      setRevealMsg(`${profile.full_name.split(' ')[0]} has been notified.`)
+      setRevealMsg(`${firstNameOnly(profile.full_name)} has been notified.`)
     } catch (err) { setRevealError(err instanceof Error ? err.message : 'Something went wrong.') }
     finally { setRevealing(false) }
   }
@@ -116,7 +117,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}>
           <div>
             <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.25rem' }}>
-              {profile.full_name}
+              {maskName(profile.full_name)}
             </h2>
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivoryDim, margin: 0 }}>
               {profile.age} yrs · {profile.city}, {profile.country}
@@ -225,7 +226,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
           <div style={{ textAlign: 'center' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.5rem' }}>🔒</div>
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>
-              {profile.full_name.split(' ')[0]} hasn&apos;t uploaded their reveal photo yet
+              {firstNameOnly(profile.full_name)} hasn&apos;t uploaded their reveal photo yet
             </p>
           </div>
         ) : revealed && frontUrl ? (
@@ -244,7 +245,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
           <div style={{ textAlign: 'center' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.75rem' }}>🔒</div>
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
-              Face photo is hidden. Revealing notifies {profile.full_name.split(' ')[0]} instantly.
+              Face photo is hidden. Revealing notifies {firstNameOnly(profile.full_name)} instantly.
             </p>
             {revealError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{revealError}</p>}
             <button onClick={handleReveal} disabled={revealing}
@@ -268,7 +269,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
           ) : meetPending && !meetSent ? (
             <div style={{ textAlign: 'center', padding: '0.75rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '6px' }}>
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>
-                ✓ Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{profile.full_name}</strong> and is waiting for their confirmation.
+                ✓ Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{maskName(profile.full_name)}</strong> and is waiting for their confirmation.
               </p>
             </div>
           ) : meetSent ? (
@@ -278,12 +279,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
                 Request Sent!
               </p>
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0, lineHeight: 1.5 }}>
-                Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{profile.full_name}</strong> and is waiting for their confirmation.
+                Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{maskName(profile.full_name)}</strong> and is waiting for their confirmation.
               </p>
             </div>
           ) : showForm ? (
             <form onSubmit={handleRequestMeeting} style={{ background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, borderRadius: '8px', padding: '1rem' }}>
-              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem' }}>📅 Request Meeting with {profile.full_name.split(' ')[0]}</p>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem' }}>📅 Request Meeting with {firstNameOnly(profile.full_name)}</p>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.65rem' }}>
                 <div>
@@ -300,7 +301,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
 
               <div style={{ marginBottom: '0.75rem' }}>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.ivoryDim, marginBottom: '0.3rem' }}>Message</label>
-                <textarea value={meetMsg} onChange={e => setMeetMsg(e.target.value)} placeholder={`Hi ${profile.full_name.split(' ')[0]}, I'd love to connect…`} rows={2}
+                <textarea value={meetMsg} onChange={e => setMeetMsg(e.target.value)} placeholder={`Hi ${firstNameOnly(profile.full_name)}, I'd love to connect…`} rows={2}
                   style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', fontStyle: 'italic', borderRadius: '4px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
               </div>
 

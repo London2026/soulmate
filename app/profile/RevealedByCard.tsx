@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { requestVideoMeeting } from './actions'
+import { maskName } from '@/lib/maskName'
 
 export interface Viewer {
   id: string
@@ -49,7 +50,7 @@ export default function RevealedByCard({ viewer }: { viewer: Viewer }) {
         )}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0.6rem 0.75rem', background: 'linear-gradient(to top, rgba(13,31,60,0.95), transparent)' }}>
           <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '0.9rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.1rem' }}>
-            {viewer.full_name}
+            {maskName(viewer.full_name)}
           </p>
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', color: c.ivoryDim, margin: 0 }}>
             {viewer.age} · {viewer.city}

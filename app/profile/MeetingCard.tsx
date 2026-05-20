@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { acceptMeeting, declineMeeting } from './actions'
+import { maskName, firstNameOnly } from '@/lib/maskName'
 
 interface Props {
   meeting: {
@@ -58,7 +59,7 @@ export default function MeetingCard({ meeting }: Props) {
         <div>
           <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.15rem' }}>
             {meeting.i_requested ? `You invited ` : `Invited by `}
-            <span style={{ fontStyle: 'italic' }}>{meeting.other_name}</span>
+            <span style={{ fontStyle: 'italic' }}>{maskName(meeting.other_name)}</span>
           </p>
           {dateStr && (
             <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: c.goldLight, margin: '0 0 0.15rem', letterSpacing: '0.06em' }}>
@@ -95,7 +96,7 @@ export default function MeetingCard({ meeting }: Props) {
 
       {status === 'pending' && meeting.i_requested && (
         <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0.5rem 0 0', textAlign: 'center' }}>
-          Awaiting response from {meeting.other_name.split(' ')[0]}…
+          Awaiting response from {firstNameOnly(meeting.other_name)}…
         </p>
       )}
 

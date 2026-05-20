@@ -8,7 +8,7 @@ const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderC
 const GENDERS = ['Man', 'Woman', 'Other']
 
 interface Props {
-  data: { fullName: string; age: string; gender: string; city: string; country: string }
+  data: { firstName: string; lastName: string; age: string; gender: string; city: string; country: string }
   onChange: (key: string, value: string) => void
 }
 
@@ -23,11 +23,21 @@ export default function AboutStep({ data, onChange }: Props) {
       </p>
       <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
-      {/* Full Name – readonly */}
-      <div style={field}>
-        <label style={label}>Full Name</label>
-        <input type="text" value={data.fullName} readOnly
-          style={{ ...inp, opacity: 0.6, cursor: 'not-allowed', background: 'rgba(13,31,60,0.04)' }} />
+      {/* First Name + Last Name */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.1rem' }}>
+        <div>
+          <label style={label}>First Name</label>
+          <input type="text" value={data.firstName} onChange={e => onChange('firstName', e.target.value)}
+            placeholder="e.g. Anup" style={inp} onFocus={focus} onBlur={blur} />
+        </div>
+        <div>
+          <label style={label}>Last Name</label>
+          <input type="text" value={data.lastName} onChange={e => onChange('lastName', e.target.value)}
+            placeholder="e.g. Sharma" style={inp} onFocus={focus} onBlur={blur} />
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: c.sepia, margin: '0.25rem 0 0', letterSpacing: '0.05em' }}>
+            Others see first name + initial only
+          </p>
+        </div>
       </div>
 
       {/* Age */}

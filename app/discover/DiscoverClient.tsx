@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import ProfileCard, { type ProfileData } from './ProfileCard'
+import { maskName } from '@/lib/maskName'
 
 const c = {
   page: '#07111f', card: '#1e3358', border: 'rgba(201,168,76,0.25)',
@@ -103,7 +104,7 @@ export default function DiscoverClient({
                 <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px' }}>
                   <div style={{ height: '100%', width: `${m.score}%`, background: scoreGradient(m.score), borderRadius: '3px', transition: 'width 0.5s ease' }} />
                 </div>
-                <span style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, fontSize: '0.95rem' }}>{m.profile?.full_name}</span>
+                <span style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, fontSize: '0.95rem' }}>{maskName(m.profile?.full_name ?? '')}</span>
                 <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia }}>{m.profile?.age} · {m.profile?.city}</span>
               </div>
               <ul style={{ margin: 0, padding: '0 0 0 2.5rem', listStyle: 'none' }}>
@@ -179,7 +180,7 @@ function CompactCard({ profile, onClick }: { profile: ProfileData; onClick: () =
       {/* Info */}
       <div style={{ padding: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.3rem', marginBottom: '0.25rem' }}>
-          <p style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, fontSize: '0.9rem', color: c.ivory, margin: 0, lineHeight: 1.2 }}>{profile.full_name}</p>
+          <p style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, fontSize: '0.9rem', color: c.ivory, margin: 0, lineHeight: 1.2 }}>{maskName(profile.full_name)}</p>
           <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.1em', padding: '0.15rem 0.45rem', background: 'rgba(201,168,76,0.1)', border: `1px solid rgba(201,168,76,0.25)`, color: c.gold, borderRadius: '20px', flexShrink: 0 }}>
             {profile.religion?.slice(0, 6).toUpperCase()}
           </span>

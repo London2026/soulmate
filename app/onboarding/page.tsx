@@ -19,14 +19,14 @@ const c = {
 }
 
 interface Draft {
-  fullName: string; age: string; gender: string; city: string; country: string
+  firstName: string; lastName: string; age: string; gender: string; city: string; country: string
   religion: string; motherTongue: string; education: string; occupation: string
   prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string
   favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string
 }
 
 const EMPTY: Draft = {
-  fullName: '', age: '', gender: '', city: '', country: '',
+  firstName: '', lastName: '', age: '', gender: '', city: '', country: '',
   religion: '', motherTongue: '', education: '', occupation: '',
   prefGender: '', prefAgeMin: '18', prefAgeMax: '50', prefLocation: '', prefReligion: '',
   favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '',
@@ -65,8 +65,11 @@ function OnboardingPage() {
       setUserId(user.id)
       // Pre-fill draft with existing profile data when editing
       if (profile) {
+        const rawName = (profile.full_name ?? user.user_metadata?.full_name ?? '').trim()
+        const nameParts = rawName.split(/\s+/).filter(Boolean)
         setDraft({
-          fullName: profile.full_name ?? user.user_metadata?.full_name ?? '',
+          firstName: nameParts[0] ?? '',
+          lastName: nameParts.slice(1).join(' ') ?? '',
           age: profile.age ? String(profile.age) : '',
           gender: profile.gender ?? '',
           city: profile.city ?? '',
@@ -88,7 +91,9 @@ function OnboardingPage() {
           favAiTools: profile.fav_ai_tools ?? '',
         })
       } else {
-        setDraft(d => ({ ...d, fullName: user.user_metadata?.full_name ?? '' }))
+        const rawName = (user.user_metadata?.full_name ?? '').trim()
+        const nameParts = rawName.split(/\s+/).filter(Boolean)
+        setDraft(d => ({ ...d, firstName: nameParts[0] ?? '', lastName: nameParts.slice(1).join(' ') ?? '' }))
       }
       setReady(true)
     }
@@ -99,6 +104,7 @@ function OnboardingPage() {
 
   function validate(): string {
     if (step === 0) {
+      if (!draft.firstName.trim() || !draft.lastName.trim()) return 'Please enter your first and last name.'
       if (!draft.age || parseInt(draft.age) < 18) return 'Please enter a valid age (18+).'
       if (!draft.gender) return 'Please select your gender.'
       if (!draft.city || !draft.country) return 'Please enter your city and country.'
@@ -158,7 +164,8 @@ function OnboardingPage() {
 
       const update: Record<string, unknown> = {
         id: userId,
-        full_name: draft.fullName, age: parseInt(draft.age), gender: draft.gender,
+        full_name: (draft.firstName.trim() + ' ' + draft.lastName.trim()).trim(),
+        age: parseInt(draft.age), gender: draft.gender,
         city: draft.city, country: draft.country, religion: draft.religion,
         mother_tongue: draft.motherTongue, education: draft.education, occupation: draft.occupation,
         pref_gender: draft.prefGender, pref_age_min: parseInt(draft.prefAgeMin),
