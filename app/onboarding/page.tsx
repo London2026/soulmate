@@ -197,7 +197,7 @@ function OnboardingPage() {
     return (
       <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💘</div>
+          <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ width: '120px', height: '120px', objectFit: 'contain', borderRadius: '12px', marginBottom: '0.75rem' }} />
           <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: c.sepia }}>Preparing your profile…</p>
         </div>
       </div>
@@ -212,9 +212,8 @@ function OnboardingPage() {
       {/* Logo + Progress */}
       <div style={{ width: '100%', maxWidth: '540px', marginBottom: '1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-          <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.75rem' }}>💘</span>
-            <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 700, color: c.navy }}>Soul Mate</span>
+          <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+            <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ width: '130px', height: '130px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(13,31,60,0.12)' }} />
           </Link>
         </div>
 
