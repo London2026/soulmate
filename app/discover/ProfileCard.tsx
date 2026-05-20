@@ -116,9 +116,14 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
       <div style={{ padding: '1.5rem 1.5rem 1.25rem', borderBottom: `1px solid rgba(201,168,76,0.08)` }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}>
           <div>
-            <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.25rem' }}>
-              {maskName(profile.full_name)}
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.2rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 600, color: c.ivory, margin: 0 }}>
+                {maskName(profile.full_name)}
+              </h2>
+              <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.72rem', fontWeight: 700, color: c.goldLight, background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.15rem 0.45rem', borderRadius: '4px', letterSpacing: '0.08em', flexShrink: 0 }}>
+                #{profile.id.slice(0, 8).toUpperCase()}
+              </span>
+            </div>
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivoryDim, margin: 0 }}>
               {profile.age} yrs · {profile.city}, {profile.country}
             </p>

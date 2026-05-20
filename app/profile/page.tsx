@@ -176,12 +176,21 @@ export default async function ProfilePage() {
       <main style={{ maxWidth: '600px', margin: '0 auto', padding: '6rem 1.5rem 5rem' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: c.ivory, margin: 0 }}>
-            My Profile
-          </h1>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.5rem' }}>
+              My Profile
+            </h1>
+            {/* Profile ID — big and prominent */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 1rem', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.35)', borderRadius: '8px' }}>
+              <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.sepia }}>Profile ID</span>
+              <span style={{ fontFamily: '"Courier New", monospace', fontSize: '1.25rem', fontWeight: 900, color: c.goldLight, letterSpacing: '0.12em' }}>
+                #{user.id.slice(0, 8).toUpperCase()}
+              </span>
+            </div>
+          </div>
           <Link href="/onboarding?edit=true"
-            style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none' }}>
+            style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', marginTop: '0.5rem' }}>
             Edit Profile →
           </Link>
         </div>
