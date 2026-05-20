@@ -1253,23 +1253,18 @@
     text-align: center;
   }
 
-  .footer-logo {
-    font-family: 'Bodoni Moda', 'Playfair Display', serif;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--light-gold);
-    font-style: normal;
-    letter-spacing: 0.04em;
-    margin-bottom: 0.5rem;
+  .footer-logo-img-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
   }
 
-  .footer-tagline {
-    font-family: 'Raleway', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(212,168,67,0.5);
-    margin-bottom: 2.5rem;
+  .footer-logo-img {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,168,67,0.18);
   }
 
   .footer-links {
@@ -1811,6 +1806,7 @@
 
     /* FOOTER */
     footer { padding: 3rem 1.5rem 1.5rem; }
+    .footer-logo-img { width: 160px; height: 160px; }
     .footer-links { gap: 1.2rem; flex-wrap: wrap; justify-content: center; }
 
     /* TOAST */
@@ -2621,8 +2617,9 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">Soul Mate</div>
-  <div class="footer-tagline">✦ Find Your Forever ✦</div>
+  <div class="footer-logo-img-wrap">
+    <img src="/soulmate-logo-full.png" alt="Soul Mate — Find Your Forever" class="footer-logo-img" />
+  </div>
   <ul class="footer-links">
     <li><a href="#">About Us</a></li>
     <li><a href="#">How It Works</a></li>
