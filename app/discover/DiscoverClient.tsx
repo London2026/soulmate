@@ -39,19 +39,49 @@ export default function DiscoverClient({
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean
 }) {
   const [search, setSearch] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [fLocation, setFLocation] = useState('')
+  const [fAgeMin, setFAgeMin] = useState('')
+  const [fAgeMax, setFAgeMax] = useState('')
+  const [fReligion, setFReligion] = useState('')
+  const [fEducation, setFEducation] = useState('')
+  const [fOccupation, setFOccupation] = useState('')
   const [selected, setSelected] = useState<ProfileData | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiMatches, setAiMatches] = useState<AIMatch[] | null>(null)
   const [aiError, setAiError] = useState('')
 
+  const activeFilterCount = [fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation].filter(Boolean).length
+
+  function clearFilters() {
+    setFLocation(''); setFAgeMin(''); setFAgeMax('')
+    setFReligion(''); setFEducation(''); setFOccupation('')
+  }
+
+  // Unique values from loaded profiles for dropdowns
+  const religions  = useMemo(() => [...new Set(profiles.map(p => p.religion).filter(Boolean))].sort(), [profiles])
+  const educations = useMemo(() => [...new Set(profiles.map(p => p.education).filter(Boolean))].sort(), [profiles])
+
   const filtered = useMemo(() => {
+    let list = profiles
     const q = search.trim().toLowerCase().replace(/^#/, '')
-    if (!q) return profiles
-    return profiles.filter(p =>
+    if (q) list = list.filter(p =>
       p.full_name.toLowerCase().includes(q) ||
       p.id.slice(0, 8).toLowerCase().startsWith(q)
     )
-  }, [profiles, search])
+    if (fLocation) list = list.filter(p =>
+      p.city?.toLowerCase().includes(fLocation.toLowerCase()) ||
+      p.country?.toLowerCase().includes(fLocation.toLowerCase())
+    )
+    if (fAgeMin) list = list.filter(p => p.age >= parseInt(fAgeMin))
+    if (fAgeMax) list = list.filter(p => p.age <= parseInt(fAgeMax))
+    if (fReligion) list = list.filter(p => p.religion === fReligion)
+    if (fEducation) list = list.filter(p => p.education === fEducation)
+    if (fOccupation) list = list.filter(p =>
+      p.occupation?.toLowerCase().includes(fOccupation.toLowerCase())
+    )
+    return list
+  }, [profiles, search, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation])
 
   async function handleAiMatch() {
     setAiLoading(true); setAiError(''); setAiMatches(null)
@@ -127,18 +157,106 @@ export default function DiscoverClient({
         }
       `}</style>
 
-      {/* Search bar */}
+      {/* Search bar + filter toggle */}
       <div style={{ marginBottom: '0.75rem' }}>
-        <div style={{ position: 'relative' }}>
-          <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: c.sepia, fontSize: '0.9rem' }}>🔍</span>
-          <input
-            type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name or Profile ID…"
-            style={{ width: '100%', padding: '0.75rem 0.9rem 0.75rem 2.4rem', background: c.card, border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '8px', outline: 'none', boxSizing: 'border-box' }}
-            onFocus={e => (e.target.style.borderColor = c.gold)}
-            onBlur={e => (e.target.style.borderColor = c.border)}
-          />
+        <div style={{ display: 'flex', gap: '0.6rem' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: c.sepia, fontSize: '0.9rem' }}>🔍</span>
+            <input
+              type="text" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name or Profile ID…"
+              style={{ width: '100%', padding: '0.75rem 0.9rem 0.75rem 2.4rem', background: c.card, border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '8px', outline: 'none', boxSizing: 'border-box' }}
+              onFocus={e => (e.target.style.borderColor = c.gold)}
+              onBlur={e => (e.target.style.borderColor = c.border)}
+            />
+          </div>
+          {/* Filter toggle button */}
+          <button onClick={() => setShowFilters(f => !f)}
+            style={{ padding: '0.75rem 1.1rem', background: showFilters ? 'rgba(201,168,76,0.18)' : c.card, border: `1px solid ${activeFilterCount > 0 ? c.gold : c.border}`, color: activeFilterCount > 0 ? c.gold : c.sepia, borderRadius: '8px', cursor: 'pointer', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+            ⚙ Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+          </button>
         </div>
+
+        {/* Filter panel */}
+        {showFilters && (
+          <div style={{ marginTop: '0.6rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '10px', padding: '1.1rem 1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+
+              {/* Location */}
+              <div>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>📍 Location</label>
+                <input type="text" value={fLocation} onChange={e => setFLocation(e.target.value)}
+                  placeholder="City or country…"
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={e => (e.target.style.borderColor = c.gold)}
+                  onBlur={e => (e.target.style.borderColor = c.border)} />
+              </div>
+
+              {/* Age range */}
+              <div>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🎂 Age Range</label>
+                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                  <input type="number" min={18} max={99} value={fAgeMin} onChange={e => setFAgeMin(e.target.value)}
+                    placeholder="Min"
+                    style={{ flex: 1, padding: '0.55rem 0.5rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
+                    onFocus={e => (e.target.style.borderColor = c.gold)}
+                    onBlur={e => (e.target.style.borderColor = c.border)} />
+                  <span style={{ color: c.sepia, fontSize: '0.8rem', flexShrink: 0 }}>–</span>
+                  <input type="number" min={18} max={99} value={fAgeMax} onChange={e => setFAgeMax(e.target.value)}
+                    placeholder="Max"
+                    style={{ flex: 1, padding: '0.55rem 0.5rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
+                    onFocus={e => (e.target.style.borderColor = c.gold)}
+                    onBlur={e => (e.target.style.borderColor = c.border)} />
+                </div>
+              </div>
+
+              {/* Religion */}
+              <div>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🕊 Religion</label>
+                <select value={fReligion} onChange={e => setFReligion(e.target.value)}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: fReligion ? c.ivory : c.sepia, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+                  onFocus={e => (e.target.style.borderColor = c.gold)}
+                  onBlur={e => (e.target.style.borderColor = c.border)}>
+                  <option value="">Any religion</option>
+                  {religions.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+
+              {/* Education */}
+              <div>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🎓 Education</label>
+                <select value={fEducation} onChange={e => setFEducation(e.target.value)}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: fEducation ? c.ivory : c.sepia, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+                  onFocus={e => (e.target.style.borderColor = c.gold)}
+                  onBlur={e => (e.target.style.borderColor = c.border)}>
+                  <option value="">Any level</option>
+                  {educations.map(e => <option key={e} value={e}>{e}</option>)}
+                </select>
+              </div>
+
+              {/* Occupation */}
+              <div>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>💼 Occupation</label>
+                <input type="text" value={fOccupation} onChange={e => setFOccupation(e.target.value)}
+                  placeholder="e.g. Engineer, Doctor…"
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={e => (e.target.style.borderColor = c.gold)}
+                  onBlur={e => (e.target.style.borderColor = c.border)} />
+              </div>
+
+            </div>
+
+            {/* Clear filters */}
+            {activeFilterCount > 0 && (
+              <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <button onClick={clearFilters}
+                  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.08em', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                  Clear all filters
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Find My Soul Mate button */}
@@ -230,7 +348,8 @@ export default function DiscoverClient({
 
       {/* Profile count */}
       <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia, letterSpacing: '0.08em', marginBottom: '1rem' }}>
-        {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{search ? ' found' : ''}
+        {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{(search || activeFilterCount > 0) ? ' found' : ''}
+        {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
       </p>
 
       {/* Grid */}
