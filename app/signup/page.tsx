@@ -59,12 +59,7 @@ export default function SignupPage() {
     // Update user name metadata after verification
     if (data.user) {
       await supabase.auth.updateUser({ data: { full_name: name.trim() } })
-      const { data: profile } = await supabase
-        .from('profiles').select('onboarding_complete, plan')
-        .eq('id', data.user.id).maybeSingle()
-      if (profile?.onboarding_complete) router.push('/discover')
-      else if (profile?.plan) router.push('/onboarding')
-      else router.push('/pricing')
+      router.push('/auth/redirect')
     }
   }
 
