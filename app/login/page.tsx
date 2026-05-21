@@ -96,7 +96,7 @@ export default function LoginPage() {
                   inputMode="numeric"
                   maxLength={8}
                   value={code}
-                  onChange={e => { setCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
+                  onChange={e => { setCode(e.target.value.replace(/\D/g, '').slice(0, 8)); setError('') }}
                   placeholder="00000000"
                   autoFocus
                   style={{ ...inp, fontSize: '2rem', textAlign: 'center', letterSpacing: '0.5em', fontFamily: '"Courier New", monospace', fontWeight: 700, padding: '0.9rem' }}
