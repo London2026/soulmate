@@ -43,7 +43,7 @@ export default function LoginPage() {
 
   async function verifyCode(e: React.FormEvent) {
     e.preventDefault()
-    if (code.length !== 6) { setError('Please enter the full 6-digit code.'); return }
+    if (code.length !== 8) { setError('Please enter the full 8-digit code.'); return }
     setLoading(true); setError('')
     const supabase = createClient()
     const { data, error } = await supabase.auth.verifyOtp({
@@ -84,7 +84,7 @@ export default function LoginPage() {
               Enter your code
             </h2>
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', fontStyle: 'italic', color: c.sepia, margin: 0 }}>
-              We sent a 6-digit code to <strong style={{ color: c.navy, fontStyle: 'normal' }}>{email}</strong>
+              We sent an 8-digit code to <strong style={{ color: c.navy, fontStyle: 'normal' }}>{email}</strong>
             </p>
           </div>
           <div style={{ padding: '1.75rem 2rem' }}>
@@ -94,10 +94,10 @@ export default function LoginPage() {
                 <input
                   type="text"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={8}
                   value={code}
                   onChange={e => { setCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setError('') }}
-                  placeholder="000000"
+                  placeholder="00000000"
                   autoFocus
                   style={{ ...inp, fontSize: '2rem', textAlign: 'center', letterSpacing: '0.5em', fontFamily: '"Courier New", monospace', fontWeight: 700, padding: '0.9rem' }}
                   onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
@@ -107,8 +107,8 @@ export default function LoginPage() {
 
               {error && <div style={errBox}>{error}</div>}
 
-              <button type="submit" disabled={loading || code.length !== 6}
-                style={{ width: '100%', padding: '0.9rem', background: (loading || code.length !== 6) ? c.navyMid : c.navy, color: c.goldLight, border: 'none', borderRadius: '4px', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: (loading || code.length !== 6) ? 'default' : 'pointer', transition: 'background 0.2s' }}>
+              <button type="submit" disabled={loading || code.length !== 8}
+                style={{ width: '100%', padding: '0.9rem', background: (loading || code.length !== 8) ? c.navyMid : c.navy, color: c.goldLight, border: 'none', borderRadius: '4px', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: (loading || code.length !== 8) ? 'default' : 'pointer', transition: 'background 0.2s' }}>
                 {loading ? 'Verifying…' : 'Sign In →'}
               </button>
             </form>
