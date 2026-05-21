@@ -179,44 +179,48 @@ export default function DiscoverClient({
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,168,76,0.04)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
 
-              <div className="disc-match-headline">
-                <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.9rem', fontWeight: 900, color: c.gold, letterSpacing: '0.08em', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+              {/* Match headline */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.95rem', fontWeight: 900, color: c.gold, letterSpacing: '0.08em', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.25rem 0.6rem', borderRadius: '6px' }}>
                   {profileId(m.id)}
                 </span>
-                <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, fontSize: '0.95rem' }}>
+                <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, fontSize: '1.1rem' }}>
                   {maskName(m.profile?.full_name ?? '')}
                 </span>
-                <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', color: c.sepia }}>
-                  {m.profile?.age} · {m.profile?.city}
+                <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.sepia }}>
+                  {m.profile?.age} yrs · {m.profile?.city}
                 </span>
-                <span className="disc-score-label" style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.2rem 0.55rem', borderRadius: '20px' }}>
+                <span style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.06em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.25rem 0.65rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>
                   {scoreLabel(m.score)}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
-                <div style={{ flex: 1, height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px' }}>
+              {/* Score bar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px' }}>
                   <div style={{ height: '100%', width: `${m.score}%`, background: scoreGradient(m.score), borderRadius: '3px', transition: 'width 0.6s ease' }} />
                 </div>
-                <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', fontWeight: 700, color: scoreColor(m.score), minWidth: '48px', textAlign: 'right' }}>
+                <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.15rem', fontWeight: 700, color: scoreColor(m.score), minWidth: '56px', textAlign: 'right' }}>
                   {m.score}/100
                 </span>
               </div>
 
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.92rem', color: c.ivoryDim, margin: '0 0 0.5rem', lineHeight: 1.55 }}>
-                Profile {profileId(m.id)} matches your profile with a compatibility score of <strong style={{ color: scoreColor(m.score), fontStyle: 'normal' }}>{m.score}/100</strong> — a {scoreLabel(m.score).toLowerCase()}. Here is why:
+              {/* Narrative */}
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.ivoryDim, margin: '0 0 0.65rem', lineHeight: 1.65 }}>
+                Profile {profileId(m.id)} matches your profile with a compatibility score of <strong style={{ color: scoreColor(m.score), fontStyle: 'normal' }}>{m.score} out of 100</strong> — a {scoreLabel(m.score).toLowerCase()}. Here is why this is a good match for you:
               </p>
 
-              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              {/* Reasons */}
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                 {m.reasons.map((r, j) => (
-                  <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.4rem' }}>
-                    <span style={{ color: c.gold, fontSize: '0.7rem', marginTop: '0.2rem', flexShrink: 0 }}>✦</span>
-                    <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', color: c.ivoryDim, lineHeight: 1.5 }}>{r}</span>
+                  <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <span style={{ color: c.gold, fontSize: '0.75rem', marginTop: '0.25rem', flexShrink: 0 }}>✦</span>
+                    <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivoryDim, lineHeight: 1.6 }}>{r}</span>
                   </li>
                 ))}
               </ul>
 
-              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 600, letterSpacing: '0.1em', color: c.gold, textTransform: 'uppercase', margin: '0.6rem 0 0', textAlign: 'right' }}>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', color: c.gold, textTransform: 'uppercase', margin: '0.75rem 0 0', textAlign: 'right' }}>
                 Tap to view full profile →
               </p>
             </div>
