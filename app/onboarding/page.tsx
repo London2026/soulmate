@@ -51,6 +51,8 @@ function OnboardingPage() {
   const [back1, setBack1] = useState<File | null>(null)
   const [back2, setBack2] = useState<File | null>(null)
   const [front, setFront] = useState<File | null>(null)
+  const [hasExistingPhotos, setHasExistingPhotos] = useState(false)
+  const [hasExistingVoice, setHasExistingVoice] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const isEdit = searchParams.get('edit') === 'true'
@@ -63,6 +65,8 @@ function OnboardingPage() {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
       if (profile?.onboarding_complete && !isEdit) { router.replace('/discover'); return }
       setUserId(user.id)
+      setHasExistingPhotos(!!(profile?.back_photo_1_path && profile?.back_photo_2_path && profile?.front_photo_path))
+      setHasExistingVoice(!!profile?.voice_path)
       // Pre-fill draft with existing profile data when editing
       if (profile) {
         const rawName = (profile.full_name ?? user.user_metadata?.full_name ?? '').trim()
@@ -116,10 +120,11 @@ function OnboardingPage() {
       if (parseInt(draft.prefAgeMin) >= parseInt(draft.prefAgeMax)) return 'Max age must be greater than min age.'
       if (!draft.prefReligion) return 'Please select a religion preference.'
     }
-    if (step === 3 && !voiceBlob && !isEdit) return 'Please record your voice introduction.'
-    if (step === 4 && !isEdit) {
-      if (!back1 || !back2) return 'Please upload both back-side photos.'
-      if (!front) return 'Please upload your reveal photo.'
+    if (step === 3 && !voiceBlob && !hasExistingVoice) return 'Please record your voice introduction.'
+    if (step === 4) {
+      if (!back1 && !hasExistingPhotos) return 'Please upload both back-side photos.'
+      if ((!back1 || !back2) && !hasExistingPhotos) return 'Please upload both back-side photos.'
+      if (!front && !hasExistingPhotos) return 'Please upload your reveal photo.'
     }
     // Step 5 (personality) is optional — no validation required
     return ''
