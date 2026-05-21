@@ -155,6 +155,10 @@ export default function DiscoverClient({
           .compact-card-name { font-size: 0.82rem !important; }
           .compact-card-sub { font-size: 0.75rem !important; }
         }
+
+        /* Filter input placeholder text */
+        .disc-filter-inp::placeholder { color: #8a9db5 !important; }
+        .disc-filter-inp:focus { border-color: #c9a84c !important; }
       `}</style>
 
       {/* Search bar + filter toggle */}
@@ -186,8 +190,8 @@ export default function DiscoverClient({
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>📍 Location</label>
                 <input type="text" value={fLocation} onChange={e => setFLocation(e.target.value)}
-                  placeholder="City or country…"
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
+                  placeholder="City or country…" className="disc-filter-inp"
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)} />
               </div>
@@ -197,14 +201,14 @@ export default function DiscoverClient({
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🎂 Age Range</label>
                 <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                   <input type="number" min={18} max={99} value={fAgeMin} onChange={e => setFAgeMin(e.target.value)}
-                    placeholder="Min"
-                    style={{ flex: 1, padding: '0.55rem 0.5rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
+                    placeholder="Min" className="disc-filter-inp"
+                    style={{ flex: 1, padding: '0.55rem 0.5rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
                     onFocus={e => (e.target.style.borderColor = c.gold)}
                     onBlur={e => (e.target.style.borderColor = c.border)} />
                   <span style={{ color: c.sepia, fontSize: '0.8rem', flexShrink: 0 }}>–</span>
                   <input type="number" min={18} max={99} value={fAgeMax} onChange={e => setFAgeMax(e.target.value)}
-                    placeholder="Max"
-                    style={{ flex: 1, padding: '0.55rem 0.5rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
+                    placeholder="Max" className="disc-filter-inp"
+                    style={{ flex: 1, padding: '0.55rem 0.5rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', textAlign: 'center', boxSizing: 'border-box' }}
                     onFocus={e => (e.target.style.borderColor = c.gold)}
                     onBlur={e => (e.target.style.borderColor = c.border)} />
                 </div>
@@ -214,7 +218,7 @@ export default function DiscoverClient({
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🕊 Religion</label>
                 <select value={fReligion} onChange={e => setFReligion(e.target.value)}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: fReligion ? c.ivory : c.sepia, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: fReligion ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)}>
                   <option value="">Any religion</option>
@@ -226,7 +230,7 @@ export default function DiscoverClient({
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🎓 Education</label>
                 <select value={fEducation} onChange={e => setFEducation(e.target.value)}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: fEducation ? c.ivory : c.sepia, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: fEducation ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)}>
                   <option value="">Any level</option>
@@ -238,8 +242,8 @@ export default function DiscoverClient({
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>💼 Occupation</label>
                 <input type="text" value={fOccupation} onChange={e => setFOccupation(e.target.value)}
-                  placeholder="e.g. Engineer, Doctor…"
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
+                  placeholder="e.g. Engineer, Doctor…" className="disc-filter-inp"
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }}
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)} />
               </div>
