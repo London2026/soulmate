@@ -117,24 +117,24 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.2rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 600, color: c.ivory, margin: 0 }}>
+              <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.6rem', fontWeight: 600, color: c.ivory, margin: 0 }}>
                 {maskName(profile.full_name)}
               </h2>
-              <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.72rem', fontWeight: 700, color: c.goldLight, background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.15rem 0.45rem', borderRadius: '4px', letterSpacing: '0.08em', flexShrink: 0 }}>
+              <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.78rem', fontWeight: 700, color: c.goldLight, background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.18rem 0.5rem', borderRadius: '4px', letterSpacing: '0.08em', flexShrink: 0 }}>
                 #{profile.id.slice(0, 8).toUpperCase()}
               </span>
             </div>
-            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivoryDim, margin: 0 }}>
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.1rem', color: c.ivoryDim, margin: 0 }}>
               {profile.age} yrs · {profile.city}, {profile.country}
             </p>
           </div>
-          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, color: c.goldLight, borderRadius: '20px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0.3rem 0.85rem', background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, color: c.goldLight, borderRadius: '20px', flexShrink: 0, whiteSpace: 'nowrap' }}>
             {profile.religion}
           </span>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {tags.map(tag => (
-            <span key={tag} style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', letterSpacing: '0.08em', padding: '0.2rem 0.6rem', background: 'rgba(14,26,53,0.7)', border: '1px solid rgba(201,168,76,0.1)', color: c.ivoryDim, borderRadius: '3px' }}>
+            <span key={tag} style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', letterSpacing: '0.06em', padding: '0.3rem 0.75rem', background: 'rgba(14,26,53,0.7)', border: '1px solid rgba(201,168,76,0.15)', color: c.ivoryDim, borderRadius: '4px' }}>
               {tag}
             </span>
           ))}
@@ -180,33 +180,35 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true 
         { icon: '🍽️', label: 'Favourite Foods',     value: profile.fav_foods },
         { icon: '🤖', label: 'AI Tools',            value: profile.fav_ai_tools },
       ].some(p => p.value) && (
-        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem' }}>✦ Personality</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 1rem' }}>✦ Personality &amp; Interests</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {[
-              { icon: '🎬', label: 'Reels',    value: profile.fav_reels },
-              { icon: '▶️', label: 'YouTube',   value: profile.fav_youtube },
-              { icon: '📺', label: 'Series',    value: profile.fav_web_series },
-              { icon: '✈️', label: 'Travel',    value: profile.fav_travel },
-              { icon: '🍽️', label: 'Foods',     value: profile.fav_foods },
-              { icon: '🤖', label: 'AI Tools',  value: profile.fav_ai_tools },
+              { icon: '🎬', label: 'Favourite Reels',       value: profile.fav_reels },
+              { icon: '▶️', label: 'Favourite YouTube',      value: profile.fav_youtube },
+              { icon: '📺', label: 'Favourite Web Series',   value: profile.fav_web_series },
+              { icon: '✈️', label: 'Favourite Travel',       value: profile.fav_travel },
+              { icon: '🍽️', label: 'Favourite Foods',        value: profile.fav_foods },
+              { icon: '🤖', label: 'Favourite AI Tools',     value: profile.fav_ai_tools },
             ].filter(p => p.value).map(p => (
-              <div key={p.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', flexShrink: 0, marginTop: '0.05rem' }}>{p.icon}</span>
-                <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.ivoryDim, flexShrink: 0, minWidth: '52px' }}>{p.label}</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: 0, flex: 1 }}>
-                  {splitPersonalityChips(p.value!).map((tag, i) => (
-                    isPersonalityUrl(tag) ? (
-                      <a key={i} href={tag} target="_blank" rel="noopener noreferrer" title={tag}
-                        style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.88rem', color: '#7fb3f5', textDecoration: 'underline', padding: '0.1rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                        {shortPersonalityLabel(tag)}
-                      </a>
-                    ) : (
-                      <span key={i} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.88rem', color: c.ivory, padding: '0.1rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {tag}
-                      </span>
-                    )
-                  ))}
+              <div key={p.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+                <span style={{ fontSize: '1.1rem', flexShrink: 0, marginTop: '0.1rem' }}>{p.icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.35rem' }}>{p.label}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    {splitPersonalityChips(p.value!).map((tag, i) => (
+                      isPersonalityUrl(tag) ? (
+                        <a key={i} href={tag} target="_blank" rel="noopener noreferrer" title={tag}
+                          style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: '#7fb3f5', textDecoration: 'underline', padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                          {shortPersonalityLabel(tag)}
+                        </a>
+                      ) : (
+                        <span key={i} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block' }}>
+                          {tag}
+                        </span>
+                      )
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
