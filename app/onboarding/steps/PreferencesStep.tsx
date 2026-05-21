@@ -16,7 +16,7 @@ interface Props {
 export default function PreferencesStep({ data, onChange }: Props) {
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.9rem', fontWeight: 600, color: c.navy, margin: '0 0 0.25rem' }}>
+      <h2 className="ob-step-h2" style={{ color: c.navy, margin: '0 0 0.25rem' }}>
         Who are you looking for?
       </h2>
       <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.sepia, margin: '0 0 1rem' }}>

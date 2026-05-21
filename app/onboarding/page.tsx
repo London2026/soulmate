@@ -207,24 +207,31 @@ function OnboardingPage() {
   const progress = ((step + 1) / STEPS.length) * 100
 
   return (
-    <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 0.75rem' }}>
+    <div className="ob-page" style={{ minHeight: '100dvh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 0.75rem' }}>
       <style>{`
-        .ob-logo { width: 130px; height: 130px; }
+        .ob-page { box-sizing: border-box; }
+        .ob-logo { width: 120px; height: 120px; }
+        .ob-progress { width: 100%; max-width: 720px; margin-bottom: 1rem; }
+        .ob-card { width: 100%; max-width: 720px; background: #fff; border-radius: 10px; box-shadow: 0 16px 60px rgba(13,31,60,0.12); border: 1px solid rgba(13,31,60,0.08); overflow: hidden; }
         .ob-card-inner { padding: 2.5rem 2.5rem 1.5rem; }
         .ob-nav { padding: 1.25rem 2.5rem 2rem; display: flex; gap: 0.75rem; border-top: 1px solid rgba(13,31,60,0.06); }
-        .ob-btn-back { padding: 0.9rem 2rem; background: transparent; border: 1px solid rgba(13,31,60,0.2); color: #5a6e82; font-family: Raleway, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
-        .ob-btn-next { padding: 0.9rem 2.25rem; border: none; font-family: Raleway, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 4px; transition: background 0.2s; }
-        @media (max-width: 600px) {
-          .ob-logo { width: 90px !important; height: 90px !important; }
-          .ob-card-inner { padding: 1.25rem 1rem 1rem !important; }
+        .ob-btn-back { padding: 0.9rem 2rem; background: transparent; border: 1px solid rgba(13,31,60,0.2); color: #5a6e82; font-family: Raleway, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-radius: 4px; white-space: nowrap; }
+        .ob-btn-next { padding: 0.9rem 2.25rem; border: none; font-family: Raleway, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 4px; transition: background 0.2s; white-space: nowrap; }
+        .ob-step-h2 { font-family: var(--font-playfair, "Playfair Display", serif); font-size: 1.9rem; font-weight: 600; }
+        @media (max-width: 640px) {
+          .ob-page { justify-content: flex-start !important; padding-top: 1.25rem !important; padding-bottom: 1.5rem !important; }
+          .ob-logo { width: 80px !important; height: 80px !important; }
+          .ob-progress { margin-bottom: 0.75rem; }
+          .ob-card-inner { padding: 1.1rem 1rem 0.9rem !important; }
           .ob-nav { padding: 0.85rem 1rem 1.25rem !important; }
-          .ob-btn-back { padding: 0.85rem 1.25rem !important; font-size: 0.7rem !important; }
-          .ob-btn-next { padding: 0.85rem 1rem !important; font-size: 0.7rem !important; flex: 1; }
+          .ob-btn-back { padding: 0.8rem 1rem !important; font-size: 0.68rem !important; }
+          .ob-btn-next { padding: 0.8rem 1rem !important; font-size: 0.68rem !important; flex: 1 !important; }
+          .ob-step-h2 { font-size: 1.5rem !important; }
         }
       `}</style>
 
       {/* Logo + Progress */}
-      <div style={{ width: '100%', maxWidth: '720px', marginBottom: '1.5rem' }}>
+      <div className="ob-progress">
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
             <img src="/soulmate-logo-full.png" alt="Soul Mate" className="ob-logo" style={{ objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(13,31,60,0.12)' }} />
@@ -249,7 +256,7 @@ function OnboardingPage() {
       </div>
 
       {/* Card */}
-      <div style={{ width: '100%', maxWidth: '720px', background: '#fff', borderRadius: '10px', boxShadow: '0 16px 60px rgba(13,31,60,0.12)', border: '1px solid rgba(13,31,60,0.08)', overflow: 'hidden' }}>
+      <div className="ob-card">
 
         <div className="ob-card-inner">
           {step === 0 && <AboutStep data={draft} onChange={change} />}

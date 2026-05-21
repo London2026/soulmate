@@ -37,7 +37,7 @@ function shortLabel(url: string): string {
 export default function PersonalityStep({ data, onChange }: Props) {
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.9rem', fontWeight: 600, color: c.navy, margin: '0 0 0.35rem' }}>
+      <h2 className="ob-step-h2" style={{ color: c.navy, margin: '0 0 0.35rem' }}>
         Your personality
       </h2>
       <div style={{ background: 'rgba(139,105,20,0.07)', border: '1px solid rgba(139,105,20,0.2)', borderRadius: '5px', padding: '0.6rem 0.8rem', margin: '0 0 0.7rem' }}>
