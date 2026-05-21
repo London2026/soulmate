@@ -169,38 +169,61 @@ export default async function ProfilePage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: c.bg }}>
+      <style>{`
+        .prof-main { max-width: 600px; margin: 0 auto; padding: 5.5rem 1.5rem 5rem; }
+        .prof-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.5rem; }
+        .prof-h1 { font-size: 2rem; }
+        .prof-id-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 1rem; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.35); border-radius: 8px; }
+        .prof-id-code { font-size: 1.25rem; }
+        .prof-personality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .prof-revealed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .prof-card-info { padding: 1.5rem 1.5rem 1.25rem; }
+        @media (max-width: 600px) {
+          .prof-main { padding: 5rem 0.85rem 6rem; }
+          .prof-h1 { font-size: 1.5rem !important; }
+          .prof-header { flex-direction: column; gap: 0.75rem; }
+          .prof-id-badge { padding: 0.4rem 0.75rem; }
+          .prof-id-code { font-size: 1rem !important; }
+          .prof-personality-grid { grid-template-columns: 1fr; }
+          .prof-revealed-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+          .prof-card-info { padding: 1rem 1rem 0.9rem; }
+        }
+        @media (max-width: 400px) {
+          .prof-revealed-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%)' }} />
 
       <Navigation />
 
-      <main style={{ maxWidth: '600px', margin: '0 auto', padding: '6rem 1.5rem 5rem' }}>
+      <main className="prof-main">
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+        <div className="prof-header">
           <div>
-            <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.5rem' }}>
+            <h1 className="prof-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, margin: '0 0 0.5rem' }}>
               My Profile
             </h1>
-            {/* Profile ID — big and prominent */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 1rem', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.35)', borderRadius: '8px' }}>
+            {/* Profile ID */}
+            <div className="prof-id-badge">
               <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.sepia }}>Profile ID</span>
-              <span style={{ fontFamily: '"Courier New", monospace', fontSize: '1.25rem', fontWeight: 900, color: c.goldLight, letterSpacing: '0.12em' }}>
+              <span className="prof-id-code" style={{ fontFamily: '"Courier New", monospace', fontWeight: 900, color: c.goldLight, letterSpacing: '0.12em' }}>
                 #{user.id.slice(0, 8).toUpperCase()}
               </span>
             </div>
           </div>
           <Link href="/onboarding?edit=true"
-            style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', marginTop: '0.5rem' }}>
-            Edit Profile →
+            style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', padding: '0.5rem 1rem', border: `1px solid rgba(201,168,76,0.35)`, borderRadius: '6px', whiteSpace: 'nowrap' }}>
+            ✏ Edit Profile
           </Link>
         </div>
-        <div style={{ height: '1px', background: `linear-gradient(to right, ${c.goldLight}, transparent)`, marginBottom: '2rem' }} />
+        <div style={{ height: '1px', background: `linear-gradient(to right, ${c.goldLight}, transparent)`, marginBottom: '1.5rem' }} />
 
         {/* Profile card */}
         <div style={{ background: 'rgba(26,58,92,0.25)', border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '2rem', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
 
           {/* Info section */}
-          <div style={{ padding: '1.5rem 1.5rem 1.25rem', borderBottom: `1px solid ${c.borderSub}` }}>
+          <div className="prof-card-info" style={{ borderBottom: `1px solid ${c.borderSub}` }}>
             <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.4rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.25rem' }}>
               {profile.full_name}
             </h2>
@@ -245,7 +268,7 @@ export default async function ProfilePage() {
         {personalityFields.length > 0 && (
           <div style={{ marginBottom: '2rem' }}>
             <SectionHeader title="My Personality" count={0} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="prof-personality-grid">
               {personalityFields.map((f) => (
                 <div key={f.label} style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem' }}>
                   <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.4rem' }}>
@@ -281,7 +304,7 @@ export default async function ProfilePage() {
               No one has revealed your photo yet.
             </p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="prof-revealed-grid">
               {viewers.map((v) => (
                 <RevealedByCard key={v.id} viewer={v} />
               ))}
