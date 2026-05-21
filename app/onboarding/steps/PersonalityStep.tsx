@@ -37,7 +37,7 @@ function shortLabel(url: string): string {
 export default function PersonalityStep({ data, onChange }: Props) {
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', fontWeight: 600, color: c.navy, margin: '0 0 0.35rem' }}>
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.9rem', fontWeight: 600, color: c.navy, margin: '0 0 0.35rem' }}>
         Your personality
       </h2>
       <div style={{ background: 'rgba(139,105,20,0.07)', border: '1px solid rgba(139,105,20,0.2)', borderRadius: '5px', padding: '0.6rem 0.8rem', margin: '0 0 0.7rem' }}>
@@ -99,7 +99,7 @@ function ChipField({ icon, label, placeholder, value, onChange }: {
     <div style={{ background: 'rgba(244,241,235,0.3)', border: `1px solid ${c.border}`, borderRadius: '6px', padding: '0.75rem', minWidth: 0, overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
         <span style={{ fontSize: '1rem', flexShrink: 0 }}>{icon}</span>
-        <label style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.textMid, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <label style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.textMid, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {label}
         </label>
         <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: chips.length >= 3 ? c.gold : c.sepia, marginLeft: 'auto', flexShrink: 0 }}>
@@ -142,7 +142,7 @@ function ChipField({ icon, label, placeholder, value, onChange }: {
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
             placeholder={chips.length === 0 ? placeholder : 'Add another…'}
-            style={{ flex: 1, padding: '0.4rem 0.6rem', border: `1px solid ${c.border}`, background: 'rgba(244,241,235,0.6)', color: c.navy, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', fontStyle: 'italic', borderRadius: '4px', outline: 'none', minWidth: 0 }}
+            style={{ flex: 1, padding: '0.6rem 0.75rem', border: `1px solid ${c.border}`, background: 'rgba(244,241,235,0.6)', color: c.navy, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', fontStyle: 'italic', borderRadius: '4px', outline: 'none', minWidth: 0 }}
             onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
             onBlur={e => (e.target.style.borderColor = c.border)}
           />

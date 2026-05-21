@@ -210,7 +210,7 @@ function OnboardingPage() {
     <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
 
       {/* Logo + Progress */}
-      <div style={{ width: '100%', maxWidth: '540px', marginBottom: '1.5rem' }}>
+      <div style={{ width: '100%', maxWidth: '720px', marginBottom: '1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
             <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ width: '130px', height: '130px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(13,31,60,0.12)' }} />
@@ -218,11 +218,11 @@ function OnboardingPage() {
         </div>
 
         {/* Progress bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold }}>
             Step {step + 1} of {STEPS.length}
           </span>
-          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia }}>{STEPS[step]}</span>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', color: c.sepia }}>{STEPS[step]}</span>
         </div>
         <div style={{ height: '3px', background: 'rgba(13,31,60,0.08)', borderRadius: '2px' }}>
           <div style={{ height: '100%', background: c.gold, borderRadius: '2px', width: `${progress}%`, transition: 'width 0.5s ease' }} />
@@ -235,9 +235,9 @@ function OnboardingPage() {
       </div>
 
       {/* Card */}
-      <div style={{ width: '100%', maxWidth: '540px', background: '#fff', borderRadius: '10px', boxShadow: '0 16px 60px rgba(13,31,60,0.12)', border: '1px solid rgba(13,31,60,0.08)', overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: '720px', background: '#fff', borderRadius: '10px', boxShadow: '0 16px 60px rgba(13,31,60,0.12)', border: '1px solid rgba(13,31,60,0.08)', overflow: 'hidden' }}>
 
-        <div style={{ padding: '2rem 2rem 1.25rem' }}>
+        <div style={{ padding: '2.5rem 2.5rem 1.5rem' }}>
           {step === 0 && <AboutStep data={draft} onChange={change} />}
           {step === 1 && <BackgroundStep data={draft} onChange={change} />}
           {step === 2 && <PreferencesStep data={draft} onChange={change} />}
@@ -253,15 +253,15 @@ function OnboardingPage() {
         </div>
 
         {/* Navigation */}
-        <div style={{ padding: '1rem 2rem 1.75rem', display: 'flex', justifyContent: step > 0 ? 'space-between' : 'flex-end', gap: '0.75rem', borderTop: '1px solid rgba(13,31,60,0.06)' }}>
+        <div style={{ padding: '1.25rem 2.5rem 2rem', display: 'flex', justifyContent: step > 0 ? 'space-between' : 'flex-end', gap: '0.75rem', borderTop: '1px solid rgba(13,31,60,0.06)' }}>
           {step > 0 && (
             <button onClick={() => { setStep(s => s - 1); setError('') }} disabled={saving}
-              style={{ padding: '0.75rem 1.5rem', background: 'transparent', border: '1px solid rgba(13,31,60,0.2)', color: c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '4px' }}>
+              style={{ padding: '0.9rem 2rem', background: 'transparent', border: '1px solid rgba(13,31,60,0.2)', color: c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '4px' }}>
               ← Back
             </button>
           )}
           <button onClick={handleNext} disabled={saving}
-            style={{ padding: '0.75rem 2rem', background: saving ? c.navyMid : c.navy, color: c.goldLight, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: saving ? 'default' : 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}>
+            style={{ padding: '0.9rem 2.25rem', background: saving ? c.navyMid : c.navy, color: c.goldLight, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: saving ? 'default' : 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}>
             {saving ? 'Saving…' : step === 5 ? (isEdit ? 'Save Changes ✓' : 'Complete Profile ✓') : 'Continue →'}
           </button>
         </div>

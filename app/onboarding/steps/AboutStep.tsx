@@ -1,7 +1,7 @@
 const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e', rose: '#9e2a2b' }
-const label = { display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' as const, color: c.textMid, marginBottom: '0.4rem' }
-const inp = { width: '100%', padding: '0.7rem 0.9rem', border: '1px solid rgba(13,31,60,0.18)', background: 'rgba(244,241,235,0.4)', color: c.navy, fontSize: '1rem', fontFamily: '"Cormorant Garamond", Georgia, serif', outline: 'none', borderRadius: '4px', boxSizing: 'border-box' as const, transition: 'border-color 0.2s' }
-const field = { marginBottom: '1.1rem' }
+const label = { display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: c.textMid, marginBottom: '0.5rem' }
+const inp = { width: '100%', padding: '0.85rem 1rem', border: '1px solid rgba(13,31,60,0.18)', background: 'rgba(244,241,235,0.4)', color: c.navy, fontSize: '1.05rem', fontFamily: '"Cormorant Garamond", Georgia, serif', outline: 'none', borderRadius: '4px', boxSizing: 'border-box' as const, transition: 'border-color 0.2s' }
+const field = { marginBottom: '1.4rem' }
 const focus = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = '#1b3a6b')
 const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')
 
@@ -15,7 +15,7 @@ interface Props {
 export default function AboutStep({ data, onChange }: Props) {
   return (
     <div>
-      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', fontWeight: 600, color: c.navy, margin: '0 0 0.25rem' }}>
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.9rem', fontWeight: 600, color: c.navy, margin: '0 0 0.25rem' }}>
         Tell us about yourself
       </h2>
       <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: c.sepia, margin: '0 0 1rem' }}>
@@ -53,7 +53,7 @@ export default function AboutStep({ data, onChange }: Props) {
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {GENDERS.map(g => (
             <button key={g} type="button" onClick={() => onChange('gender', g)}
-              style={{ flex: 1, padding: '0.65rem', border: data.gender === g ? `1px solid #1b3a6b` : '1px solid rgba(13,31,60,0.18)', background: data.gender === g ? 'rgba(27,58,107,0.07)' : 'transparent', color: data.gender === g ? '#1b3a6b' : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '4px', transition: 'all 0.2s' }}>
+              style={{ flex: 1, padding: '0.8rem', border: data.gender === g ? `1px solid #1b3a6b` : '1px solid rgba(13,31,60,0.18)', background: data.gender === g ? 'rgba(27,58,107,0.07)' : 'transparent', color: data.gender === g ? '#1b3a6b' : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '4px', transition: 'all 0.2s' }}>
               {g}
             </button>
           ))}
