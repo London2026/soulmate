@@ -57,9 +57,12 @@ export default function LoginPage() {
     })
     setLoading(false)
     if (error) {
-      setError(error.message.includes('not found') || error.message.includes('registered')
-        ? 'No account found with this email. Please sign up first.'
-        : error.message)
+      const msg = error.message.toLowerCase()
+      if (msg.includes('not found') || msg.includes('registered') || msg.includes('signups not allowed') || msg.includes('not registered') || msg.includes('no user')) {
+        setError('This email address is not registered with Soul Mate. Please create your profile first.')
+      } else {
+        setError('Something went wrong. Please try again.')
+      }
       return
     }
     setStep('code')
