@@ -120,15 +120,23 @@ export default async function DiscoverPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#07111f' }}>
+      <style>{`
+        .disc-main { padding: 5.5rem 1.5rem 5rem; }
+        .disc-h1 { font-size: 2rem; }
+        @media (max-width: 600px) {
+          .disc-main { padding: 5rem 0.85rem 6rem; }
+          .disc-h1 { font-size: 1.5rem; }
+        }
+      `}</style>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%)' }} />
 
       <Navigation />
 
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '6rem 1.5rem 4rem' }}>
+      <main className="disc-main" style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
         {/* Heading */}
         <div style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2rem', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.5rem' }}>
+          <h1 className="disc-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.5rem' }}>
             Discover
           </h1>
           <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)' }} />
