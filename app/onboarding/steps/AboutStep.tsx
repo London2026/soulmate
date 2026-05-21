@@ -24,7 +24,8 @@ export default function AboutStep({ data, onChange }: Props) {
       <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
       {/* First Name + Last Name */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.1rem' }}>
+      <style>{`.ob-name-grid,.ob-loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem} @media(max-width:480px){.ob-name-grid,.ob-loc-grid{grid-template-columns:1fr}}`}</style>
+      <div className="ob-name-grid" style={{ marginBottom: '1.1rem' }}>
         <div>
           <label style={label}>First Name</label>
           <input type="text" value={data.firstName} onChange={e => onChange('firstName', e.target.value)}
@@ -61,7 +62,7 @@ export default function AboutStep({ data, onChange }: Props) {
       </div>
 
       {/* City + Country */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+      <div className="ob-loc-grid">
         <div>
           <label style={label}>City</label>
           <input type="text" value={data.city} onChange={e => onChange('city', e.target.value)}

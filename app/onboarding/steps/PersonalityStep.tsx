@@ -50,7 +50,8 @@ export default function PersonalityStep({ data, onChange }: Props) {
       </p>
       <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <style>{`.ob-personality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; } @media (max-width: 600px) { .ob-personality-grid { grid-template-columns: 1fr; } }`}</style>
+      <div className="ob-personality-grid">
         {CATEGORIES.map(cat => (
           <ChipField
             key={cat.key}

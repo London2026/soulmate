@@ -207,13 +207,27 @@ function OnboardingPage() {
   const progress = ((step + 1) / STEPS.length) * 100
 
   return (
-    <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
+    <div style={{ minHeight: '100vh', background: c.cream, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 0.75rem' }}>
+      <style>{`
+        .ob-logo { width: 130px; height: 130px; }
+        .ob-card-inner { padding: 2.5rem 2.5rem 1.5rem; }
+        .ob-nav { padding: 1.25rem 2.5rem 2rem; display: flex; gap: 0.75rem; border-top: 1px solid rgba(13,31,60,0.06); }
+        .ob-btn-back { padding: 0.9rem 2rem; background: transparent; border: 1px solid rgba(13,31,60,0.2); color: #5a6e82; font-family: Raleway, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
+        .ob-btn-next { padding: 0.9rem 2.25rem; border: none; font-family: Raleway, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 4px; transition: background 0.2s; }
+        @media (max-width: 600px) {
+          .ob-logo { width: 90px !important; height: 90px !important; }
+          .ob-card-inner { padding: 1.25rem 1rem 1rem !important; }
+          .ob-nav { padding: 0.85rem 1rem 1.25rem !important; }
+          .ob-btn-back { padding: 0.85rem 1.25rem !important; font-size: 0.7rem !important; }
+          .ob-btn-next { padding: 0.85rem 1rem !important; font-size: 0.7rem !important; flex: 1; }
+        }
+      `}</style>
 
       {/* Logo + Progress */}
       <div style={{ width: '100%', maxWidth: '720px', marginBottom: '1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
-            <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ width: '130px', height: '130px', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(13,31,60,0.12)' }} />
+            <img src="/soulmate-logo-full.png" alt="Soul Mate" className="ob-logo" style={{ objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(13,31,60,0.12)' }} />
           </Link>
         </div>
 
@@ -237,7 +251,7 @@ function OnboardingPage() {
       {/* Card */}
       <div style={{ width: '100%', maxWidth: '720px', background: '#fff', borderRadius: '10px', boxShadow: '0 16px 60px rgba(13,31,60,0.12)', border: '1px solid rgba(13,31,60,0.08)', overflow: 'hidden' }}>
 
-        <div style={{ padding: '2.5rem 2.5rem 1.5rem' }}>
+        <div className="ob-card-inner">
           {step === 0 && <AboutStep data={draft} onChange={change} />}
           {step === 1 && <BackgroundStep data={draft} onChange={change} />}
           {step === 2 && <PreferencesStep data={draft} onChange={change} />}
@@ -253,15 +267,14 @@ function OnboardingPage() {
         </div>
 
         {/* Navigation */}
-        <div style={{ padding: '1.25rem 2.5rem 2rem', display: 'flex', justifyContent: step > 0 ? 'space-between' : 'flex-end', gap: '0.75rem', borderTop: '1px solid rgba(13,31,60,0.06)' }}>
+        <div className="ob-nav" style={{ justifyContent: step > 0 ? 'space-between' : 'flex-end' }}>
           {step > 0 && (
-            <button onClick={() => { setStep(s => s - 1); setError('') }} disabled={saving}
-              style={{ padding: '0.9rem 2rem', background: 'transparent', border: '1px solid rgba(13,31,60,0.2)', color: c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '4px' }}>
+            <button onClick={() => { setStep(s => s - 1); setError('') }} disabled={saving} className="ob-btn-back">
               ← Back
             </button>
           )}
-          <button onClick={handleNext} disabled={saving}
-            style={{ padding: '0.9rem 2.25rem', background: saving ? c.navyMid : c.navy, color: c.goldLight, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: saving ? 'default' : 'pointer', borderRadius: '4px', transition: 'background 0.2s' }}>
+          <button onClick={handleNext} disabled={saving} className="ob-btn-next"
+            style={{ background: saving ? c.navyMid : c.navy, color: c.goldLight, cursor: saving ? 'default' : 'pointer' }}>
             {saving ? 'Saving…' : step === 5 ? (isEdit ? 'Save Changes ✓' : 'Complete Profile ✓') : 'Continue →'}
           </button>
         </div>
