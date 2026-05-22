@@ -135,44 +135,52 @@ export default function Navigation() {
 
               {/* Dropdown panel */}
               {open && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '280px', background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: '12px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)', overflow: 'hidden', zIndex: 200 }}>
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '310px', background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: '12px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)', overflow: 'hidden', zIndex: 200 }}>
 
                   {/* Profile header */}
-                  <div style={{ padding: '1.1rem 1.25rem', borderBottom: `1px solid ${c.border}`, background: 'rgba(30,51,88,0.5)' }}>
-                    <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.05rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem' }}>{user.name}</p>
-                    <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '0.18rem 0.6rem', background: 'rgba(201,168,76,0.12)', border: `1px solid rgba(201,168,76,0.3)`, color: c.gold, borderRadius: '20px' }}>
+                  <div style={{ padding: '1.25rem 1.4rem', borderBottom: `1px solid ${c.border}`, background: 'rgba(30,51,88,0.5)' }}>
+                    <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.2rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.35rem' }}>{user.name}</p>
+                    <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '0.22rem 0.7rem', background: 'rgba(201,168,76,0.12)', border: `1px solid rgba(201,168,76,0.3)`, color: c.gold, borderRadius: '20px' }}>
                       {planLabel} Plan
                     </span>
                   </div>
 
                   {/* Meeting stats */}
-                  <div style={{ padding: '0.9rem 1.25rem', borderBottom: `1px solid ${c.border}` }}>
-                    <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.65rem' }}>Meeting Activity</p>
+                  <div style={{ padding: '1rem 1.4rem', borderBottom: `1px solid ${c.border}` }}>
+                    <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.75rem' }}>Meeting Activity</p>
                     {[
-                      { label: 'Requests Sent',          value: user.stats.requested, color: '#93c5fd' },
-                      { label: 'Accepted',               value: user.stats.accepted,  color: '#4ade80' },
-                      { label: 'Declined',               value: user.stats.declined,  color: '#f87171' },
-                      { label: 'Awaiting Confirmation',  value: user.stats.waiting,   color: c.gold },
+                      { label: 'Requests Sent',         value: user.stats.requested, color: '#93c5fd' },
+                      { label: 'Accepted',              value: user.stats.accepted,  color: '#4ade80' },
+                      { label: 'Declined',              value: user.stats.declined,  color: '#f87171' },
+                      { label: 'Awaiting Confirmation', value: user.stats.waiting,   color: c.gold },
                     ].map(stat => (
-                      <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                        <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.92rem', color: c.ivoryDim }}>{stat.label}</span>
-                        <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', fontWeight: 600, color: stat.color, minWidth: '24px', textAlign: 'right' }}>{stat.value}</span>
+                      <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem', color: c.ivoryDim }}>{stat.label}</span>
+                        <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600, color: stat.color, minWidth: '24px', textAlign: 'right' }}>{stat.value}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Actions */}
-                  <div style={{ padding: '0.75rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <div style={{ padding: '0.85rem 1.4rem', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
                     <Link href="/profile" onClick={() => setOpen(false)}
-                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.08em', color: c.ivoryDim, textDecoration: 'none', padding: '0.45rem 0' }}>
+                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       👤 My Profile
                     </Link>
                     <Link href="/pricing" onClick={() => setOpen(false)}
-                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.08em', color: c.ivoryDim, textDecoration: 'none', padding: '0.45rem 0' }}>
-                      💳 Upgrade Plan
+                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      ⭐ Upgrade Plan
                     </Link>
+                    {user.plan !== 'free' && (
+                      <BillingButton onClose={() => setOpen(false)} />
+                    )}
+                    <a href="mailto:support@soulmate.com" onClick={() => setOpen(false)}
+                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      ❓ Help &amp; Support
+                    </a>
+                    <div style={{ height: '1px', background: `1px solid ${c.border}`, margin: '0.25rem 0', opacity: 0.3 }} />
                     <button onClick={handleSignOut}
-                      style={{ textAlign: 'left', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.08em', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: '0.45rem 0' }}>
+                      style={{ textAlign: 'left', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       → Sign Out
                     </button>
                   </div>
@@ -194,5 +202,34 @@ export default function Navigation() {
         )}
       </div>
     </nav>
+  )
+}
+
+function BillingButton({ onClose }: { onClose: () => void }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function openPortal() {
+    setLoading(true); setError('')
+    try {
+      const res = await fetch('/api/create-portal-session', { method: 'POST' })
+      const { url, error: err } = await res.json()
+      if (err) { setError(err); setLoading(false); return }
+      onClose()
+      window.location.href = url
+    } catch {
+      setError('Could not open billing portal.')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div>
+      <button onClick={openPortal} disabled={loading}
+        style={{ textAlign: 'left', width: '100%', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: '#c9a84c', background: 'none', border: 'none', cursor: loading ? 'default' : 'pointer', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: loading ? 0.7 : 1 }}>
+        💳 {loading ? 'Opening…' : 'Billing & Cancel Plan'}
+      </button>
+      {error && <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: '#f87171', margin: '0 0 0.25rem' }}>{error}</p>}
+    </div>
   )
 }
