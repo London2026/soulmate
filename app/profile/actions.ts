@@ -1,6 +1,9 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { sendMeetingRequestEmail, sendMeetingAcceptedEmail } from '@/lib/sendEmail'
+import { firstNameOnly } from '@/lib/maskName'
 
 export async function requestVideoMeeting(
   recipientId: string,
@@ -67,6 +70,25 @@ export async function requestVideoMeeting(
     message: `${name} has requested a video meeting on ${dateStr} at ${preferredTime}. Message: "${message}"`,
   })
 
+  // Email the recipient
+  const admin = createAdminClient()
+  const { data: recipientAuth } = await admin.auth.admin.getUserById(recipientId)
+  const recipientEmail = recipientAuth?.user?.email
+  if (recipientEmail) {
+    const safeDateStr = preferredDate
+      ? new Date(preferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+      : 'a date to be confirmed'
+    const { data: recipientProfile } = await supabase.from('profiles').select('full_name').eq('id', recipientId).single()
+    await sendMeetingRequestEmail(
+      recipientEmail,
+      firstNameOnly(recipientProfile?.full_name ?? ''),
+      name,
+      safeDateStr,
+      preferredTime || 'time to be confirmed',
+      message
+    )
+  }
+
   return { meetingId: meeting.id }
 }
 
@@ -95,6 +117,25 @@ export async function acceptMeeting(meetingId: string): Promise<{ roomId: string
     type: 'meeting_accepted',
     message: `${me?.full_name ?? 'Someone'} accepted your video meeting request for ${dateStr} at ${meeting.preferred_time}. Join via the meeting link in your profile.`,
   })
+
+  // Email the requester
+  const admin = createAdminClient()
+  const { data: requesterAuth } = await admin.auth.admin.getUserById(meeting.requester_id)
+  const requesterEmail = requesterAuth?.user?.email
+  if (requesterEmail) {
+    const safeDateStr = meeting.preferred_date
+      ? new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+      : 'your requested date'
+    const { data: requesterProfile } = await supabase.from('profiles').select('full_name').eq('id', meeting.requester_id).single()
+    await sendMeetingAcceptedEmail(
+      requesterEmail,
+      firstNameOnly(requesterProfile?.full_name ?? ''),
+      me?.full_name ?? 'Your match',
+      safeDateStr,
+      meeting.preferred_time ?? '',
+      meeting.room_id
+    )
+  }
 
   return { roomId: meeting.room_id }
 }

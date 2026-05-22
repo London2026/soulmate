@@ -1,6 +1,9 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { sendPhotoRevealedEmail } from '@/lib/sendEmail'
+import { firstNameOnly } from '@/lib/maskName'
 
 export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: string }> {
   const supabase = await createClient()
@@ -21,20 +24,27 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
       viewed_id: viewedUserId,
     })
 
-    const { data: me } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('id', user.id)
-      .single()
-
-    const name = me?.full_name ?? 'Someone'
+    const [meRes, ownerRes] = await Promise.all([
+      supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+      supabase.from('profiles').select('full_name').eq('id', viewedUserId).single(),
+    ])
+    const viewerName = meRes.data?.full_name ?? 'Someone'
+    const ownerName  = ownerRes.data?.full_name ?? ''
 
     await supabase.from('notifications').insert({
       recipient_id: viewedUserId,
       sender_id: user.id,
       type: 'photo_revealed',
-      message: `Your photo was seen today by ${name}. Would you like to check their profile? There is a chance that you may receive a request for an online video meeting.`,
+      message: `Your photo was seen today by ${viewerName}. Would you like to check their profile? There is a chance that you may receive a request for an online video meeting.`,
     })
+
+    // Email the photo owner
+    const admin = createAdminClient()
+    const { data: ownerAuth } = await admin.auth.admin.getUserById(viewedUserId)
+    const ownerEmail = ownerAuth?.user?.email
+    if (ownerEmail) {
+      await sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerName)
+    }
   }
 
   // Fetch the front photo path and generate a signed URL
