@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPhotoRevealedEmail } from '@/lib/sendEmail'
 import { firstNameOnly } from '@/lib/maskName'
 
+
 export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -43,7 +44,8 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
     const { data: ownerAuth } = await admin.auth.admin.getUserById(viewedUserId)
     const ownerEmail = ownerAuth?.user?.email
     if (ownerEmail) {
-      await sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerName)
+      const viewerProfileId = user.id.slice(0, 8).toUpperCase()
+      await sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerProfileId)
     }
   }
 

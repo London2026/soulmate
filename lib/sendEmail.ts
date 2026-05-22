@@ -55,23 +55,26 @@ function wrap(body: string) {
 
 // ── Email templates ──────────────────────────────────────────────────────────
 
-export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string, viewerName: string) {
-  const subject = `💘 Someone revealed your photo on Soul Mate`
+export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string, viewerProfileId: string) {
+  const subject = `💘 Profile #${viewerProfileId} has revealed your photo on Soul Mate`
   const html = wrap(`
-    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your photo was revealed</h2>
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your photo has been revealed</h2>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
     <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
       Hi <strong>${ownerFirstName}</strong>,
     </p>
-    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;font-style:italic;line-height:1.7;margin:0 0 20px;">
-      <strong style="color:#0d1f3c;font-style:normal;">${viewerName}</strong> has revealed your photo on Soul Mate — they liked what they saw and wanted to see more of you.
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
+      Profile <strong style="color:#0d1f3c;font-family:'Courier New',monospace;">#${viewerProfileId}</strong> has revealed your photo on Soul Mate.
     </p>
-    <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;line-height:1.7;margin:0 0 28px;">
-      Log in to view their profile and see if you'd like to connect. You can request a video meeting directly from their profile.
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
+      You may receive an online video meeting request from this profile. If you would like to view their profile and connect with them, please log in to Soul Mate.
+    </p>
+    <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;font-style:italic;line-height:1.7;margin:0 0 28px;">
+      You can search for Profile <span style="font-family:'Courier New',monospace;font-style:normal;">#${viewerProfileId}</span> directly in the Discover page to view their full profile.
     </p>
     <div style="text-align:center;margin-bottom:8px;">
       <a href="https://soulmate-theta.vercel.app/discover" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
-        View Profile →
+        Check Their Profile →
       </a>
     </div>
   `)
