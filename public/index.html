@@ -106,6 +106,21 @@
 
   .nav-cta:hover { background: var(--warm-brown); }
 
+  .nav-signin-btn {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    text-decoration: none;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid rgba(122,28,28,0.35);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .nav-signin-btn:hover { background: rgba(122,28,28,0.06); color: var(--warm-brown); }
+
   /* ALL SECTIONS ABOVE BG */
   section, header, footer { position: relative; z-index: 2; }
 
@@ -1756,6 +1771,7 @@
     /* NAV */
     nav { padding: 0.9rem 1.2rem; }
     .nav-logo-img { width: 46px !important; height: 46px !important; }
+    .nav-signin-btn { display: none; }
 
     /* HERO */
     .hero { padding: 6rem 1.2rem 3rem; }
@@ -1907,7 +1923,10 @@
     <li><a href="#safety">Safety</a></li>
   </ul>
   <div id="nav-auth-area">
-    <button class="nav-cta" onclick="openModal()">Begin Journey</button>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="/login" class="nav-signin-btn">Sign In</a>
+      <button class="nav-cta" onclick="openModal()">Begin Journey</button>
+    </div>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Open menu" onclick="toggleMenu()">
     <span></span><span></span><span></span>
