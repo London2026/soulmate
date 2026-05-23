@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendMeetingRequestEmail, sendMeetingAcceptedEmail } from '@/lib/sendEmail'
-import { sendMeetingRequestWhatsApp, sendMeetingAcceptedWhatsApp } from '@/lib/sendWhatsApp'
+import { sendMeetingRequestWhatsApp, sendMeetingAcceptedWhatsApp, sendMeetingDeclinedWhatsApp } from '@/lib/sendWhatsApp'
 import { firstNameOnly } from '@/lib/maskName'
 
 export async function requestVideoMeeting(
@@ -160,4 +160,14 @@ export async function declineMeeting(meetingId: string): Promise<void> {
     type: 'meeting_declined',
     message: `${me?.full_name ?? 'Someone'} is unavailable for ${dateStr} at ${meeting.preferred_time}. You can send a new request with a different date.`,
   })
+
+  const { data: requesterProfile } = await supabase.from('profiles').select('full_name, phone').eq('id', meeting.requester_id).single()
+  if (requesterProfile?.phone) {
+    await sendMeetingDeclinedWhatsApp(
+      requesterProfile.phone,
+      firstNameOnly(requesterProfile.full_name ?? ''),
+      me?.full_name ?? 'Your match',
+      dateStr,
+    )
+  }
 }

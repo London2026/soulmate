@@ -58,6 +58,20 @@ export async function sendMeetingRequestWhatsApp(
   ].join('\n'))
 }
 
+export async function sendMeetingDeclinedWhatsApp(
+  toPhone: string,
+  requesterFirstName: string,
+  declinerName: string,
+  dateStr: string,
+) {
+  await twilioSend(toPhone, [
+    `💔 *Soul Mate* — Hi ${requesterFirstName},`,
+    `*${declinerName}* is unavailable for *${dateStr}*.`,
+    `You can send a new request with a different date:`,
+    `https://soulmate-theta.vercel.app/discover`,
+  ].join('\n'))
+}
+
 export async function sendMeetingAcceptedWhatsApp(
   toPhone: string,
   requesterFirstName: string,
