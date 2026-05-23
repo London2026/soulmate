@@ -8,7 +8,7 @@ const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderC
 const GENDERS = ['Man', 'Woman', 'Other']
 
 interface Props {
-  data: { firstName: string; lastName: string; age: string; gender: string; city: string; country: string }
+  data: { firstName: string; lastName: string; age: string; gender: string; city: string; country: string; phone: string }
   onChange: (key: string, value: string) => void
 }
 
@@ -73,6 +73,16 @@ export default function AboutStep({ data, onChange }: Props) {
           <input type="text" value={data.country} onChange={e => onChange('country', e.target.value)}
             placeholder="United Kingdom" style={inp} onFocus={focus} onBlur={blur} />
         </div>
+      </div>
+
+      {/* WhatsApp / Phone */}
+      <div style={{ ...field, marginTop: '1.1rem' }}>
+        <label style={label}>WhatsApp Number</label>
+        <input type="tel" value={data.phone} onChange={e => onChange('phone', e.target.value)}
+          placeholder="+44 7911 123456" style={inp} onFocus={focus} onBlur={blur} />
+        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: c.sepia, margin: '0.25rem 0 0', letterSpacing: '0.05em' }}>
+          Include country code · Used only for match notifications
+        </p>
       </div>
     </div>
   )

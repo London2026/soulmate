@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPhotoRevealedEmail } from '@/lib/sendEmail'
+import { sendPhotoRevealWhatsApp } from '@/lib/sendWhatsApp'
 import { firstNameOnly } from '@/lib/maskName'
 
 
@@ -27,10 +28,11 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
 
     const [meRes, ownerRes] = await Promise.all([
       supabase.from('profiles').select('full_name').eq('id', user.id).single(),
-      supabase.from('profiles').select('full_name').eq('id', viewedUserId).single(),
+      supabase.from('profiles').select('full_name, phone').eq('id', viewedUserId).single(),
     ])
     const viewerName = meRes.data?.full_name ?? 'Someone'
     const ownerName  = ownerRes.data?.full_name ?? ''
+    const ownerPhone = ownerRes.data?.phone ?? null
 
     await supabase.from('notifications').insert({
       recipient_id: viewedUserId,
@@ -39,14 +41,20 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
       message: `Your photo was seen today by ${viewerName}. Would you like to check their profile? There is a chance that you may receive a request for an online video meeting.`,
     })
 
-    // Email the photo owner
+    const viewerProfileId = user.id.slice(0, 8).toUpperCase()
+
+    // Email + WhatsApp the photo owner
     const admin = createAdminClient()
     const { data: ownerAuth } = await admin.auth.admin.getUserById(viewedUserId)
     const ownerEmail = ownerAuth?.user?.email
-    if (ownerEmail) {
-      const viewerProfileId = user.id.slice(0, 8).toUpperCase()
-      await sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerProfileId)
-    }
+    await Promise.all([
+      ownerEmail
+        ? sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerProfileId)
+        : Promise.resolve(),
+      ownerPhone
+        ? sendPhotoRevealWhatsApp(ownerPhone, firstNameOnly(ownerName), viewerProfileId)
+        : Promise.resolve(),
+    ])
   }
 
   // Fetch the front photo path and generate a signed URL

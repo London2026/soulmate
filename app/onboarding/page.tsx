@@ -19,14 +19,14 @@ const c = {
 }
 
 interface Draft {
-  firstName: string; lastName: string; age: string; gender: string; city: string; country: string
+  firstName: string; lastName: string; age: string; gender: string; city: string; country: string; phone: string
   religion: string; motherTongue: string; education: string; occupation: string
   prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string
   favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string
 }
 
 const EMPTY: Draft = {
-  firstName: '', lastName: '', age: '', gender: '', city: '', country: '',
+  firstName: '', lastName: '', age: '', gender: '', city: '', country: '', phone: '',
   religion: '', motherTongue: '', education: '', occupation: '',
   prefGender: '', prefAgeMin: '18', prefAgeMax: '50', prefLocation: '', prefReligion: '',
   favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '',
@@ -87,6 +87,7 @@ function OnboardingPage() {
           prefAgeMax: profile.pref_age_max ? String(profile.pref_age_max) : '50',
           prefLocation: profile.pref_location ?? '',
           prefReligion: profile.pref_religion ?? '',
+          phone: profile.phone ?? '',
           favReels: profile.fav_reels ?? '',
           favYoutube: profile.fav_youtube ?? '',
           favWebSeries: profile.fav_web_series ?? '',
@@ -176,6 +177,7 @@ function OnboardingPage() {
         pref_gender: draft.prefGender, pref_age_min: parseInt(draft.prefAgeMin),
         pref_age_max: parseInt(draft.prefAgeMax), pref_location: draft.prefLocation,
         pref_religion: draft.prefReligion,
+        phone: draft.phone.trim() || null,
         fav_reels: draft.favReels || null, fav_youtube: draft.favYoutube || null,
         fav_web_series: draft.favWebSeries || null, fav_travel: draft.favTravel || null,
         fav_foods: draft.favFoods || null, fav_ai_tools: draft.favAiTools || null,
