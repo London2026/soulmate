@@ -19,6 +19,7 @@ interface Props {
   meetings: Record<string, unknown>[]
   reveals: Record<string, unknown>[]
   planCounts: Record<string, number>
+  defaultTab?: Tab
 }
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
@@ -88,8 +89,8 @@ const td: React.CSSProperties = {
   borderBottom: `1px solid ${c.border2}`, whiteSpace: 'nowrap',
 }
 
-export default function AdminClient({ stats, members, meetings, reveals, planCounts }: Props) {
-  const [tab, setTab] = useState<Tab>('dashboard')
+export default function AdminClient({ stats, members, meetings, reveals, planCounts, defaultTab }: Props) {
+  const [tab, setTab] = useState<Tab>(defaultTab ?? 'dashboard')
 
   const sectionTitle = (title: string, count?: number) => (
     <div style={{ marginBottom: '1.5rem' }}>
