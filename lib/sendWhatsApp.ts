@@ -1,4 +1,4 @@
-export async function sendPhotoRevealWhatsApp(toPhone: string, ownerFirstName: string, viewerProfileId: string) {
+async function twilioSend(toPhone: string, body: string) {
   const accountSid = process.env.TWILIO_ACCOUNT_SID
   const authToken  = process.env.TWILIO_AUTH_TOKEN
   const from       = process.env.TWILIO_WHATSAPP_FROM
@@ -8,16 +8,8 @@ export async function sendPhotoRevealWhatsApp(toPhone: string, ownerFirstName: s
     return
   }
 
-  // Normalise: strip any existing whatsapp: prefix, then re-add it
   const fromAddr = `whatsapp:${from.replace(/^whatsapp:/, '')}`
   const toAddr   = `whatsapp:${toPhone.replace(/^whatsapp:/, '')}`
-
-  const body = [
-    `💘 *Soul Mate* — Hi ${ownerFirstName},`,
-    `Profile *#${viewerProfileId}* has revealed your photo.`,
-    `They may send you a video meeting request. Log in to view their profile:`,
-    `https://soulmate-theta.vercel.app/discover`,
-  ].join('\n')
 
   try {
     const res = await fetch(
@@ -40,4 +32,43 @@ export async function sendPhotoRevealWhatsApp(toPhone: string, ownerFirstName: s
   } catch (err) {
     console.error('WhatsApp send error:', err)
   }
+}
+
+export async function sendPhotoRevealWhatsApp(toPhone: string, ownerFirstName: string, viewerProfileId: string) {
+  await twilioSend(toPhone, [
+    `💘 *Soul Mate* — Hi ${ownerFirstName},`,
+    `Profile *#${viewerProfileId}* has revealed your photo.`,
+    `They may send you a video meeting request. Log in to view their profile:`,
+    `https://soulmate-theta.vercel.app/discover`,
+  ].join('\n'))
+}
+
+export async function sendMeetingRequestWhatsApp(
+  toPhone: string,
+  recipientFirstName: string,
+  requesterName: string,
+  dateStr: string,
+  time: string,
+) {
+  await twilioSend(toPhone, [
+    `📅 *Soul Mate* — Hi ${recipientFirstName},`,
+    `*${requesterName}* has requested a video meeting with you on *${dateStr}* at *${time}*.`,
+    `Log in to accept or decline:`,
+    `https://soulmate-theta.vercel.app/profile`,
+  ].join('\n'))
+}
+
+export async function sendMeetingAcceptedWhatsApp(
+  toPhone: string,
+  requesterFirstName: string,
+  acceptorName: string,
+  dateStr: string,
+  time: string,
+  roomId: string,
+) {
+  await twilioSend(toPhone, [
+    `✅ *Soul Mate* — Hi ${requesterFirstName},`,
+    `*${acceptorName}* has accepted your meeting request for *${dateStr}* at *${time}*.`,
+    `Join at the time via: https://meet.jit.si/SoulMate-${roomId}`,
+  ].join('\n'))
 }
