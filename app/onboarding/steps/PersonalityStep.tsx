@@ -5,13 +5,13 @@ import { useState } from 'react'
 const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e', ivory: '#f5f0e6', border: 'rgba(13,31,60,0.18)' }
 
 const CATEGORIES = [
-  { key: 'favReels',      icon: '🎬', label: 'Favourite Reels',        placeholder: 'e.g. paste a link or type Travel vlogs' },
-  { key: 'favYoutube',    icon: '▶️', label: 'YouTube Channels',        placeholder: 'e.g. paste a link or type Veritasium' },
-  { key: 'favWebSeries',  icon: '📺', label: 'Web Series',              placeholder: 'e.g. Succession, Black Mirror' },
-  { key: 'favTravel',     icon: '✈️', label: 'Travel Destinations',     placeholder: 'e.g. Japan, Iceland, New Zealand' },
-  { key: 'favFoods',      icon: '🍽️', label: 'Favourite Foods',         placeholder: 'e.g. Sushi, Pasta, Tacos' },
-  { key: 'favAiTools',    icon: '🤖', label: 'Favourite AI Tools',      placeholder: 'e.g. Claude, Midjourney, Notion AI' },
-  { key: 'hobby',         icon: '🎯', label: 'Hobbies & Interests',     placeholder: 'e.g. Photography, Hiking, Chess' },
+  { key: 'favReels',      icon: '🎬', label: 'Favourite Reels',        placeholder: 'e.g. paste a link or type Travel vlogs',  full: false },
+  { key: 'favYoutube',    icon: '▶️', label: 'YouTube Channels',        placeholder: 'e.g. paste a link or type Veritasium',    full: false },
+  { key: 'favWebSeries',  icon: '📺', label: 'Web Series',              placeholder: 'e.g. Succession, Black Mirror',            full: false },
+  { key: 'favTravel',     icon: '✈️', label: 'Travel Destinations',     placeholder: 'e.g. Japan, Iceland, New Zealand',         full: false },
+  { key: 'favFoods',      icon: '🍽️', label: 'Favourite Foods',         placeholder: 'e.g. Sushi, Pasta, Tacos',                 full: false },
+  { key: 'favAiTools',    icon: '🤖', label: 'Favourite AI Tools',      placeholder: 'e.g. Claude, Midjourney, Notion AI',       full: false },
+  { key: 'hobby',         icon: '🎯', label: 'Hobbies & Interests',     placeholder: 'e.g. Photography, Hiking, Chess',          full: true  },
 ]
 
 type PersonalityData = { favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string; hobby: string }
@@ -54,14 +54,15 @@ export default function PersonalityStep({ data, onChange }: Props) {
       <style>{`.ob-personality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; } @media (max-width: 600px) { .ob-personality-grid { grid-template-columns: 1fr; } }`}</style>
       <div className="ob-personality-grid">
         {CATEGORIES.map(cat => (
-          <ChipField
-            key={cat.key}
-            icon={cat.icon}
-            label={cat.label}
-            placeholder={cat.placeholder}
-            value={data[cat.key as keyof PersonalityData] || ''}
-            onChange={v => onChange(cat.key, v)}
-          />
+          <div key={cat.key} style={cat.full ? { gridColumn: '1 / -1' } : undefined}>
+            <ChipField
+              icon={cat.icon}
+              label={cat.label}
+              placeholder={cat.placeholder}
+              value={data[cat.key as keyof PersonalityData] || ''}
+              onChange={v => onChange(cat.key, v)}
+            />
+          </div>
         ))}
       </div>
     </div>
