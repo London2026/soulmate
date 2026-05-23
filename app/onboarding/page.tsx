@@ -22,14 +22,14 @@ interface Draft {
   firstName: string; lastName: string; age: string; gender: string; city: string; country: string; phone: string
   religion: string; motherTongue: string; education: string; occupation: string
   prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string
-  favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string
+  favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string; hobby: string
 }
 
 const EMPTY: Draft = {
   firstName: '', lastName: '', age: '', gender: '', city: '', country: '', phone: '',
   religion: '', motherTongue: '', education: '', occupation: '',
   prefGender: '', prefAgeMin: '18', prefAgeMax: '50', prefLocation: '', prefReligion: '',
-  favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '',
+  favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '', hobby: '',
 }
 
 export default function OnboardingPageWrapper() {
@@ -94,6 +94,7 @@ function OnboardingPage() {
           favTravel: profile.fav_travel ?? '',
           favFoods: profile.fav_foods ?? '',
           favAiTools: profile.fav_ai_tools ?? '',
+          hobby: profile.hobby ?? '',
         })
       } else {
         const rawName = (user.user_metadata?.full_name ?? '').trim()
@@ -181,6 +182,7 @@ function OnboardingPage() {
         fav_reels: draft.favReels || null, fav_youtube: draft.favYoutube || null,
         fav_web_series: draft.favWebSeries || null, fav_travel: draft.favTravel || null,
         fav_foods: draft.favFoods || null, fav_ai_tools: draft.favAiTools || null,
+        hobby: draft.hobby || null,
         onboarding_complete: true, updated_at: new Date().toISOString(),
       }
       if (voicePath) update.voice_path = voicePath
@@ -271,7 +273,7 @@ function OnboardingPage() {
           {step === 2 && <PreferencesStep data={draft} onChange={change} />}
           {step === 3 && <VoiceStep onVoiceChange={setVoiceBlob} hasRecording={!!voiceBlob} />}
           {step === 4 && <PhotosStep back1={back1} back2={back2} front={front} onPhotosChange={(b1, b2, f) => { setBack1(b1); setBack2(b2); setFront(f) }} />}
-          {step === 5 && <PersonalityStep data={{ favReels: draft.favReels, favYoutube: draft.favYoutube, favWebSeries: draft.favWebSeries, favTravel: draft.favTravel, favFoods: draft.favFoods, favAiTools: draft.favAiTools }} onChange={change} />}
+          {step === 5 && <PersonalityStep data={{ favReels: draft.favReels, favYoutube: draft.favYoutube, favWebSeries: draft.favWebSeries, favTravel: draft.favTravel, favFoods: draft.favFoods, favAiTools: draft.favAiTools, hobby: draft.hobby }} onChange={change} />}
 
           {error && (
             <div style={{ marginTop: '1rem', background: 'rgba(158,42,43,0.07)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '4px', padding: '0.65rem 0.9rem', color: c.rose, fontSize: '0.9rem', fontFamily: '"Cormorant Garamond", serif', textAlign: 'center' }}>

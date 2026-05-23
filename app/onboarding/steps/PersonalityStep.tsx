@@ -11,9 +11,10 @@ const CATEGORIES = [
   { key: 'favTravel',     icon: '✈️', label: 'Travel Destinations',     placeholder: 'e.g. Japan, Iceland, New Zealand' },
   { key: 'favFoods',      icon: '🍽️', label: 'Favourite Foods',         placeholder: 'e.g. Sushi, Pasta, Tacos' },
   { key: 'favAiTools',    icon: '🤖', label: 'Favourite AI Tools',      placeholder: 'e.g. Claude, Midjourney, Notion AI' },
+  { key: 'hobby',         icon: '🎯', label: 'Hobbies & Interests',     placeholder: 'e.g. Photography, Hiking, Chess' },
 ]
 
-type PersonalityData = { favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string }
+type PersonalityData = { favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string; hobby: string }
 
 interface Props {
   data: PersonalityData

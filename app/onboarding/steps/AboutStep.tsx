@@ -80,9 +80,11 @@ export default function AboutStep({ data, onChange }: Props) {
         <label style={label}>WhatsApp Number</label>
         <input type="tel" value={data.phone} onChange={e => onChange('phone', e.target.value)}
           placeholder="+44 7911 123456" style={inp} onFocus={focus} onBlur={blur} />
-        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: c.sepia, margin: '0.25rem 0 0', letterSpacing: '0.05em' }}>
-          Include country code · Used only for match notifications
-        </p>
+        <div style={{ marginTop: '0.5rem', background: 'rgba(139,105,20,0.07)', border: '1px solid rgba(139,105,20,0.2)', borderRadius: '4px', padding: '0.5rem 0.7rem' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia, margin: 0, lineHeight: 1.6 }}>
+            📲 You will receive video meeting requests directly on this WhatsApp number. Please include your country code — for example, <strong style={{ color: c.navy }}>+44</strong> for the United Kingdom or <strong style={{ color: c.navy }}>+91</strong> for India.
+          </p>
+        </div>
       </div>
     </div>
   )
