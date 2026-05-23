@@ -31,9 +31,11 @@ export async function sendPhotoRevealWhatsApp(toPhone: string, ownerFirstName: s
         body: new URLSearchParams({ From: fromAddr, To: toAddr, Body: body }).toString(),
       }
     )
+    const json = await res.json()
     if (!res.ok) {
-      const text = await res.text()
-      console.error('WhatsApp send error:', text)
+      console.error('WhatsApp send error:', JSON.stringify(json))
+    } else {
+      console.log('WhatsApp sent:', json.sid, 'status:', json.status, 'to:', json.to)
     }
   } catch (err) {
     console.error('WhatsApp send error:', err)
