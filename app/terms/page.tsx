@@ -106,7 +106,7 @@ export default function TermsPage() {
         <h2 style={h2}>11. Contact</h2>
         <p style={p}>
           If you have any questions about these Terms, please contact us at{' '}
-          <a href="mailto:support@soulmate.com" style={{ color: c.gold }}>support@soulmate.com</a>.
+          <a href="mailto:support@mysoulmate.live" style={{ color: c.gold }}>support@mysoulmate.live</a>.
         </p>
 
         <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: `1px solid ${c.border}`, display: 'flex', gap: '1.5rem' }}>

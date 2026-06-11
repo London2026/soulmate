@@ -116,6 +116,10 @@ export default function SupportPage() {
             We typically respond within 24 hours
           </p>
           <div style={{ height: '1px', background: `linear-gradient(to right, ${c.goldLight}, transparent)` }} />
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', color: c.sepia, marginTop: '0.85rem' }}>
+            Prefer email? Reach us directly at{' '}
+            <a href="mailto:support@mysoulmate.live" style={{ color: c.goldLight }}>support@mysoulmate.live</a>
+          </p>
         </div>
 
         {status === 'sent' ? (

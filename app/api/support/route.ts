@@ -93,15 +93,16 @@ export async function POST(request: Request) {
 
   await Promise.all([
     resend.emails.send({
-      from: 'Soul Mate Support <noreply@mysoulmate.live>',
+      from: 'Soul Mate Support <support@mysoulmate.live>',
       to: ADMIN_EMAIL,
       replyTo: email,
       subject: `🆘 Support: ${subject} — ${name}`,
       html: adminHtml,
     }),
     resend.emails.send({
-      from: 'Soul Mate Support <noreply@mysoulmate.live>',
+      from: 'Soul Mate Support <support@mysoulmate.live>',
       to: email,
+      replyTo: 'support@mysoulmate.live',
       subject: `We've received your query — Soul Mate Support`,
       html: confirmHtml,
     }),

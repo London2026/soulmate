@@ -33,7 +33,7 @@ export default function PrivacyPage() {
         <h2 style={h2}>1. Who We Are</h2>
         <p style={p}>
           Soul Mate is a privacy-first matrimony platform based in the United Kingdom. For any privacy-related enquiries, please contact us at{' '}
-          <a href="mailto:support@soulmate.com" style={{ color: c.gold }}>support@soulmate.com</a>.
+          <a href="mailto:support@mysoulmate.live" style={{ color: c.gold }}>support@mysoulmate.live</a>.
         </p>
 
         <h2 style={h2}>2. Data We Collect</h2>
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
         </ul>
         <p style={p}>
           To exercise any of these rights, please email us at{' '}
-          <a href="mailto:support@soulmate.com" style={{ color: c.gold }}>support@soulmate.com</a>.
+          <a href="mailto:support@mysoulmate.live" style={{ color: c.gold }}>support@mysoulmate.live</a>.
           We will respond within 30 days.
         </p>
 
