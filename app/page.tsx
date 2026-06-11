@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
-
-// Serve the existing index.html landing page at /
+// Landing page is served from public/index.html via beforeFiles rewrite in next.config.ts
+// This component is never reached for the / route
 export default function Home() {
-  redirect('/index.html')
+  return null
 }

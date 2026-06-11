@@ -34,12 +34,23 @@ async function twilioSend(toPhone: string, body: string) {
   }
 }
 
+export async function sendAdminNewSubscriberWhatsApp(memberName: string, plan: string) {
+  const adminPhone = process.env.ADMIN_WHATSAPP_PHONE
+  if (!adminPhone) return
+  await twilioSend(adminPhone, [
+    `💳 *Soul Mate — New Subscriber*`,
+    `👤 ${memberName} has just subscribed to the *${plan.charAt(0).toUpperCase() + plan.slice(1)}* plan.`,
+    `🕐 ${new Date().toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })}`,
+    `View admin panel: https://mysoulmate.live/admin`,
+  ].join('\n'))
+}
+
 export async function sendPhotoRevealWhatsApp(toPhone: string, ownerFirstName: string, viewerProfileId: string) {
   await twilioSend(toPhone, [
     `💘 *Soul Mate* — Hi ${ownerFirstName},`,
     `Profile *#${viewerProfileId}* has revealed your photo.`,
     `They may send you a video meeting request. Log in to view their profile:`,
-    `https://soulmate-theta.vercel.app/discover`,
+    `https://mysoulmate.live/discover`,
   ].join('\n'))
 }
 
@@ -54,7 +65,7 @@ export async function sendMeetingRequestWhatsApp(
     `📅 *Soul Mate* — Hi ${recipientFirstName},`,
     `*${requesterName}* has requested a video meeting with you on *${dateStr}* at *${time}*.`,
     `Log in to accept or decline:`,
-    `https://soulmate-theta.vercel.app/profile`,
+    `https://mysoulmate.live/profile`,
   ].join('\n'))
 }
 
@@ -68,7 +79,7 @@ export async function sendMeetingDeclinedWhatsApp(
     `💔 *Soul Mate* — Hi ${requesterFirstName},`,
     `*${declinerName}* is unavailable for *${dateStr}*.`,
     `You can send a new request with a different date:`,
-    `https://soulmate-theta.vercel.app/discover`,
+    `https://mysoulmate.live/discover`,
   ].join('\n'))
 }
 
@@ -82,7 +93,30 @@ export async function sendMeetingAcceptedWhatsApp(
 ) {
   await twilioSend(toPhone, [
     `✅ *Soul Mate* — Hi ${requesterFirstName},`,
-    `*${acceptorName}* has accepted your meeting request for *${dateStr}* at *${time}*.`,
-    `Join at the time via: https://meet.jit.si/SoulMate-${roomId}`,
+    `Your video meeting with *${acceptorName}* is confirmed for *${dateStr}* at *${time}*.`,
+    `🎥 Join at the scheduled time: https://meet.jit.si/SoulMate-${roomId}`,
+    ``,
+    `💡 *Soul Mate Safety Advice:*`,
+    `🪪 Please keep your ID ready to show to the other person, and ask to see their ID before the conversation begins.`,
+    `📵 We advise you not to share or ask for a mobile number during your first meeting, unless you feel completely comfortable doing so.`,
+  ].join('\n'))
+}
+
+export async function sendMeetingConfirmedAcceptorWhatsApp(
+  toPhone: string,
+  acceptorFirstName: string,
+  requesterName: string,
+  dateStr: string,
+  time: string,
+  roomId: string,
+) {
+  await twilioSend(toPhone, [
+    `✅ *Soul Mate* — Hi ${acceptorFirstName},`,
+    `Your video meeting with *${requesterName}* is confirmed for *${dateStr}* at *${time}*.`,
+    `🎥 Join at the scheduled time: https://meet.jit.si/SoulMate-${roomId}`,
+    ``,
+    `💡 *Soul Mate Safety Advice:*`,
+    `🪪 Please keep your ID ready to show to the other person, and ask to see their ID before the conversation begins.`,
+    `📵 We advise you not to share or ask for a mobile number during your first meeting, unless you feel completely comfortable doing so.`,
   ].join('\n'))
 }

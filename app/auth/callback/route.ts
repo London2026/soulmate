@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { sendWelcomeSignupEmail, sendEncouragementEmail } from '@/lib/sendEmail'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -39,10 +40,16 @@ export async function GET(request: NextRequest) {
           // Profile done → go straight to discover
           return NextResponse.redirect(`${origin}/discover`)
         } else if (profile?.plan) {
-          // Has picked a plan but not finished onboarding
+          // Has picked a plan but not finished onboarding — encourage them to complete
+          if (user.email) {
+            sendEncouragementEmail(user.email).catch(() => {})
+          }
           return NextResponse.redirect(`${origin}/onboarding`)
         } else {
-          // New user → pick a plan first
+          // Brand new user → send welcome email, then go to pricing
+          if (user.email) {
+            sendWelcomeSignupEmail(user.email).catch(() => {})
+          }
           return NextResponse.redirect(`${origin}/pricing`)
         }
       }

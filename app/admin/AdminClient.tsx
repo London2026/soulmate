@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { verifyMember, rejectMemberId } from './actions'
 
 const c = {
   navy: '#0d1f3c', navy2: '#122d52', navy3: '#1a3a6b',
@@ -11,7 +12,15 @@ const c = {
   green: '#2e7d52', amber: '#c97a2e', rose: '#9e2a2b',
 }
 
-type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions'
+type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions' | 'id_verification'
+
+interface IdVerification {
+  id: string
+  full_name: string
+  id_country: string
+  doc_url: string | null
+  created_at: string
+}
 
 interface Props {
   stats: { totalMembers: number; newThisWeek: number; activeSubscribers: number; revealsToday: number; pendingMeetings: number }
@@ -19,15 +28,17 @@ interface Props {
   meetings: Record<string, unknown>[]
   reveals: Record<string, unknown>[]
   planCounts: Record<string, number>
+  idVerifications: IdVerification[]
   defaultTab?: Tab
 }
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
-  { id: 'dashboard',     icon: '◼', label: 'Dashboard' },
-  { id: 'members',       icon: '👤', label: 'Members' },
-  { id: 'meetings',      icon: '🎥', label: 'Meetings' },
-  { id: 'reveals',       icon: '💘', label: 'Reveals' },
-  { id: 'subscriptions', icon: '💳', label: 'Subscriptions' },
+  { id: 'dashboard',       icon: '◼',  label: 'Dashboard' },
+  { id: 'members',         icon: '👤', label: 'Members' },
+  { id: 'meetings',        icon: '🎥', label: 'Meetings' },
+  { id: 'reveals',         icon: '💘', label: 'Reveals' },
+  { id: 'subscriptions',   icon: '💳', label: 'Subscriptions' },
+  { id: 'id_verification', icon: '🪪', label: 'ID Verify' },
 ]
 
 function fmt(dateStr: string) {
@@ -89,8 +100,30 @@ const td: React.CSSProperties = {
   borderBottom: `1px solid ${c.border2}`, whiteSpace: 'nowrap',
 }
 
-export default function AdminClient({ stats, members, meetings, reveals, planCounts, defaultTab }: Props) {
+export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, defaultTab }: Props) {
   const [tab, setTab] = useState<Tab>(defaultTab ?? 'dashboard')
+  const [idDocs, setIdDocs] = useState<IdVerification[]>(idVerifications)
+  const [idAction, setIdAction] = useState<Record<string, 'verifying' | 'rejecting' | 'done'>>({})
+
+  async function handleVerify(profileId: string) {
+    setIdAction(p => ({ ...p, [profileId]: 'verifying' }))
+    try {
+      await verifyMember(profileId)
+      setIdDocs(d => d.filter(x => x.id !== profileId))
+    } finally {
+      setIdAction(p => { const n = { ...p }; delete n[profileId]; return n })
+    }
+  }
+
+  async function handleReject(profileId: string) {
+    setIdAction(p => ({ ...p, [profileId]: 'rejecting' }))
+    try {
+      await rejectMemberId(profileId)
+      setIdDocs(d => d.filter(x => x.id !== profileId))
+    } finally {
+      setIdAction(p => { const n = { ...p }; delete n[profileId]; return n })
+    }
+  }
 
   const sectionTitle = (title: string, count?: number) => (
     <div style={{ marginBottom: '1.5rem' }}>
@@ -142,7 +175,12 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
                 fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', fontWeight: 500,
                 transition: 'all 0.15s', textAlign: 'left' }}>
               <span style={{ fontSize: '1rem', width: 18, textAlign: 'center', flexShrink: 0 }}>{t.icon}</span>
-              <span className="nav-label">{t.label}</span>
+              <span className="nav-label" style={{ flex: 1 }}>{t.label}</span>
+              {t.id === 'id_verification' && idDocs.length > 0 && (
+                <span className="nav-label" style={{ minWidth: 20, height: 20, borderRadius: '50%', background: '#f59e0b', color: '#0d1f3c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700, flexShrink: 0 }}>
+                  {idDocs.length}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -165,6 +203,7 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
               <StatCard icon="💳" label="Paid Subscribers"    value={stats.activeSubscribers} sub="starter + standard" />
               <StatCard icon="💘" label="Reveals Today"       value={stats.revealsToday}      sub="face photos seen" />
               <StatCard icon="⏳" label="Pending Meetings"    value={stats.pendingMeetings}   sub="awaiting response" />
+              <StatCard icon="🪪" label="ID Pending"          value={idDocs.length}           sub="awaiting verification" />
             </div>
 
             {/* Recent members */}
@@ -282,6 +321,62 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ── ID VERIFICATION ── */}
+        {tab === 'id_verification' && (
+          <div>
+            {sectionTitle('ID Verification', idDocs.length)}
+            {idDocs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '4rem 2rem', background: c.card, border: `1px solid ${c.border2}`, borderRadius: 8 }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>✅</div>
+                <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.2rem', color: c.text, margin: '0 0 0.4rem' }}>All clear</p>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', color: c.text3 }}>No pending ID verifications at this time.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {idDocs.map(doc => (
+                  <div key={doc.id} style={{ background: c.card2, border: `1px solid ${c.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                    <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid ${c.border2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                      <div>
+                        <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', color: c.text, margin: '0 0 0.25rem' }}>{doc.full_name}</p>
+                        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.text3, margin: 0, letterSpacing: '0.08em' }}>
+                          ID Country: <strong style={{ color: c.text2 }}>{doc.id_country}</strong> · Submitted: {fmt(doc.created_at)}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => handleVerify(doc.id)} disabled={!!idAction[doc.id]}
+                          style={{ padding: '0.5rem 1.25rem', background: 'rgba(46,125,82,0.2)', border: '1px solid rgba(46,125,82,0.5)', color: '#4ade80', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: 4, cursor: idAction[doc.id] ? 'default' : 'pointer', opacity: idAction[doc.id] ? 0.6 : 1 }}>
+                          {idAction[doc.id] === 'verifying' ? 'Verifying…' : '✅ Verify'}
+                        </button>
+                        <button onClick={() => handleReject(doc.id)} disabled={!!idAction[doc.id]}
+                          style={{ padding: '0.5rem 1.25rem', background: 'rgba(158,42,43,0.2)', border: '1px solid rgba(158,42,43,0.5)', color: '#f87171', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: 4, cursor: idAction[doc.id] ? 'default' : 'pointer', opacity: idAction[doc.id] ? 0.6 : 1 }}>
+                          {idAction[doc.id] === 'rejecting' ? 'Rejecting…' : '✗ Reject'}
+                        </button>
+                      </div>
+                    </div>
+                    {doc.doc_url ? (
+                      <div style={{ padding: '1rem 1.5rem' }}>
+                        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: c.text3, margin: '0 0 0.6rem' }}>ID Document</p>
+                        <a href={doc.doc_url} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+                          <img src={doc.doc_url} alt="ID document" style={{ maxWidth: '480px', width: '100%', borderRadius: 4, border: `1px solid ${c.border2}`, display: 'block' }}
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                        </a>
+                        <a href={doc.doc_url} target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'inline-block', marginTop: '0.5rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.gold, textDecoration: 'underline' }}>
+                          Open in new tab ↗
+                        </a>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '1rem 1.5rem' }}>
+                        <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.text3 }}>Document URL expired or unavailable. Reload the page to refresh.</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

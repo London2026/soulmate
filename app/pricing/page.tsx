@@ -182,17 +182,30 @@ export default function PricingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: c.navy }}>
+      <style>{`
+        .pricing-plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 1.25rem; }
+        .pricing-trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+        .pricing-h1 { font-size: 2.6rem; }
+        @media (max-width: 700px) {
+          .pricing-plans-grid { grid-template-columns: 1fr; }
+          .pricing-trust-grid { grid-template-columns: 1fr; }
+          .pricing-h1 { font-size: 2rem !important; }
+        }
+        @media (max-width: 480px) {
+          .pricing-h1 { font-size: 1.7rem !important; }
+        }
+      `}</style>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 65%)' }} />
       <Navigation />
 
-      <main style={{ maxWidth: '900px', margin: '0 auto', padding: '7rem 1rem 4rem' }}>
+      <main style={{ maxWidth: '900px', margin: '0 auto', padding: '7rem 1rem 5rem' }}>
 
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <span style={{ display: 'inline-block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '0.3rem 1rem', background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, color: c.goldLight, borderRadius: '20px', marginBottom: '1.25rem' }}>
             Simple, transparent pricing
           </span>
-          <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2.6rem', fontWeight: 700, color: c.ivory, margin: '0 0 0.75rem', lineHeight: 1.2 }}>
+          <h1 className="pricing-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 700, color: c.ivory, margin: '0 0 0.75rem', lineHeight: 1.2 }}>
             Choose your journey
           </h1>
           <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.1rem', fontStyle: 'italic', color: c.ivoryDim, maxWidth: '440px', margin: '0 auto 1.5rem' }}>
@@ -209,7 +222,7 @@ export default function PricingPage() {
         )}
 
         {/* 3 plan cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem', marginBottom: '1.25rem' }}>
+        <div className="pricing-plans-grid">
           {plans.map(plan => (
             <PlanCard key={plan.key} plan={plan} onSelect={handleSelect} pending={isBusy} stripeLoading={stripeLoading} />
           ))}
@@ -231,7 +244,7 @@ export default function PricingPage() {
         </div>
 
         {/* Trust */}
-        <div style={{ background: c.navyMid, border: `1px solid rgba(201,168,76,0.1)`, borderRadius: '12px', padding: '1.25rem 1.5rem', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+        <div className="pricing-trust-grid" style={{ background: c.navyMid, border: `1px solid rgba(201,168,76,0.1)`, borderRadius: '12px', padding: '1.25rem 1.5rem' }}>
           {[
             { icon: '🔒', label: 'Privacy First', desc: 'Face photos hidden until mutual reveal' },
             { icon: '🎙️', label: 'Voice-Led', desc: 'Personality before appearance' },

@@ -9,7 +9,7 @@ const GENDERS   = ['Man', 'Woman', 'Either']
 const RELIGIONS = ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Buddhist', 'Jewish', 'Zoroastrian', 'Any']
 
 interface Props {
-  data: { prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string }
+  data: { prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string; prefSubReligion: string; prefOccupation: string; prefHeight: string; prefEthnicity: string; otherPreferences: string }
   onChange: (key: string, value: string) => void
 }
 
@@ -60,9 +60,54 @@ export default function PreferencesStep({ data, onChange }: Props) {
       <div style={field}>
         <label style={label}>Religion Preference</label>
         <select value={data.prefReligion} onChange={e => onChange('prefReligion', e.target.value)} style={inp} onFocus={focus} onBlur={blur}>
-          <option value="">Select preference</option>
+          <option value="">Any</option>
           {RELIGIONS.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
+      </div>
+
+      {/* Preferred Sub-Religion */}
+      <div style={field}>
+        <label style={label}>Preferred Sub-Religion <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: '0.78rem', color: c.sepia }}>(Optional)</span></label>
+        <input type="text" value={data.prefSubReligion} onChange={e => onChange('prefSubReligion', e.target.value)}
+          placeholder="e.g. Sunni, Shia, Catholic, Protestant, Vaishnavite…" style={inp} onFocus={focus} onBlur={blur} />
+      </div>
+
+      {/* Preferred Occupation */}
+      <div style={field}>
+        <label style={label}>Preferred Occupation</label>
+        <input type="text" value={data.prefOccupation} onChange={e => onChange('prefOccupation', e.target.value)}
+          placeholder="e.g. Doctor, Engineer, Teacher  or  Any" style={inp} onFocus={focus} onBlur={blur} />
+      </div>
+
+      {/* Preferred Height */}
+      <div style={field}>
+        <label style={label}>Preferred Height</label>
+        <input type="text" value={data.prefHeight} onChange={e => onChange('prefHeight', e.target.value)}
+          placeholder="e.g. 5'6&quot; and above  or  Any" style={inp} onFocus={focus} onBlur={blur} />
+      </div>
+
+      {/* Preferred Ethnicity */}
+      <div style={field}>
+        <label style={label}>Preferred Ethnicity</label>
+        <input type="text" value={data.prefEthnicity} onChange={e => onChange('prefEthnicity', e.target.value)}
+          placeholder="e.g. South Asian, White British  or  Any" style={inp} onFocus={focus} onBlur={blur} />
+      </div>
+
+      {/* Other Preferences */}
+      <div style={field}>
+        <label style={label}>Other Preferences <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: '0.78rem', color: c.sepia }}>(Optional)</span></label>
+        <textarea
+          value={data.otherPreferences}
+          onChange={e => onChange('otherPreferences', e.target.value)}
+          placeholder="Describe any other qualities, values, or circumstances that matter to you in a partner — family background, lifestyle, personality, future goals, or anything else you would like us to know…"
+          rows={6}
+          style={{ ...inp, height: 'auto', resize: 'vertical', lineHeight: '1.6' }}
+          onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
+          onBlur={e => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')}
+        />
+        <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.88rem', color: c.sepia, margin: '0.3rem 0 0' }}>
+          This is your space — write as much or as little as you like.
+        </p>
       </div>
     </div>
   )

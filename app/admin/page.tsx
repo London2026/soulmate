@@ -9,14 +9,13 @@ export default async function AdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+  if (user.email !== ADMIN_EMAIL) redirect('/discover')
 
   const admin = createAdminClient()
-  const { data: authUser } = await admin.auth.admin.getUserById(user.id)
-  if (authUser?.user?.email !== ADMIN_EMAIL) redirect('/discover')
 
   const [membersRes, meetingsRes, revealsRes] = await Promise.all([
     admin.from('profiles')
-      .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at')
+      .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at, id_verified, id_document_path, id_country')
       .order('created_at', { ascending: false }),
     admin.from('video_meetings')
       .select('id, room_id, requester_id, recipient_id, status, preferred_date, preferred_time, created_at')
@@ -67,6 +66,24 @@ export default async function AdminPage() {
     viewed_name: nameById[r.viewed_id] ?? r.viewed_id.slice(0, 8),
   }))
 
+  // Build ID verification list — members who submitted a doc but aren't yet verified
+  const pendingIdMembers = members.filter(m => m.id_document_path && !m.id_verified)
+  const idDocPaths = pendingIdMembers.map(m => m.id_document_path).filter((p): p is string => !!p)
+  const idUrlMap: Record<string, string> = {}
+  if (idDocPaths.length > 0) {
+    const { data: signed } = await admin.storage.from('profile-media').createSignedUrls(idDocPaths, 3600)
+    for (const s of signed ?? []) {
+      if (s.path && s.signedUrl) idUrlMap[s.path] = s.signedUrl
+    }
+  }
+  const idVerifications = pendingIdMembers.map(m => ({
+    id: m.id,
+    full_name: m.full_name ?? '—',
+    id_country: (m as Record<string, unknown>).id_country as string ?? '—',
+    doc_url: m.id_document_path ? (idUrlMap[m.id_document_path] ?? null) : null,
+    created_at: m.created_at,
+  }))
+
   return (
     <AdminClient
       stats={stats}
@@ -74,6 +91,7 @@ export default async function AdminPage() {
       meetings={meetingsWithNames}
       reveals={revealsWithNames}
       planCounts={planCounts}
+      idVerifications={idVerifications}
     />
   )
 }

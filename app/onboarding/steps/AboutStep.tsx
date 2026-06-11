@@ -7,8 +7,14 @@ const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderC
 
 const GENDERS = ['Man', 'Woman', 'Other']
 
+const ZODIAC_SIGNS = [
+  '♈ Aries', '♉ Taurus', '♊ Gemini', '♋ Cancer',
+  '♌ Leo', '♍ Virgo', '♎ Libra', '♏ Scorpio',
+  '♐ Sagittarius', '♑ Capricorn', '♒ Aquarius', '♓ Pisces',
+]
+
 interface Props {
-  data: { firstName: string; lastName: string; age: string; gender: string; city: string; country: string; phone: string }
+  data: { firstName: string; lastName: string; age: string; gender: string; city: string; country: string; phone: string; height: string; weight: string; ethnicity: string; zodiacSign: string }
   onChange: (key: string, value: string) => void
 }
 
@@ -23,8 +29,9 @@ export default function AboutStep({ data, onChange }: Props) {
       </p>
       <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
+      <style>{`.ob-name-grid,.ob-loc-grid,.ob-hw-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem} @media(max-width:480px){.ob-name-grid,.ob-loc-grid,.ob-hw-grid{grid-template-columns:1fr}}`}</style>
+
       {/* First Name + Last Name */}
-      <style>{`.ob-name-grid,.ob-loc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem} @media(max-width:480px){.ob-name-grid,.ob-loc-grid{grid-template-columns:1fr}}`}</style>
       <div className="ob-name-grid" style={{ marginBottom: '1.1rem' }}>
         <div>
           <label style={label}>First Name</label>
@@ -35,7 +42,7 @@ export default function AboutStep({ data, onChange }: Props) {
           <label style={label}>Last Name</label>
           <input type="text" value={data.lastName} onChange={e => onChange('lastName', e.target.value)}
             placeholder="e.g. Sharma" style={inp} onFocus={focus} onBlur={blur} />
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: c.sepia, margin: '0.25rem 0 0', letterSpacing: '0.05em' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', color: c.sepia, margin: '0.25rem 0 0', letterSpacing: '0.05em' }}>
             Others see first name + initial only
           </p>
         </div>
@@ -75,14 +82,50 @@ export default function AboutStep({ data, onChange }: Props) {
         </div>
       </div>
 
-      {/* WhatsApp / Phone */}
+      {/* Height + Weight */}
+      <div className="ob-hw-grid" style={{ marginTop: '1.1rem' }}>
+        <div>
+          <label style={label}>Height</label>
+          <input type="text" value={data.height} onChange={e => onChange('height', e.target.value)}
+            placeholder="e.g. 5'10&quot; or 178 cm" style={inp} onFocus={focus} onBlur={blur} />
+        </div>
+        <div>
+          <label style={label}>Weight</label>
+          <input type="text" value={data.weight} onChange={e => onChange('weight', e.target.value)}
+            placeholder="e.g. 70 kg or 154 lbs" style={inp} onFocus={focus} onBlur={blur} />
+        </div>
+      </div>
+
+      {/* Ethnicity */}
       <div style={{ ...field, marginTop: '1.1rem' }}>
-        <label style={label}>WhatsApp Number</label>
+        <label style={label}>Ethnicity</label>
+        <input type="text" value={data.ethnicity} onChange={e => onChange('ethnicity', e.target.value)}
+          placeholder="e.g. South Asian, White British, Black Caribbean…" style={inp} onFocus={focus} onBlur={blur} />
+      </div>
+
+      {/* Zodiac Sign */}
+      <div style={field}>
+        <label style={label}>Zodiac Sign</label>
+        <select
+          value={data.zodiacSign}
+          onChange={e => onChange('zodiacSign', e.target.value)}
+          style={{ ...inp, appearance: 'auto' as const }}
+          onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
+          onBlur={e => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')}
+        >
+          <option value="">Select your sign…</option>
+          {ZODIAC_SIGNS.map(z => <option key={z} value={z}>{z}</option>)}
+        </select>
+      </div>
+
+      {/* Mobile Number */}
+      <div style={field}>
+        <label style={label}>Mobile Number</label>
         <input type="tel" value={data.phone} onChange={e => onChange('phone', e.target.value)}
           placeholder="+44 7911 123456" style={inp} onFocus={focus} onBlur={blur} />
         <div style={{ marginTop: '0.5rem', background: 'rgba(139,105,20,0.07)', border: '1px solid rgba(139,105,20,0.2)', borderRadius: '4px', padding: '0.5rem 0.7rem' }}>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia, margin: 0, lineHeight: 1.6 }}>
-            📲 You will receive video meeting requests directly on this WhatsApp number. Please include your country code — for example, <strong style={{ color: c.navy }}>+44</strong> for the United Kingdom or <strong style={{ color: c.navy }}>+91</strong> for India.
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem', color: c.sepia, margin: 0, lineHeight: 1.6 }}>
+            📱 Please include your country code — for example, <strong style={{ color: c.navy }}>+44</strong> for the United Kingdom or <strong style={{ color: c.navy }}>+1</strong> for the USA.
           </p>
         </div>
       </div>

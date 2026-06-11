@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPhotoRevealedEmail } from '@/lib/sendEmail'
-import { sendPhotoRevealWhatsApp } from '@/lib/sendWhatsApp'
 import { firstNameOnly } from '@/lib/maskName'
 
 
@@ -28,11 +27,10 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
 
     const [meRes, ownerRes] = await Promise.all([
       supabase.from('profiles').select('full_name').eq('id', user.id).single(),
-      supabase.from('profiles').select('full_name, phone').eq('id', viewedUserId).single(),
+      supabase.from('profiles').select('full_name').eq('id', viewedUserId).single(),
     ])
     const viewerName = meRes.data?.full_name ?? 'Someone'
     const ownerName  = ownerRes.data?.full_name ?? ''
-    const ownerPhone = ownerRes.data?.phone ?? null
 
     await supabase.from('notifications').insert({
       recipient_id: viewedUserId,
@@ -43,18 +41,13 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
 
     const viewerProfileId = user.id.slice(0, 8).toUpperCase()
 
-    // Email + WhatsApp the photo owner
+    // Email the photo owner
     const admin = createAdminClient()
     const { data: ownerAuth } = await admin.auth.admin.getUserById(viewedUserId)
     const ownerEmail = ownerAuth?.user?.email
-    await Promise.all([
-      ownerEmail
-        ? sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerProfileId)
-        : Promise.resolve(),
-      ownerPhone
-        ? sendPhotoRevealWhatsApp(ownerPhone, firstNameOnly(ownerName), viewerProfileId)
-        : Promise.resolve(),
-    ])
+    if (ownerEmail) {
+      await sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerProfileId)
+    }
   }
 
   // Fetch the front photo path and generate a signed URL

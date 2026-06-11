@@ -648,17 +648,21 @@
 
   .meeting-showcase .ornament-heart { color: var(--rose); }
 
+  .meeting-showcase .section-inner {
+    max-width: 1400px;
+  }
+
   .meeting-layout {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 4rem;
+    grid-template-columns: 2.5fr 1fr;
+    gap: 2rem;
     align-items: center;
     margin-top: 3rem;
   }
 
   /* LAPTOP FRAME */
   .meeting-laptop-wrap {
-    perspective: 1000px;
+    perspective: 1200px;
   }
 
   .laptop-frame {
@@ -1102,6 +1106,68 @@
     font-size: 0.88rem;
     color: var(--text-mid);
     line-height: 1.6;
+  }
+
+  /* HEALTH SECTION */
+  .health-section { background: var(--parchment); }
+
+  .health-card {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+    background: #fff;
+    border: 1px solid rgba(158,42,43,0.18);
+    border-left: 5px solid var(--rose);
+    border-radius: 6px;
+    padding: 2.5rem 2.8rem;
+    margin-top: 3rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+
+  .health-card-icon {
+    font-size: 3.5rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 0.1rem;
+  }
+
+  .health-card-body h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.55rem;
+    font-weight: 600;
+    color: var(--deep-brown);
+    margin-bottom: 1rem;
+  }
+
+  .health-card-body p {
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--text-mid);
+    margin: 0;
+  }
+
+  .health-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: rgba(158,42,43,0.07);
+    border: 1px solid rgba(158,42,43,0.2);
+    color: var(--rose);
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .health-card { flex-direction: column; gap: 1.2rem; padding: 1.5rem 1.2rem; }
+    .health-card-icon { font-size: 2.5rem; }
+    .health-card-body h3 { font-size: 1.2rem; }
+    .health-card-body p { font-size: 0.9rem; }
   }
 
   /* REGISTRATION MODAL TEASER */
@@ -2514,7 +2580,7 @@
     </div>
 
     <p style="text-align:center; margin-top:2rem; font-family:'Raleway',sans-serif; font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,239,224,0.35);">
-      All meetings are arranged by the Soul Mate team · No direct contact shared until both parties agree
+      Video meetings are booked in the app with your preferred date and time · Soul Mate advises not sharing personal contact details during your first meeting
     </p>
   </div>
 </section>
@@ -2619,6 +2685,27 @@
   </div>
 </section>
 
+<!-- HEALTH & WELLBEING -->
+<section class="section health-section" id="health">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <span class="section-label">Health &amp; Wellbeing</span>
+      <h2 class="section-title">Your Health <em>Matters</em></h2>
+      <div class="ornament-divider"><span class="ornament-heart">♥</span></div>
+      <p class="section-sub">A healthy marriage begins with informed, honest conversations about health — for you, your partner, and your future family.</p>
+    </div>
+
+    <div class="health-card reveal">
+      <div class="health-card-icon">🩸</div>
+      <div class="health-card-body">
+        <div class="health-badge">🛡️ Recommended Before Marriage</div>
+        <h3>HIV Testing Before Marriage</h3>
+        <p>HIV testing before marriage protects both partners and future children. Many people are unaware of their status as the virus can remain asymptomatic for years. Early detection enables timely treatment and prevents transmission.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- REGISTER CTA -->
 <section class="section register-section">
   <div class="section-inner">
@@ -2652,6 +2739,9 @@
   </ul>
   <div class="footer-bottom">
     © 2026 Soul Mate · All rights reserved · Privacy-first matrimony platform
+    <p style="margin: 0.75rem 0 0; font-size: 0.78rem; color: rgba(245,239,224,0.3);">
+      mysoulmate.live is owned and operated by Oxyn AI Ltd, Company Registration Number: 17134431, Registered office: Brentford London.
+    </p>
   </div>
 </footer>
 

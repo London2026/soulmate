@@ -1,13 +1,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Serve the original landing page at / without changing the URL
+        { source: '/', destination: '/index.html' },
+      ],
+      afterFiles: [],
+      fallback: [],
+    }
+  },
   async redirects() {
     return [
-      // Old static register page → Supabase signup
-      { source: '/register', destination: '/signup', permanent: false },
-      { source: '/register.html', destination: '/signup', permanent: false },
-      // /admin shortcut → static admin page
-      { source: '/admin', destination: '/admin.html', permanent: false },
+      { source: '/register',      destination: '/signup', permanent: true },
+      { source: '/register.html', destination: '/signup', permanent: true },
+      { source: '/admin.html',    destination: '/admin',  permanent: true },
+      { source: '/index.html',    destination: '/',       permanent: true },
     ]
   },
 }

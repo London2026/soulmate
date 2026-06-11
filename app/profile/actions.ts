@@ -2,8 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendMeetingRequestEmail, sendMeetingAcceptedEmail } from '@/lib/sendEmail'
-import { sendMeetingRequestWhatsApp, sendMeetingAcceptedWhatsApp, sendMeetingDeclinedWhatsApp } from '@/lib/sendWhatsApp'
+import { sendMeetingRequestEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail } from '@/lib/sendEmail'
 import { firstNameOnly } from '@/lib/maskName'
 
 export async function requestVideoMeeting(
@@ -71,24 +70,19 @@ export async function requestVideoMeeting(
     message: `${name} has requested a video meeting on ${dateStr} at ${preferredTime}. Message: "${message}"`,
   })
 
-  // Email + WhatsApp the recipient
+  // Email the recipient
   const admin = createAdminClient()
   const { data: recipientAuth } = await admin.auth.admin.getUserById(recipientId)
   const recipientEmail = recipientAuth?.user?.email
   const safeDateStr = preferredDate
     ? new Date(preferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     : 'a date to be confirmed'
-  const { data: recipientProfile } = await supabase.from('profiles').select('full_name, phone').eq('id', recipientId).single()
+  const { data: recipientProfile } = await supabase.from('profiles').select('full_name').eq('id', recipientId).single()
   const recipientFirstName = firstNameOnly(recipientProfile?.full_name ?? '')
   const safeTime = preferredTime || 'time to be confirmed'
-  await Promise.all([
-    recipientEmail
-      ? sendMeetingRequestEmail(recipientEmail, recipientFirstName, name, safeDateStr, safeTime, message)
-      : Promise.resolve(),
-    recipientProfile?.phone
-      ? sendMeetingRequestWhatsApp(recipientProfile.phone, recipientFirstName, name, safeDateStr, safeTime)
-      : Promise.resolve(),
-  ])
+  if (recipientEmail) {
+    await sendMeetingRequestEmail(recipientEmail, recipientFirstName, name, safeDateStr, safeTime, message)
+  }
 
   return { meetingId: meeting.id }
 }
@@ -119,22 +113,25 @@ export async function acceptMeeting(meetingId: string): Promise<{ roomId: string
     message: `${me?.full_name ?? 'Someone'} accepted your video meeting request for ${dateStr} at ${meeting.preferred_time}. Join via the meeting link in your profile.`,
   })
 
-  // Email + WhatsApp the requester
+  // Email both parties
   const admin = createAdminClient()
   const { data: requesterAuth } = await admin.auth.admin.getUserById(meeting.requester_id)
   const requesterEmail = requesterAuth?.user?.email
   const safeDateStr = meeting.preferred_date
     ? new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     : 'your requested date'
-  const { data: requesterProfile } = await supabase.from('profiles').select('full_name, phone').eq('id', meeting.requester_id).single()
+  const { data: requesterProfile } = await supabase.from('profiles').select('full_name').eq('id', meeting.requester_id).single()
   const requesterFirstName = firstNameOnly(requesterProfile?.full_name ?? '')
   const acceptorName = me?.full_name ?? 'Your match'
+  const acceptorFirstName = firstNameOnly(me?.full_name ?? '')
+  const { data: acceptorAuth } = await admin.auth.admin.getUserById(user.id)
+  const acceptorEmail = acceptorAuth?.user?.email
   await Promise.all([
     requesterEmail
       ? sendMeetingAcceptedEmail(requesterEmail, requesterFirstName, acceptorName, safeDateStr, meeting.preferred_time ?? '', meeting.room_id)
       : Promise.resolve(),
-    requesterProfile?.phone
-      ? sendMeetingAcceptedWhatsApp(requesterProfile.phone, requesterFirstName, acceptorName, safeDateStr, meeting.preferred_time ?? '', meeting.room_id)
+    acceptorEmail
+      ? sendMeetingConfirmedAcceptorEmail(acceptorEmail, acceptorFirstName, requesterProfile?.full_name ?? 'Your match', safeDateStr, meeting.preferred_time ?? '', meeting.room_id)
       : Promise.resolve(),
   ])
 
@@ -161,13 +158,4 @@ export async function declineMeeting(meetingId: string): Promise<void> {
     message: `${me?.full_name ?? 'Someone'} is unavailable for ${dateStr} at ${meeting.preferred_time}. You can send a new request with a different date.`,
   })
 
-  const { data: requesterProfile } = await supabase.from('profiles').select('full_name, phone').eq('id', meeting.requester_id).single()
-  if (requesterProfile?.phone) {
-    await sendMeetingDeclinedWhatsApp(
-      requesterProfile.phone,
-      firstNameOnly(requesterProfile.full_name ?? ''),
-      me?.full_name ?? 'Your match',
-      dateStr,
-    )
-  }
 }

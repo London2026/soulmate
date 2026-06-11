@@ -136,6 +136,10 @@ export default function PrivacyPage() {
           <Link href="/" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.sepia, textDecoration: 'none', letterSpacing: '0.06em' }}>← Back to Home</Link>
         </div>
 
+        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.sepia, lineHeight: 1.7, marginTop: '1.5rem' }}>
+          mysoulmate.live is owned and operated by Oxyn AI Ltd, Company Registration Number: 17134431, Registered office: Brentford London.
+        </p>
+
       </main>
     </div>
   )

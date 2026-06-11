@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { sendAdminNewSubscriberEmail } from '@/lib/sendEmail'
 
 export async function POST(request: Request) {
   if (!process.env.STRIPE_SECRET_KEY || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -37,6 +38,17 @@ export async function POST(request: Request) {
           stripe_customer_id: session.customer as string,
           updated_at: new Date().toISOString(),
         }).eq('id', userId)
+
+        // Notify admin
+        const { data: profile } = await supabaseAdmin
+          .from('profiles').select('full_name').eq('id', userId).single()
+        const memberName = profile?.full_name ?? 'Unknown member'
+        await sendAdminNewSubscriberEmail(memberName, planKey)
+      } else if (session.metadata?.type === 'extra_meeting' && session.metadata?.user_id) {
+        await supabaseAdmin.from('extra_meeting_purchases').insert({
+          user_id: session.metadata.user_id,
+          stripe_session_id: session.id,
+        })
       }
       break
     }

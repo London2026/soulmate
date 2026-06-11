@@ -29,10 +29,18 @@ const c = {
   sepia: '#5a6e82',
 }
 
+const WARN_MS   = 9 * 60 * 1000   // show warning at 9 min
+const LOGOUT_MS = 10 * 60 * 1000  // auto-logout at 10 min
+
 export default function Navigation() {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [open, setOpen] = useState(false)
-  const dropRef = useRef<HTMLDivElement>(null)
+  const [warning, setWarning] = useState(false)
+  const [countdown, setCountdown] = useState(60)
+  const dropRef    = useRef<HTMLDivElement>(null)
+  const warnTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const logoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const countdownInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -97,14 +105,87 @@ export default function Navigation() {
     const supabase = createClient()
     await supabase.auth.signOut()
     setUser(null)
+    setWarning(false)
     router.push('/')
   }
+
+  // ── Inactivity timer ────────────────────────────────────────────────────────
+  function clearTimers() {
+    if (warnTimer.current)  clearTimeout(warnTimer.current)
+    if (logoutTimer.current) clearTimeout(logoutTimer.current)
+    if (countdownInterval.current) clearInterval(countdownInterval.current)
+  }
+
+  function resetInactivity() {
+    clearTimers()
+    setWarning(false)
+    setCountdown(60)
+
+    warnTimer.current = setTimeout(() => {
+      setWarning(true)
+      setCountdown(60)
+      countdownInterval.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) { clearInterval(countdownInterval.current!); return 0 }
+          return prev - 1
+        })
+      }, 1000)
+    }, WARN_MS)
+
+    logoutTimer.current = setTimeout(() => {
+      handleSignOut()
+    }, LOGOUT_MS)
+  }
+
+  useEffect(() => {
+    if (!user) { clearTimers(); return }
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click']
+    const handler = () => resetInactivity()
+
+    resetInactivity()
+    events.forEach(e => window.addEventListener(e, handler, { passive: true }))
+
+    return () => {
+      clearTimers()
+      events.forEach(e => window.removeEventListener(e, handler))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   const planLabel = user?.plan === 'standard' ? 'Standard' : user?.plan === 'starter' ? 'Starter' : 'Free'
 
   const initials = user?.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() ?? ''
 
   return (
+    <>
+    {/* Inactivity warning modal */}
+    {warning && (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+        <div style={{ background: '#0d1f3c', border: '1px solid rgba(201,168,76,0.35)', borderRadius: '14px', padding: '2rem 2rem 1.75rem', maxWidth: '380px', width: '100%', textAlign: 'center', boxShadow: '0 24px 64px rgba(0,0,0,0.7)' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⏱</div>
+          <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.4rem', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.6rem' }}>
+            Still there?
+          </h2>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem', color: '#bdb5a6', lineHeight: 1.65, margin: '0 0 0.5rem' }}>
+            You have been inactive for 9 minutes.
+          </p>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem', color: '#f87171', fontWeight: 600, margin: '0 0 1.5rem' }}>
+            You will be logged out automatically in <strong style={{ fontSize: '1.1rem' }}>{countdown}s</strong>
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button onClick={resetInactivity}
+              style={{ flex: 1, padding: '0.85rem', background: 'linear-gradient(135deg, #e8c876, #c9a84c)', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
+              Stay Logged In
+            </button>
+            <button onClick={handleSignOut}
+              style={{ flex: 1, padding: '0.85rem', background: 'rgba(248,113,113,0.1)', color: '#f87171', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '6px', cursor: 'pointer' }}>
+              Log Out Now
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: c.nav, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: `1px solid ${c.border}` }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
@@ -135,7 +216,7 @@ export default function Navigation() {
 
               {/* Dropdown panel */}
               {open && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '310px', background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: '12px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)', overflow: 'hidden', zIndex: 200 }}>
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 'min(310px, calc(100vw - 1.5rem))', background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: '12px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)', overflow: 'hidden', zIndex: 200 }}>
 
                   {/* Profile header */}
                   <div style={{ padding: '1.25rem 1.4rem', borderBottom: `1px solid ${c.border}`, background: 'rgba(30,51,88,0.5)' }}>
@@ -174,10 +255,10 @@ export default function Navigation() {
                     {user.plan !== 'free' && (
                       <BillingButton onClose={() => setOpen(false)} />
                     )}
-                    <a href="mailto:support@soulmate.com" onClick={() => setOpen(false)}
+                    <Link href="/support" onClick={() => setOpen(false)}
                       style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       ❓ Help &amp; Support
-                    </a>
+                    </Link>
                     <div style={{ height: '1px', background: `1px solid ${c.border}`, margin: '0.25rem 0', opacity: 0.3 }} />
                     <button onClick={handleSignOut}
                       style={{ textAlign: 'left', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -202,6 +283,7 @@ export default function Navigation() {
         )}
       </div>
     </nav>
+    </>
   )
 }
 

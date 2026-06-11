@@ -5,13 +5,13 @@ import { useState } from 'react'
 const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e', ivory: '#f5f0e6', border: 'rgba(13,31,60,0.18)' }
 
 const CATEGORIES = [
-  { key: 'favReels',      icon: '🎬', label: 'Favourite Reels',        placeholder: 'e.g. paste a link or type Travel vlogs',  full: false },
-  { key: 'favYoutube',    icon: '▶️', label: 'YouTube Channels',        placeholder: 'e.g. paste a link or type Veritasium',    full: false },
-  { key: 'favWebSeries',  icon: '📺', label: 'Web Series',              placeholder: 'e.g. Succession, Black Mirror',            full: false },
-  { key: 'favTravel',     icon: '✈️', label: 'Travel Destinations',     placeholder: 'e.g. Japan, Iceland, New Zealand',         full: false },
-  { key: 'favFoods',      icon: '🍽️', label: 'Favourite Foods',         placeholder: 'e.g. Sushi, Pasta, Tacos',                 full: false },
-  { key: 'favAiTools',    icon: '🤖', label: 'Favourite AI Tools',      placeholder: 'e.g. Claude, Midjourney, Notion AI',       full: false },
-  { key: 'hobby',         icon: '🎯', label: 'Hobbies & Interests',     placeholder: 'e.g. Photography, Hiking, Chess',          full: true  },
+  { key: 'favReels',      icon: '🎬', label: 'Your Favourite Social Media Reels',   placeholder: 'e.g. paste a link or type Travel vlogs',  full: false },
+  { key: 'favYoutube',    icon: '▶️', label: 'Your Favourite YouTube Channels',      placeholder: 'e.g. paste a link or type Veritasium',    full: false },
+  { key: 'favWebSeries',  icon: '📺', label: 'Your Favourite Web Series on OTT',    placeholder: 'e.g. Succession, Black Mirror',            full: false },
+  { key: 'favTravel',     icon: '✈️', label: 'Your Favourite Travel Destinations',  placeholder: 'e.g. Japan, Iceland, New Zealand',         full: false },
+  { key: 'favFoods',      icon: '🍽️', label: 'Your Favourite Foods',                placeholder: 'e.g. Sushi, Pasta, Tacos',                 full: false },
+  { key: 'favAiTools',    icon: '🤖', label: 'Your Favourite AI Tools',             placeholder: 'e.g. Claude, Midjourney, Notion AI',       full: false },
+  { key: 'hobby',         icon: '🎯', label: 'Hobbies & Interests',                 placeholder: 'e.g. Photography, Hiking, Chess',          full: true  },
 ]
 
 type PersonalityData = { favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string; hobby: string }
@@ -41,28 +41,29 @@ export default function PersonalityStep({ data, onChange }: Props) {
       <h2 className="ob-step-h2" style={{ color: c.navy, margin: '0 0 0.35rem' }}>
         Your personality
       </h2>
-      <div style={{ background: 'rgba(139,105,20,0.07)', border: '1px solid rgba(139,105,20,0.2)', borderRadius: '5px', padding: '0.6rem 0.8rem', margin: '0 0 0.7rem' }}>
-        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', color: c.navy, margin: 0, lineHeight: 1.65 }}>
+      <div style={{ background: 'rgba(139,105,20,0.07)', border: '1px solid rgba(139,105,20,0.2)', borderRadius: '5px', padding: '0.75rem 1rem', margin: '0 0 0.85rem' }}>
+        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.95rem', color: c.navy, margin: 0, lineHeight: 1.65 }}>
           Sharing your favourite content and interests gives other members a real sense of who you are — your tastes, your curiosity, and what makes you unique. This helps you find someone who truly connects with you.
         </p>
       </div>
-      <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', color: c.gold, letterSpacing: '0.1em', margin: '0 0 1rem' }}>
+      <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', color: c.gold, letterSpacing: '0.1em', margin: '0 0 0.4rem' }}>
         ADD UP TO 3 ITEMS PER CATEGORY — type a name or paste a link, then press Enter
+      </p>
+      <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', color: '#9e2a2b', letterSpacing: '0.06em', margin: '0 0 1rem' }}>
+        ✦ At least one entry is required in every category to continue.
       </p>
       <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
-      <style>{`.ob-personality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; } @media (max-width: 600px) { .ob-personality-grid { grid-template-columns: 1fr; } }`}</style>
-      <div className="ob-personality-grid">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {CATEGORIES.map(cat => (
-          <div key={cat.key} style={cat.full ? { gridColumn: '1 / -1' } : undefined}>
-            <ChipField
-              icon={cat.icon}
-              label={cat.label}
-              placeholder={cat.placeholder}
-              value={data[cat.key as keyof PersonalityData] || ''}
-              onChange={v => onChange(cat.key, v)}
-            />
-          </div>
+          <ChipField
+            key={cat.key}
+            icon={cat.icon}
+            label={cat.label}
+            placeholder={cat.placeholder}
+            value={data[cat.key as keyof PersonalityData] || ''}
+            onChange={v => onChange(cat.key, v)}
+          />
         ))}
       </div>
     </div>
@@ -102,11 +103,13 @@ function ChipField({ icon, label, placeholder, value, onChange }: {
     <div style={{ background: 'rgba(244,241,235,0.3)', border: `1px solid ${c.border}`, borderRadius: '6px', padding: '0.75rem', minWidth: 0, overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
         <span style={{ fontSize: '1rem', flexShrink: 0 }}>{icon}</span>
-        <label style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.textMid, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <label style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.textMid, flex: 1, lineHeight: 1.4 }}>
           {label}
         </label>
-        <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: chips.length >= 3 ? c.gold : c.sepia, marginLeft: 'auto', flexShrink: 0 }}>
-          {chips.length}/3
+        <span style={{ flexShrink: 0, display: 'flex', alignItems: 'baseline', gap: '1px', marginLeft: '0.5rem' }}>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, color: chips.length >= 3 ? c.gold : c.sepia }}>{chips.length}</span>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: 'rgba(90,110,130,0.5)' }}>/</span>
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '1.1rem', fontWeight: 900, color: c.gold, lineHeight: 1 }}>3</span>
         </span>
       </div>
 
