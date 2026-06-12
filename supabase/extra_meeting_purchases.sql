@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS public.extra_meeting_purchases (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
-  stripe_session_id text,
+  payment_reference text,
   created_at timestamptz DEFAULT now()
 );
 

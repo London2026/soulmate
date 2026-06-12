@@ -54,7 +54,7 @@ export default function TermsPage() {
           Soul Mate offers a Free plan and paid subscription plans (Starter and Standard). Paid subscriptions are billed monthly. By subscribing to a paid plan, you authorise Soul Mate to charge your payment method on a recurring monthly basis until you cancel.
         </p>
         <p style={p}>
-          All payments are processed securely through Stripe. Soul Mate does not store your card details. Prices are displayed in USD and may be subject to currency conversion by your bank.
+          All payments are processed securely through CCBill. Soul Mate does not store your card details. Prices are displayed in USD and may be subject to currency conversion by your bank.
         </p>
 
         <h2 style={h2}>4. Cancellation Policy</h2>

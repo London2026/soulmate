@@ -71,11 +71,11 @@ const plans = [
   },
 ]
 
-function PlanCard({ plan, onSelect, pending, stripeLoading }: {
+function PlanCard({ plan, onSelect, pending, checkoutLoading }: {
   plan: typeof plans[0]
   onSelect: (key: string) => void
   pending: boolean
-  stripeLoading: boolean
+  checkoutLoading: boolean
 }) {
   return (
     <div style={{ position: 'relative', background: c.navyMid, border: plan.highlighted ? `1px solid ${c.goldLight}` : `1px solid ${c.border}`, borderRadius: '12px', display: 'flex', flexDirection: 'column', boxShadow: plan.highlighted ? '0 0 40px rgba(201,168,76,0.12), 0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.4)' }}>
@@ -136,7 +136,7 @@ function PlanCard({ plan, onSelect, pending, stripeLoading }: {
           onClick={() => onSelect(plan.key)}
           disabled={pending}
           style={{ display: 'block', width: '100%', padding: '0.85rem', textAlign: 'center', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: pending ? 'default' : 'pointer', transition: 'all 0.2s', border: 'none', opacity: pending ? 0.7 : 1, ...(plan.highlighted ? { background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, color: c.navy, boxShadow: '0 4px 16px rgba(201,168,76,0.25)' } : plan.key === 'free' ? { background: 'transparent', border: `1px solid rgba(201,168,76,0.25)`, color: c.ivoryDim } : { border: `1px solid rgba(201,168,76,0.35)`, color: c.goldLight, background: 'transparent' }) }}>
-          {pending ? 'Please wait…' : stripeLoading && plan.key !== 'free' ? 'Redirecting…' : plan.cta}
+          {pending ? 'Please wait…' : checkoutLoading && plan.key !== 'free' ? 'Redirecting…' : plan.cta}
         </button>
       </div>
     </div>
@@ -145,12 +145,12 @@ function PlanCard({ plan, onSelect, pending, stripeLoading }: {
 
 export default function PricingPage() {
   const [pending, startTransition] = useTransition()
-  const [stripeLoading, setStripeLoading] = useState(false)
-  const [stripeError, setStripeError] = useState('')
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError, setCheckoutError] = useState('')
   const router = useRouter()
 
   async function handleSelect(planKey: string) {
-    setStripeError('')
+    setCheckoutError('')
 
     // Free plan — no payment needed
     if (planKey === 'free') {
@@ -158,8 +158,8 @@ export default function PricingPage() {
       return
     }
 
-    // Paid plans — redirect to Stripe Checkout
-    setStripeLoading(true)
+    // Paid plans — redirect to CCBill checkout
+    setCheckoutLoading(true)
     try {
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -173,12 +173,12 @@ export default function PricingPage() {
       const { url } = await res.json()
       window.location.href = url
     } catch (err) {
-      setStripeError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-      setStripeLoading(false)
+      setCheckoutError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setCheckoutLoading(false)
     }
   }
 
-  const isBusy = pending || stripeLoading
+  const isBusy = pending || checkoutLoading
 
   return (
     <div style={{ minHeight: '100vh', background: c.navy }}>
@@ -214,17 +214,17 @@ export default function PricingPage() {
           <div style={{ height: '1px', width: '80px', background: `linear-gradient(to right, transparent, ${c.goldLight}, transparent)`, margin: '0 auto' }} />
         </div>
 
-        {/* Stripe error */}
-        {stripeError && (
+        {/* Checkout error */}
+        {checkoutError && (
           <div style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '8px', color: '#f87171', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', textAlign: 'center' }}>
-            {stripeError}
+            {checkoutError}
           </div>
         )}
 
         {/* 3 plan cards */}
         <div className="pricing-plans-grid">
           {plans.map(plan => (
-            <PlanCard key={plan.key} plan={plan} onSelect={handleSelect} pending={isBusy} stripeLoading={stripeLoading} />
+            <PlanCard key={plan.key} plan={plan} onSelect={handleSelect} pending={isBusy} checkoutLoading={checkoutLoading} />
           ))}
         </div>
 
