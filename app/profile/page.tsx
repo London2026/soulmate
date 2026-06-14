@@ -62,6 +62,7 @@ export default async function ProfilePage() {
     (profile as Record<string, unknown>).front_photo_path as string | undefined,
     profile.voice_path,
     nativeVoicePath,
+    (profile as Record<string, unknown>).id_document_path as string | undefined,
   ].filter((p): p is string => !!p)
 
   const ownUrlMap: Record<string, string> = {}
@@ -164,6 +165,8 @@ export default async function ProfilePage() {
   const frontUrl = frontPhotoPath ? ownUrlMap[frontPhotoPath] ?? null : null
   const voiceUrl = profile.voice_path ? ownUrlMap[profile.voice_path] ?? null : null
   const nativeVoiceUrl = nativeVoicePath ? ownUrlMap[nativeVoicePath] ?? null : null
+  const idDocumentPath = (profile as Record<string, unknown>).id_document_path as string | null ?? null
+  const idDocumentUrl = idDocumentPath ? ownUrlMap[idDocumentPath] ?? null : null
 
   const personalityFields = [
     { label: 'Favourite Reels', value: profile.fav_reels },
@@ -181,10 +184,13 @@ export default async function ProfilePage() {
     { label: 'Age Range', value: p.pref_age_min && p.pref_age_max ? `${p.pref_age_min} – ${p.pref_age_max} yrs` : null },
     { label: 'Location', value: p.pref_location as string },
     { label: 'Religion', value: p.pref_religion as string },
+    { label: 'Sub-Religion', value: p.pref_sub_religion as string },
     { label: 'Occupation', value: p.pref_occupation as string },
     { label: 'Height Preference', value: p.pref_height as string },
     { label: 'Ethnicity Preference', value: p.pref_ethnicity as string },
   ].filter((f) => f.value)
+
+  const otherPreferences = p.other_preferences as string | null ?? null
 
   const idCountry = (profile as Record<string, unknown>).id_country as string | null ?? null
 
@@ -402,31 +408,54 @@ export default async function ProfilePage() {
         )}
 
         {/* Partner preferences */}
-        {prefFields.length > 0 && (
+        {(prefFields.length > 0 || otherPreferences) && (
           <div style={{ marginBottom: '2rem' }}>
             <SectionHeader title="Partner Preferences" count={0} />
-            <div className="prof-personality-grid">
-              {prefFields.map((f) => (
-                <div key={f.label} style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem' }}>
-                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.35rem' }}>
-                    {f.label}
-                  </p>
-                  <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0 }}>
-                    {f.value}
-                  </p>
-                </div>
-              ))}
-            </div>
+            {prefFields.length > 0 && (
+              <div className="prof-personality-grid">
+                {prefFields.map((f) => (
+                  <div key={f.label} style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem' }}>
+                    <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.35rem' }}>
+                      {f.label}
+                    </p>
+                    <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0 }}>
+                      {f.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {otherPreferences && (
+              <div style={{ marginTop: prefFields.length > 0 ? '0.75rem' : 0, background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem 1rem' }}>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.35rem' }}>
+                  Other Preferences
+                </p>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0, lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
+                  {otherPreferences}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
         {/* ID Document */}
-        {idCountry && (
+        {(idCountry || idDocumentUrl) && (
           <div style={{ marginBottom: '2rem' }}>
             <SectionHeader title="ID Document" count={0} />
-            <div style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem 1rem', display: 'inline-flex', gap: '0.6rem', alignItems: 'center' }}>
-              <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia }}>Country of ID:</span>
-              <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory }}>{idCountry}</span>
+            <div style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '1rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+              {idDocumentUrl && (
+                <img src={idDocumentUrl} alt="ID document" style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: `1px solid ${c.border}` }} />
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                {idCountry && (
+                  <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0 }}>
+                    <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia }}>Country of ID: </span>{idCountry}
+                  </p>
+                )}
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.sepia, margin: 0 }}>
+                  {profile.id_verified ? 'Verified ✅' : 'Pending review by the Soul Mate team'}
+                </p>
+              </div>
             </div>
           </div>
         )}
