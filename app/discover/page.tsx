@@ -6,6 +6,15 @@ import ProfileCard, { type ProfileData } from './ProfileCard'
 import NotificationBanner from './NotificationBanner'
 import DiscoverClient from './DiscoverClient'
 
+const PROFILE_FIELDS = `
+  id, full_name, age, gender, city, country,
+  religion, mother_tongue, education, education_subject, employment_status, occupation,
+  height, weight, ethnicity, marital_status, has_kids, id_verified,
+  back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
+  fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
+  zodiac_sign
+`
+
 export default async function DiscoverPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -40,18 +49,18 @@ export default async function DiscoverPage() {
   // Fetch all complete profiles except the current user
   const { data: rows } = await supabase
     .from('profiles')
-    .select(`
-      id, full_name, age, gender, city, country,
-      religion, mother_tongue, education, education_subject, employment_status, occupation,
-      height, weight, ethnicity, marital_status, has_kids, id_verified,
-      back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
-      fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
-      zodiac_sign
-    `)
+    .select(PROFILE_FIELDS)
     .eq('onboarding_complete', true)
     .neq('id', user.id)
     .order('created_at', { ascending: false })
     .limit(30)
+
+  // The current user's own profile — shown as a preview of how others see it
+  const { data: myRow } = await supabase
+    .from('profiles')
+    .select(PROFILE_FIELDS)
+    .eq('id', user.id)
+    .single()
 
   // Which profiles has the current user already revealed?
   const { data: myReveals } = await supabase
@@ -82,6 +91,9 @@ export default async function DiscoverPage() {
     // front photo only for already-revealed profiles
     if (revealedSet.has(p.id) && p.front_photo_path) allPaths.push(p.front_photo_path)
   }
+  if (myRow?.back_photo_1_path) allPaths.push(myRow.back_photo_1_path)
+  if (myRow?.back_photo_2_path) allPaths.push(myRow.back_photo_2_path)
+  if (myRow?.voice_path) allPaths.push(myRow.voice_path)
 
   // Batch sign all URLs in one call
   const urlMap: Record<string, string> = {}
@@ -133,6 +145,42 @@ export default async function DiscoverPage() {
     zodiac_sign: (p as Record<string, unknown>).zodiac_sign as string ?? null,
   }))
 
+  // Build a preview of the current user's own profile, as seen by other members
+  const myProfile: ProfileData | null = myRow ? {
+    id: myRow.id,
+    full_name: myRow.full_name,
+    age: myRow.age,
+    gender: myRow.gender,
+    city: myRow.city,
+    country: myRow.country,
+    religion: myRow.religion,
+    mother_tongue: myRow.mother_tongue,
+    education: myRow.education,
+    occupation: myRow.occupation,
+    height: myRow.height ?? null,
+    weight: myRow.weight ?? null,
+    ethnicity: myRow.ethnicity ?? null,
+    education_subject: myRow.education_subject ?? null,
+    employment_status: myRow.employment_status ?? null,
+    marital_status: myRow.marital_status ?? null,
+    has_kids: myRow.has_kids ?? null,
+    id_verified: myRow.id_verified ?? false,
+    back_photo_1_url: myRow.back_photo_1_path ? (urlMap[myRow.back_photo_1_path] ?? null) : null,
+    back_photo_2_url: myRow.back_photo_2_path ? (urlMap[myRow.back_photo_2_path] ?? null) : null,
+    voice_url: myRow.voice_path ? (urlMap[myRow.voice_path] ?? null) : null,
+    front_photo_url: null,
+    already_revealed: false,
+    meeting_room_id: null,
+    meeting_status: null,
+    fav_reels: myRow.fav_reels ?? null,
+    fav_youtube: myRow.fav_youtube ?? null,
+    fav_web_series: myRow.fav_web_series ?? null,
+    fav_travel: myRow.fav_travel ?? null,
+    fav_foods: myRow.fav_foods ?? null,
+    fav_ai_tools: myRow.fav_ai_tools ?? null,
+    zodiac_sign: (myRow as Record<string, unknown>).zodiac_sign as string ?? null,
+  } : null
+
   // Fetch unread notifications for the current user
   const { data: notifications } = await supabase
     .from('notifications')
@@ -173,28 +221,8 @@ export default async function DiscoverPage() {
         <NotificationBanner notifications={notifications ?? []} />
 
         {/* Grid client — search, AI, cards */}
-        {profiles.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <DiscoverClient profiles={profiles} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} />
-        )}
+        <DiscoverClient profiles={profiles} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} myProfile={myProfile} />
       </main>
-    </div>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div style={{ textAlign: 'center', padding: '5rem 0' }}>
-      <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', margin: '0 auto 1.25rem' }}>
-        💘
-      </div>
-      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', color: '#f5f0e6', margin: '0 0 0.5rem' }}>
-        No profiles yet
-      </h2>
-      <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: '#bdb5a6' }}>
-        Be the first to invite someone to Soul Mate.
-      </p>
     </div>
   )
 }

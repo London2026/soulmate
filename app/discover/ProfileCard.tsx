@@ -67,8 +67,8 @@ function splitPersonalityChips(value: string): string[] {
   return value.split(',').map(s => s.trim()).filter(Boolean)
 }
 
-export default function ProfileCard({ profile, canReveal = true, canMeet = true, meetingsLeft = 0 }: {
-  profile: ProfileData; canReveal?: boolean; canMeet?: boolean; meetingsLeft?: number
+export default function ProfileCard({ profile, canReveal = true, canMeet = true, meetingsLeft = 0, previewMode = false }: {
+  profile: ProfileData; canReveal?: boolean; canMeet?: boolean; meetingsLeft?: number; previewMode?: boolean
 }) {
   const [revealed, setRevealed] = useState(profile.already_revealed)
   const [frontUrl, setFrontUrl] = useState<string | null>(profile.front_photo_url)
@@ -256,7 +256,17 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       {/* Gold divider */}
       <div style={{ height: '1px', margin: '0 1.5rem', background: `linear-gradient(to right, transparent, ${c.border}, transparent)` }} />
 
-      {/* Reveal section */}
+      {previewMode ? (
+        <div style={{ padding: '1.25rem 1.5rem', textAlign: 'center' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.75rem' }}>🔒</div>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.5rem' }}>
+            Your face photo stays hidden until a member chooses to reveal it.
+          </p>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>
+            Members can request a video meeting with you from here.
+          </p>
+        </div>
+      ) : (
       <div style={{ padding: '1.25rem 1.5rem' }}>
         {!canReveal && !revealed ? (
           <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
@@ -393,6 +403,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
           )}
         </div>
       </div>
+      )}
     </article>
   )
 }

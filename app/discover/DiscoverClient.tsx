@@ -45,9 +45,9 @@ function isPositiveReason(reason: string) {
 }
 
 export default function DiscoverClient({
-  profiles, canReveal, canMeet, meetingsLeft,
+  profiles, canReveal, canMeet, meetingsLeft, myProfile,
 }: {
-  profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number
+  profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -179,6 +179,27 @@ export default function DiscoverClient({
         .disc-filter-inp::placeholder { color: #8a9db5 !important; }
         .disc-filter-inp:focus { border-color: #c9a84c !important; }
       `}</style>
+
+      {/* My profile preview — exactly how other members see your card */}
+      {myProfile && (
+        <div style={{ marginBottom: '2rem' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.4rem' }}>
+            👁 Your Profile Preview
+          </p>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 1rem' }}>
+            This is exactly how other members see your card on Discover.
+          </p>
+          <div style={{ maxWidth: '420px' }}>
+            <ProfileCard profile={myProfile} previewMode />
+          </div>
+          <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.3), transparent)', margin: '2rem 0 0' }} />
+        </div>
+      )}
+
+      {profiles.length === 0 ? (
+        <EmptyState />
+      ) : (
+      <>
 
       {/* Search bar + filter toggle */}
       <div style={{ marginBottom: '0.75rem' }}>
@@ -421,7 +442,26 @@ export default function DiscoverClient({
           </div>
         </div>
       )}
+
+      </>
+      )}
     </>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+      <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', margin: '0 auto 1.25rem' }}>
+        💘
+      </div>
+      <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.5rem', color: '#f5f0e6', margin: '0 0 0.5rem' }}>
+        No profiles yet
+      </h2>
+      <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: '#bdb5a6' }}>
+        Be the first to invite someone to Soul Mate.
+      </p>
+    </div>
   )
 }
 
