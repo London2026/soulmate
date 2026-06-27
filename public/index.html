@@ -699,19 +699,23 @@
 
   .meeting-img {
     width: 100%;
+    height: 100%;
     display: block;
+    object-fit: cover;
+    object-position: center top;
     border-radius: 4px 4px 0 0;
   }
 
-  
   .meeting-slider {
     display: flex;
     transition: transform 0.9s cubic-bezier(0.45, 0, 0.55, 1);
     width: 300%;
+    height: 320px;
   }
   .meeting-slide {
     width: 33.333%;
     flex-shrink: 0;
+    overflow: hidden;
   }
 
   .laptop-hinge {
