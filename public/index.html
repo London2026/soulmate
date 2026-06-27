@@ -699,10 +699,8 @@
 
   .meeting-img {
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
-    object-fit: cover;
-    object-position: center top;
     border-radius: 4px 4px 0 0;
   }
 
@@ -710,11 +708,10 @@
     display: flex;
     transition: transform 0.9s cubic-bezier(0.45, 0, 0.55, 1);
     width: 100%;
-    height: 260px;
   }
   .meeting-slide {
     min-width: 100%;
-    overflow: hidden;
+    flex-shrink: 0;
   }
 
   .laptop-hinge {
