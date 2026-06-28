@@ -16,7 +16,6 @@ interface AuthUser {
   id: string
   name: string
   plan: string
-  ccbillSubscriptionId: string | null
   stats: MeetingStats
 }
 
@@ -49,7 +48,7 @@ export default function Navigation() {
 
     async function loadUser(userId: string, email?: string, fullName?: string) {
       const [profileRes, meetingsRes] = await Promise.all([
-        supabase.from('profiles').select('full_name, plan, ccbill_subscription_id').eq('id', userId).maybeSingle(),
+        supabase.from('profiles').select('full_name, plan').eq('id', userId).maybeSingle(),
         supabase.from('video_meetings')
           .select('status, requester_id')
           .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`),
@@ -70,7 +69,6 @@ export default function Navigation() {
         id: userId,
         name: profile?.full_name || fullName || email?.split('@')[0] || 'Member',
         plan: profile?.plan || 'free',
-        ccbillSubscriptionId: profile?.ccbill_subscription_id ?? null,
         stats,
       })
     }
@@ -193,7 +191,7 @@ export default function Navigation() {
 
         {/* Logo */}
         <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
-          <img src="/soulmate-logo-full.png" alt="Soul Mate" style={{ height: '52px', width: '52px', objectFit: 'contain', borderRadius: '8px', display: 'block' }} />
+          <img src="/banduraa-logo.png" alt="Banduraa" style={{ height: '52px', width: '52px', objectFit: 'contain', borderRadius: '8px', display: 'block' }} />
         </Link>
 
         {user ? (
@@ -254,9 +252,6 @@ export default function Navigation() {
                       style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       ⭐ Upgrade Plan
                     </Link>
-                    {user.plan !== 'free' && (
-                      <BillingButton onClose={() => setOpen(false)} subscriptionId={user.ccbillSubscriptionId} />
-                    )}
                     <Link href="/support" onClick={() => setOpen(false)}
                       style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       ❓ Help &amp; Support
@@ -289,34 +284,3 @@ export default function Navigation() {
   )
 }
 
-function BillingButton({ onClose, subscriptionId }: { onClose: () => void; subscriptionId: string | null }) {
-  const [expanded, setExpanded] = useState(false)
-
-  return (
-    <div>
-      <button onClick={() => setExpanded(v => !v)}
-        style={{ textAlign: 'left', width: '100%', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: '#c9a84c', background: 'none', border: 'none', cursor: 'pointer', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        💳 Billing &amp; Cancel Plan
-      </button>
-      {expanded && (
-        <div style={{ padding: '0 0 0.6rem 1.6rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', color: '#bdb5a6', lineHeight: 1.6 }}>
-          {subscriptionId && (
-            <p style={{ margin: '0 0 0.4rem' }}>
-              Subscription ID: <strong style={{ color: '#f5f0e6' }}>{subscriptionId}</strong>
-            </p>
-          )}
-          <p style={{ margin: '0 0 0.4rem' }}>
-            Manage or cancel your subscription via CCBill&apos;s support portal using your email{subscriptionId ? ' and the subscription ID above' : ''}.
-          </p>
-          <a href="https://support.ccbill.com/" target="_blank" rel="noopener noreferrer" onClick={onClose}
-            style={{ color: '#c9a84c', display: 'block', marginBottom: '0.3rem' }}>
-            Open CCBill Support Portal ↗
-          </a>
-          <a href="mailto:support@mysoulmate.live" onClick={onClose} style={{ color: '#c9a84c' }}>
-            Or email support@mysoulmate.live
-          </a>
-        </div>
-      )}
-    </div>
-  )
-}

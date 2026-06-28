@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     <tr><td align="center">
       <table width="100%" style="max-width:540px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 8px 32px rgba(13,31,60,0.10);">
         <tr><td style="background:#0d1f3c;padding:28px 32px;text-align:center;">
-          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Soul Mate</p>
+          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Banduraa</p>
           <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,0.55);margin:4px 0 0;">✦ Support Query ✦</p>
         </td></tr>
         <tr><td style="padding:32px 32px 24px;">
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
           <p style="font-family:Georgia,serif;font-size:13px;color:#9aabb8;margin:20px 0 0;">Reply directly to this email to respond to the member.</p>
         </td></tr>
         <tr><td style="padding:16px 32px 24px;border-top:1px solid rgba(13,31,60,0.08);text-align:center;">
-          <p style="font-family:Arial,sans-serif;font-size:11px;color:#9aabb8;margin:0;">© 2026 Soul Mate · Support notification</p>
+          <p style="font-family:Arial,sans-serif;font-size:11px;color:#9aabb8;margin:0;">© 2026 Banduraa · Support notification</p>
         </td></tr>
       </table>
     </td></tr>
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     <tr><td align="center">
       <table width="100%" style="max-width:520px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 8px 32px rgba(13,31,60,0.10);">
         <tr><td style="background:#0d1f3c;padding:28px 32px;text-align:center;">
-          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Soul Mate</p>
+          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Banduraa</p>
           <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,0.55);margin:4px 0 0;">✦ Support ✦</p>
         </td></tr>
         <tr><td style="padding:32px 32px 24px;">
@@ -81,9 +81,9 @@ export async function POST(request: Request) {
         </td></tr>
         <tr><td style="padding:20px 32px 28px;border-top:1px solid rgba(13,31,60,0.08);text-align:center;">
           <p style="font-family:Arial,sans-serif;font-size:11px;color:#9aabb8;margin:0;">
-            © 2026 Soul Mate · Privacy-first matrimony platform<br>
-            <a href="https://mysoulmate.live/privacy" style="color:#9aabb8;">Privacy Policy</a> &nbsp;·&nbsp;
-            <a href="https://mysoulmate.live/terms" style="color:#9aabb8;">Terms of Service</a>
+            © 2026 Banduraa · Privacy-first matrimony platform<br>
+            <a href="https://banduraa.com/privacy" style="color:#9aabb8;">Privacy Policy</a> &nbsp;·&nbsp;
+            <a href="https://banduraa.com/terms" style="color:#9aabb8;">Terms of Service</a>
           </p>
         </td></tr>
       </table>
@@ -93,17 +93,17 @@ export async function POST(request: Request) {
 
   await Promise.all([
     resend.emails.send({
-      from: 'Soul Mate Support <support@mysoulmate.live>',
+      from: 'Banduraa Support <support@banduraa.com>',
       to: ADMIN_EMAIL,
       replyTo: email,
       subject: `🆘 Support: ${subject} — ${name}`,
       html: adminHtml,
     }),
     resend.emails.send({
-      from: 'Soul Mate Support <support@mysoulmate.live>',
+      from: 'Banduraa Support <support@banduraa.com>',
       to: email,
-      replyTo: 'support@mysoulmate.live',
-      subject: `We've received your query — Soul Mate Support`,
+      replyTo: 'support@banduraa.com',
+      subject: `We've received your query — Banduraa Support`,
       html: confirmHtml,
     }),
   ])

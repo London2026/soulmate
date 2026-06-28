@@ -10,7 +10,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: 'Soul Mate | Voice-First Matrimony',
+  title: 'Banduraa | Voice-First Matrimony',
   description: 'The privacy-first matrimony platform where personality comes before photos.',
 }
 

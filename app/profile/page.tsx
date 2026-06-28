@@ -453,7 +453,7 @@ export default async function ProfilePage() {
                   </p>
                 )}
                 <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.sepia, margin: 0 }}>
-                  {profile.id_verified ? 'Verified ✅' : 'Pending review by the Soul Mate team'}
+                  {profile.id_verified ? 'Verified ✅' : 'Pending review by the Banduraa team'}
                 </p>
               </div>
             </div>

@@ -13,6 +13,7 @@ interface Props {
 const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e' }
 
 export default function PhotosStep({ back1, back2, front, onPhotosChange, existingBack1Url, existingBack2Url, existingFrontUrl }: Props) {
+  // Mobile-responsive grids injected inline since this component has no wrapping style block
   const [p1, setP1] = useState<string | null>(null)
   const [p2, setP2] = useState<string | null>(null)
   const [pf, setPf] = useState<string | null>(null)
@@ -40,6 +41,7 @@ export default function PhotosStep({ back1, back2, front, onPhotosChange, existi
 
   return (
     <div>
+      <style>{`.ob-photo-3col{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem} .ob-photo-2col{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem} @media(max-width:480px){.ob-photo-3col{grid-template-columns:1fr 1fr} .ob-photo-2col{grid-template-columns:1fr}}`}</style>
       <h2 className="ob-step-h2" style={{ color: c.navy, margin: '0 0 0.25rem' }}>
         Your photos
       </h2>
@@ -69,7 +71,7 @@ export default function PhotosStep({ back1, back2, front, onPhotosChange, existi
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.6rem' }}>
             Example back-side photos
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+          <div className="ob-photo-3col">
             {[
               { icon: '🚶', label: 'Walking away', sub: 'Back view, full body' },
               { icon: '🌅', label: 'Silhouette', sub: 'Against sky or window' },
@@ -84,7 +86,7 @@ export default function PhotosStep({ back1, back2, front, onPhotosChange, existi
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="ob-photo-2col">
           <PhotoBox label="Photo 1" preview={p1} existingUrl={existingBack1Url ?? null} inputRef={r1} onChange={pick1} blurred={false} required />
           <PhotoBox label="Photo 2" preview={p2} existingUrl={existingBack2Url ?? null} inputRef={r2} onChange={pick2} blurred={false} required />
         </div>

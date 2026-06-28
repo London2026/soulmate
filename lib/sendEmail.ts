@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const FROM = 'Soul Mate <noreply@mysoulmate.live>'
+const FROM = 'Banduraa <noreply@banduraa.com>'
 
 function resend() {
   if (!process.env.RESEND_API_KEY) return null
@@ -30,7 +30,7 @@ function wrap(body: string) {
 
         <!-- Header -->
         <tr><td style="background:#0d1f3c;padding:28px 32px;text-align:center;">
-          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Soul Mate</p>
+          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Banduraa</p>
           <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,0.55);margin:4px 0 0;">✦ Find Your Forever ✦</p>
         </td></tr>
 
@@ -40,9 +40,9 @@ function wrap(body: string) {
         <!-- Footer -->
         <tr><td style="padding:20px 32px 28px;border-top:1px solid rgba(13,31,60,0.08);text-align:center;">
           <p style="font-family:Arial,sans-serif;font-size:11px;color:#9aabb8;margin:0;">
-            © 2026 Soul Mate · Privacy-first matrimony platform<br>
-            <a href="https://mysoulmate.live/privacy" style="color:#9aabb8;">Privacy Policy</a> &nbsp;·&nbsp;
-            <a href="https://mysoulmate.live/terms" style="color:#9aabb8;">Terms of Service</a>
+            © 2026 Banduraa · Privacy-first matrimony platform<br>
+            <a href="https://banduraa.com/privacy" style="color:#9aabb8;">Privacy Policy</a> &nbsp;·&nbsp;
+            <a href="https://banduraa.com/terms" style="color:#9aabb8;">Terms of Service</a>
           </p>
         </td></tr>
 
@@ -56,13 +56,13 @@ function wrap(body: string) {
 // ── Email templates ──────────────────────────────────────────────────────────
 
 export async function sendWelcomeSignupEmail(to: string) {
-  const subject = `Welcome to Soul Mate 🌹 — Let's build your profile`
+  const subject = `Welcome to Banduraa 🌹 — Let's build your profile`
   const html = wrap(`
-    <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Welcome to Soul Mate 🌹</h2>
+    <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Welcome to Banduraa 🌹</h2>
     <p style="font-family:Georgia,serif;font-style:italic;font-size:16px;color:#5a6e82;margin:0 0 16px;">Find Your Forever</p>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
     <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 16px;">
-      You've taken the first step towards finding a meaningful, lasting connection. We're honoured to have you on Soul Mate — a privacy-first matrimony platform built for people who value depth, trust, and genuine compatibility.
+      You've taken the first step towards finding a meaningful, lasting connection. We're honoured to have you on Banduraa — a privacy-first matrimony platform built for people who value depth, trust, and genuine compatibility.
     </p>
     <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 24px;">
       To appear in Discover and start connecting with other members, please complete your profile. It takes just a few minutes and covers 7 simple steps:
@@ -88,7 +88,7 @@ export async function sendWelcomeSignupEmail(to: string) {
       </tr>`).join('')}
     </table>
     <div style="text-align:center;margin-bottom:28px;">
-      <a href="https://mysoulmate.live/onboarding" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+      <a href="https://banduraa.com/onboarding" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
         Complete Your Profile →
       </a>
     </div>
@@ -102,13 +102,13 @@ export async function sendWelcomeSignupEmail(to: string) {
 }
 
 export async function sendEncouragementEmail(to: string) {
-  const subject = `Complete your Soul Mate profile — your match is waiting 🌹`
+  const subject = `Complete your Banduraa profile — your match is waiting 🌹`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Welcome back 🌹</h2>
     <p style="font-family:Georgia,serif;font-style:italic;font-size:16px;color:#5a6e82;margin:0 0 16px;">Your journey is just beginning</p>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
     <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 16px;">
-      We noticed your Soul Mate profile is not quite complete yet — and until it is, other members cannot discover you.
+      We noticed your Banduraa profile is not quite complete yet — and until it is, other members cannot discover you.
     </p>
     <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 20px;">
       It only takes a few minutes to finish. Once complete, your profile goes live and your matches can find you. Here is what is left:
@@ -130,7 +130,7 @@ export async function sendEncouragementEmail(to: string) {
       </p>`).join('')}
     </div>
     <div style="text-align:center;margin-bottom:28px;">
-      <a href="https://mysoulmate.live/onboarding" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+      <a href="https://banduraa.com/onboarding" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
         Finish My Profile →
       </a>
     </div>
@@ -144,7 +144,7 @@ export async function sendEncouragementEmail(to: string) {
 }
 
 export async function sendProfileLiveEmail(to: string, firstName: string) {
-  const subject = `🎉 Your Soul Mate profile is now live!`
+  const subject = `🎉 Your Banduraa profile is now live!`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 12px;">Your profile is live! 🎉</h2>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
@@ -152,7 +152,7 @@ export async function sendProfileLiveEmail(to: string, firstName: string) {
       Congratulations, <strong>${firstName}</strong>!
     </p>
     <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 20px;">
-      Your Soul Mate profile is now complete and visible to other members. Your journey towards a meaningful connection begins here.
+      Your Banduraa profile is now complete and visible to other members. Your journey towards a meaningful connection begins here.
     </p>
     <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:16px 20px;margin-bottom:24px;border-radius:0 6px 6px 0;">
       <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 12px;">What you can do next</p>
@@ -170,13 +170,13 @@ export async function sendProfileLiveEmail(to: string, firstName: string) {
       </p>
     </div>
     <div style="text-align:center;margin-bottom:28px;">
-      <a href="https://mysoulmate.live/discover" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
         Discover Members →
       </a>
     </div>
     <div style="background:#fff8ec;border:1px solid rgba(201,168,76,0.35);border-radius:8px;padding:16px 20px;">
       <p style="font-family:Georgia,serif;font-size:14px;color:#5a6e82;line-height:1.75;margin:0;">
-        If you have any questions or need help, simply reply to this email — we're here for you. Wishing you a beautiful journey on Soul Mate. 🌹
+        If you have any questions or need help, simply reply to this email — we're here for you. Wishing you a beautiful journey on Banduraa. 🌹
       </p>
     </div>
   `)
@@ -189,7 +189,7 @@ export async function sendAdminNewSubscriberEmail(memberName: string, plan: stri
     <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">New Subscription</h2>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
     <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
-      A new member has just subscribed to Soul Mate.
+      A new member has just subscribed to Banduraa.
     </p>
     <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;margin-bottom:20px;border-radius:0 6px 6px 0;">
       <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 8px;">Subscription Details</p>
@@ -198,7 +198,7 @@ export async function sendAdminNewSubscriberEmail(memberName: string, plan: stri
       <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0;">🕐 ${new Date().toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })}</p>
     </div>
     <div style="text-align:center;">
-      <a href="https://mysoulmate.live/admin" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+      <a href="https://banduraa.com/admin" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
         View Admin Panel →
       </a>
     </div>
@@ -207,7 +207,7 @@ export async function sendAdminNewSubscriberEmail(memberName: string, plan: stri
 }
 
 export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string, viewerProfileId: string) {
-  const subject = `💘 Profile #${viewerProfileId} has revealed your photo on Soul Mate`
+  const subject = `💘 Profile #${viewerProfileId} has revealed your photo on Banduraa`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your photo has been revealed</h2>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
@@ -215,16 +215,16 @@ export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string,
       Hi <strong>${ownerFirstName}</strong>,
     </p>
     <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
-      Profile <strong style="color:#0d1f3c;font-family:'Courier New',monospace;">#${viewerProfileId}</strong> has revealed your photo on Soul Mate.
+      Profile <strong style="color:#0d1f3c;font-family:'Courier New',monospace;">#${viewerProfileId}</strong> has revealed your photo on Banduraa.
     </p>
     <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
-      You may receive an online video meeting request from this profile. If you would like to view their profile and connect with them, please log in to Soul Mate.
+      You may receive an online video meeting request from this profile. If you would like to view their profile and connect with them, please log in to Banduraa.
     </p>
     <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;font-style:italic;line-height:1.7;margin:0 0 28px;">
       You can search for Profile <span style="font-family:'Courier New',monospace;font-style:normal;">#${viewerProfileId}</span> directly in the Discover page to view their full profile.
     </p>
     <div style="text-align:center;margin-bottom:8px;">
-      <a href="https://mysoulmate.live/discover" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
         Check Their Profile →
       </a>
     </div>
@@ -240,7 +240,7 @@ export async function sendMeetingRequestEmail(
   time: string,
   message: string
 ) {
-  const subject = `📅 ${requesterName} wants to meet you on Soul Mate`
+  const subject = `📅 ${requesterName} wants to meet you on Banduraa`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">New video meeting request</h2>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
@@ -260,7 +260,7 @@ export async function sendMeetingRequestEmail(
       Log in to accept or decline this request from your profile page.
     </p>
     <div style="text-align:center;margin-bottom:8px;">
-      <a href="https://mysoulmate.live/profile" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+      <a href="https://banduraa.com/profile" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
         Respond →
       </a>
     </div>
@@ -276,7 +276,7 @@ export async function sendMeetingAcceptedEmail(
   time: string,
   roomId: string
 ) {
-  const meetingUrl = `https://meet.jit.si/SoulMate-${roomId}`
+  const meetingUrl = `https://meet.jit.si/Banduraa-${roomId}`
   const subject = `✅ Your video meeting with ${acceptorName} is confirmed`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your meeting is confirmed!</h2>
@@ -301,12 +301,12 @@ export async function sendMeetingAcceptedEmail(
       </a>
     </div>
     <div style="background:#fff8ec;border:1px solid rgba(201,168,76,0.35);border-radius:8px;padding:16px 20px;">
-      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 10px;">💡 Soul Mate Safety Advice</p>
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 10px;">💡 Banduraa Safety Advice</p>
       <p style="font-family:Georgia,serif;font-size:14px;color:#2c4a6e;line-height:1.75;margin:0 0 8px;">
         🪪 <strong>Please keep your ID ready</strong> to show to the other person at the start of the meeting, and <strong>ask to see their ID</strong> before the conversation begins. This helps confirm you are both speaking to verified members.
       </p>
       <p style="font-family:Georgia,serif;font-size:14px;color:#2c4a6e;line-height:1.75;margin:0;">
-        📵 Soul Mate advises you <strong>not to share or ask for a mobile number</strong> during your first meeting, unless you feel completely comfortable doing so.
+        📵 Banduraa advises you <strong>not to share or ask for a mobile number</strong> during your first meeting, unless you feel completely comfortable doing so.
       </p>
     </div>
   `)
@@ -321,7 +321,7 @@ export async function sendMeetingConfirmedAcceptorEmail(
   time: string,
   roomId: string
 ) {
-  const meetingUrl = `https://meet.jit.si/SoulMate-${roomId}`
+  const meetingUrl = `https://meet.jit.si/Banduraa-${roomId}`
   const subject = `✅ Your video meeting with ${requesterName} is confirmed`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your meeting is confirmed!</h2>
@@ -346,12 +346,12 @@ export async function sendMeetingConfirmedAcceptorEmail(
       </a>
     </div>
     <div style="background:#fff8ec;border:1px solid rgba(201,168,76,0.35);border-radius:8px;padding:16px 20px;">
-      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 10px;">💡 Soul Mate Safety Advice</p>
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 10px;">💡 Banduraa Safety Advice</p>
       <p style="font-family:Georgia,serif;font-size:14px;color:#2c4a6e;line-height:1.75;margin:0 0 8px;">
         🪪 <strong>Please keep your ID ready</strong> to show to the other person at the start of the meeting, and <strong>ask to see their ID</strong> before the conversation begins. This helps confirm you are both speaking to verified members.
       </p>
       <p style="font-family:Georgia,serif;font-size:14px;color:#2c4a6e;line-height:1.75;margin:0;">
-        📵 Soul Mate advises you <strong>not to share or ask for a mobile number</strong> during your first meeting, unless you feel completely comfortable doing so.
+        📵 Banduraa advises you <strong>not to share or ask for a mobile number</strong> during your first meeting, unless you feel completely comfortable doing so.
       </p>
     </div>
   `)

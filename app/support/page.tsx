@@ -118,7 +118,7 @@ export default function SupportPage() {
           <div style={{ height: '1px', background: `linear-gradient(to right, ${c.goldLight}, transparent)` }} />
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', color: c.sepia, marginTop: '0.85rem' }}>
             Prefer email? Reach us directly at{' '}
-            <a href="mailto:support@mysoulmate.live" style={{ color: c.goldLight }}>support@mysoulmate.live</a>
+            <a href="mailto:support@banduraa.com" style={{ color: c.goldLight }}>support@banduraa.com</a>
           </p>
         </div>
 

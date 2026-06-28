@@ -17,14 +17,14 @@ async function sendAdminOnboardingEmail(memberName: string, city: string, countr
     <tr><td align="center">
       <table width="100%" style="max-width:520px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 8px 32px rgba(13,31,60,0.10);">
         <tr><td style="background:#0d1f3c;padding:28px 32px;text-align:center;">
-          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Soul Mate</p>
+          <p style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin:0;letter-spacing:0.04em;">Banduraa</p>
           <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,0.55);margin:4px 0 0;">✦ Admin Notification ✦</p>
         </td></tr>
         <tr><td style="padding:32px 32px 24px;">
           <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">New Member Joined</h2>
           <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
           <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
-            A new member has just completed their profile on Soul Mate.
+            A new member has just completed their profile on Banduraa.
           </p>
           <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;margin-bottom:24px;border-radius:0 6px 6px 0;">
             <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 8px;">Member Details</p>
@@ -33,20 +33,20 @@ async function sendAdminOnboardingEmail(memberName: string, city: string, countr
             <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0;">🕐 ${new Date().toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })}</p>
           </div>
           <div style="text-align:center;">
-            <a href="https://mysoulmate.live/admin" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+            <a href="https://banduraa.com/admin" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
               View Admin Panel →
             </a>
           </div>
         </td></tr>
         <tr><td style="padding:20px 32px 28px;border-top:1px solid rgba(13,31,60,0.08);text-align:center;">
-          <p style="font-family:Arial,sans-serif;font-size:11px;color:#9aabb8;margin:0;">© 2026 Soul Mate · Admin notification</p>
+          <p style="font-family:Arial,sans-serif;font-size:11px;color:#9aabb8;margin:0;">© 2026 Banduraa · Admin notification</p>
         </td></tr>
       </table>
     </td></tr>
   </table>
 </body></html>`
   try {
-    await resend.emails.send({ from: 'Soul Mate <noreply@mysoulmate.live>', to: ADMIN_EMAIL, subject, html })
+    await resend.emails.send({ from: 'Banduraa <noreply@banduraa.com>', to: ADMIN_EMAIL, subject, html })
   } catch (err) {
     console.error('Admin onboarding email error:', err)
   }

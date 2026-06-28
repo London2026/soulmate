@@ -12,7 +12,9 @@ const c = {
 }
 
 const STYLE = `
-  .auth-page { min-height:100dvh; background:#f4f1eb; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; box-sizing:border-box; }
+  .auth-page { min-height:100dvh; background:#f4f1eb; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; box-sizing:border-box; position:relative; }
+  .auth-home-btn { position:fixed; top:1rem; left:1rem; display:flex; align-items:center; gap:0.4rem; font-family:Raleway,sans-serif; font-size:0.68rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#5a6e82; text-decoration:none; padding:0.5rem 0.85rem; border:1px solid rgba(13,31,60,0.15); border-radius:6px; background:rgba(244,241,235,0.9); backdrop-filter:blur(8px); transition:color 0.2s,border-color 0.2s; z-index:10; }
+  .auth-home-btn:hover { color:#1b3a6b; border-color:rgba(13,31,60,0.3); }
   .auth-logo { width:150px; height:150px; object-fit:contain; border-radius:12px; box-shadow:0 6px 30px rgba(13,31,60,0.13); display:block; margin:0 auto 1.5rem; }
   .auth-card { width:100%; max-width:420px; background:#fff; border-radius:10px; box-shadow:0 16px 60px rgba(13,31,60,0.12); border:1px solid rgba(13,31,60,0.15); overflow:hidden; }
   .auth-card-head { padding:1.8rem 2rem 1.4rem; border-bottom:1px solid rgba(13,31,60,0.15); text-align:center; background:#f4f1eb; }
@@ -86,8 +88,9 @@ export default function SignupPage() {
   if (step === 'code') {
     return (
       <div className="auth-page">
+        <Link href="/" className="auth-home-btn">← Home</Link>
         <style>{STYLE}</style>
-        <img src="/soulmate-logo-full.png" alt="Soul Mate" className="auth-logo" />
+        <img src="/banduraa-logo.png" alt="Banduraa" className="auth-logo" />
         <div className="auth-card">
           <div className="auth-card-head">
             <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>📬</div>
@@ -135,7 +138,8 @@ export default function SignupPage() {
   return (
     <div className="auth-page">
       <style>{STYLE}</style>
-      <img src="/soulmate-logo-full.png" alt="Soul Mate" className="auth-logo" />
+      <Link href="/" className="auth-home-btn">← Home</Link>
+      <img src="/banduraa-logo.png" alt="Banduraa" className="auth-logo" />
       <div className="auth-card">
         <div className="auth-card-head">
           <h2 style={{ fontFamily: 'var(--font-playfair,"Playfair Display",serif)', fontSize: '1.6rem', fontWeight: 600, color: c.navy, margin: '0 0 0.2rem' }}>Begin Your Journey</h2>

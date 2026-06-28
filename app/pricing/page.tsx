@@ -18,7 +18,7 @@ const plans = [
     price: '$0',
     period: '',
     billing: 'No credit card required',
-    tagline: 'Try Soul Mate',
+    tagline: 'Try Banduraa',
     cta: 'Continue Free',
     highlighted: false,
     meetings: 0,
@@ -152,30 +152,13 @@ export default function PricingPage() {
   async function handleSelect(planKey: string) {
     setCheckoutError('')
 
-    // Free plan — no payment needed
     if (planKey === 'free') {
       startTransition(async () => { await selectPlan('free') })
       return
     }
 
-    // Paid plans — redirect to CCBill checkout
-    setCheckoutLoading(true)
-    try {
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planKey }),
-      })
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Could not start checkout')
-      }
-      const { url } = await res.json()
-      window.location.href = url
-    } catch (err) {
-      setCheckoutError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-      setCheckoutLoading(false)
-    }
+    // Paid plans — payments not yet configured
+    setCheckoutError('Paid plans are coming soon. We\'re finalising our payment provider — check back shortly or email support@banduraa.com.')
   }
 
   const isBusy = pending || checkoutLoading

@@ -4,6 +4,7 @@ import { useRef, useState, ClipboardEvent, KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { sendWelcomeEmail } from './actions'
 
 interface Props { email?: string; phone?: string; name?: string; type: string }
 
@@ -66,6 +67,7 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
       else if (phone) result = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' })
       else throw new Error('No contact provided')
       if (result?.error) throw result.error
+      if (type === 'signup' && email) await sendWelcomeEmail(email)
       router.push(type === 'signup' ? '/pricing' : '/discover')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid code. Please try again.')
@@ -94,7 +96,7 @@ export default function VerifyForm({ email, phone, name, type }: Props) {
         <Link href="/" style={{ textDecoration: 'none' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>💘</div>
           <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2.4rem', fontWeight: 700, color: c.navy, margin: '0 0 0.3rem', letterSpacing: '0.02em' }}>
-            Soul Mate
+            Banduraa
           </h1>
         </Link>
         <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', letterSpacing: '0.3em', textTransform: 'uppercase', color: c.gold, margin: 0 }}>

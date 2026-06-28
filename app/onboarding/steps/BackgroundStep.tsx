@@ -25,6 +25,7 @@ interface Props {
 export default function BackgroundStep({ data, onChange }: Props) {
   return (
     <div>
+      <style>{`.ob-bg-2col{display:grid;grid-template-columns:1fr 1fr;gap:1rem} @media(max-width:480px){.ob-bg-2col{grid-template-columns:1fr}}`}</style>
       <h2 className="ob-step-h2" style={{ color: c.navy, margin: '0 0 0.25rem' }}>
         Your heritage
       </h2>
@@ -118,7 +119,7 @@ export default function BackgroundStep({ data, onChange }: Props) {
       </div>
 
       {/* Marital Status + Children */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div className="ob-bg-2col">
         <div style={field}>
           <label style={label}>Marital Status</label>
           <select value={data.maritalStatus} onChange={e => onChange('maritalStatus', e.target.value)} style={inp} onFocus={focus} onBlur={blur}>

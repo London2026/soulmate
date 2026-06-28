@@ -122,6 +122,9 @@ export default function DiscoverClient({
         @media (max-width: 500px) {
           .disc-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
         }
+        @media (max-width: 360px) {
+          .disc-grid { grid-template-columns: 1fr; }
+        }
 
         .ai-btn {
           padding: 1rem 2.5rem;
@@ -178,6 +181,11 @@ export default function DiscoverClient({
         /* Filter input placeholder text */
         .disc-filter-inp::placeholder { color: #8a9db5 !important; }
         .disc-filter-inp:focus { border-color: #c9a84c !important; }
+        /* Prevent iOS auto-zoom on input focus (requires font-size >= 16px) */
+        @media (max-width: 600px) {
+          .disc-search-inp, .disc-filter-inp { font-size: 16px !important; }
+          .disc-ai-match-score { margin-left: 0 !important; }
+        }
       `}</style>
 
       {/* My profile preview — exactly how other members see your card */}
@@ -209,6 +217,7 @@ export default function DiscoverClient({
             <input
               type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by name or Profile ID…"
+              className="disc-search-inp"
               style={{ width: '100%', padding: '0.75rem 0.9rem 0.75rem 2.4rem', background: c.card, border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '8px', outline: 'none', boxSizing: 'border-box' }}
               onFocus={e => (e.target.style.borderColor = c.gold)}
               onBlur={e => (e.target.style.borderColor = c.border)}
@@ -303,7 +312,7 @@ export default function DiscoverClient({
         )}
       </div>
 
-      {/* Find My Soul Mate button */}
+      {/* Find My Banduraa button */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.75rem' }}>
         <button onClick={handleAiMatch} disabled={aiLoading} className="ai-btn"
           style={{
@@ -316,7 +325,7 @@ export default function DiscoverClient({
           }}>
           {aiLoading
             ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', fontSize: '1rem' }}>✦</span> Analysing your profile…</>
-            : <><span style={{ fontSize: '1.1rem' }}>✨</span> Find My Soul Mate</>}
+            : <><span style={{ fontSize: '1.1rem' }}>✨</span> Find My Banduraa</>}
         </button>
       </div>
 
@@ -332,7 +341,7 @@ export default function DiscoverClient({
         <div style={{ marginBottom: '2rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid rgba(201,168,76,0.12)`, background: 'linear-gradient(to right, rgba(201,168,76,0.08), transparent)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
             <div>
-              <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem' }}>✨ Your Soul Mate Matches</p>
+              <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem' }}>✨ Your Banduraa Matches</p>
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.sepia, margin: 0 }}>Showing matches with 50+ compatibility · Tap any result to view their full profile</p>
             </div>
             <button
@@ -362,7 +371,7 @@ export default function DiscoverClient({
                 <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem', color: c.sepia }}>
                   {m.profile?.age} yrs · {m.profile?.city}
                 </span>
-                <span style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.3rem 0.8rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>
+                <span className="disc-ai-match-score" style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.3rem 0.8rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>
                   {scoreLabel(m.score)}
                 </span>
               </div>
@@ -459,7 +468,7 @@ function EmptyState() {
         No profiles yet
       </h2>
       <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: '#bdb5a6' }}>
-        Be the first to invite someone to Soul Mate.
+        Be the first to invite someone to Banduraa.
       </p>
     </div>
   )
