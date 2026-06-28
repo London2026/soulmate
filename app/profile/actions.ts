@@ -4,6 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendMeetingRequestEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail } from '@/lib/sendEmail'
 import { firstNameOnly } from '@/lib/maskName'
+import {
+  sendMeetingRequestSMS,
+  sendMeetingAcceptedSMS,
+  sendMeetingConfirmedAcceptorSMS,
+  sendMeetingDeclinedSMS,
+  sendMeetingCancelledSMS,
+} from '@/lib/sendSMS'
 
 export async function requestVideoMeeting(
   recipientId: string,
@@ -33,7 +40,6 @@ export async function requestVideoMeeting(
 
   const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
 
-  // Try inserting with optional fields; fall back to base insert if columns don't exist yet
   let meeting: { id: string } | null = null
   const fullInsert = await supabase.from('video_meetings').insert({
     room_id: roomId,
@@ -46,7 +52,6 @@ export async function requestVideoMeeting(
   }).select('id').single()
 
   if (fullInsert.error) {
-    // Columns might not exist yet — insert without them
     const baseInsert = await supabase.from('video_meetings').insert({
       room_id: roomId,
       requester_id: user.id,
@@ -70,19 +75,28 @@ export async function requestVideoMeeting(
     message: `${name} has requested a video meeting on ${dateStr} at ${preferredTime}. Message: "${message}"`,
   })
 
-  // Email the recipient
+  // Fetch recipient profile (email + phone + name)
   const admin = createAdminClient()
-  const { data: recipientAuth } = await admin.auth.admin.getUserById(recipientId)
+  const [{ data: recipientAuth }, { data: recipientProfile }] = await Promise.all([
+    admin.auth.admin.getUserById(recipientId),
+    supabase.from('profiles').select('full_name, phone').eq('id', recipientId).single(),
+  ])
+
   const recipientEmail = recipientAuth?.user?.email
   const safeDateStr = preferredDate
     ? new Date(preferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     : 'a date to be confirmed'
-  const { data: recipientProfile } = await supabase.from('profiles').select('full_name').eq('id', recipientId).single()
   const recipientFirstName = firstNameOnly(recipientProfile?.full_name ?? '')
   const safeTime = preferredTime || 'time to be confirmed'
-  if (recipientEmail) {
-    await sendMeetingRequestEmail(recipientEmail, recipientFirstName, name, safeDateStr, safeTime, message)
-  }
+
+  await Promise.all([
+    recipientEmail
+      ? sendMeetingRequestEmail(recipientEmail, recipientFirstName, name, safeDateStr, safeTime, message)
+      : Promise.resolve(),
+    recipientProfile?.phone
+      ? sendMeetingRequestSMS(recipientProfile.phone, recipientFirstName, name, safeDateStr, safeTime)
+      : Promise.resolve(),
+  ])
 
   return { meetingId: meeting.id }
 }
@@ -102,10 +116,9 @@ export async function acceptMeeting(meetingId: string): Promise<{ roomId: string
 
   await supabase.from('video_meetings').update({ status: 'accepted' }).eq('id', meetingId)
 
-  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const { data: me } = await supabase.from('profiles').select('full_name, phone').eq('id', user.id).single()
   const dateStr = new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
-  // Notify requester
   await supabase.from('notifications').insert({
     recipient_id: meeting.requester_id,
     sender_id: user.id,
@@ -113,25 +126,39 @@ export async function acceptMeeting(meetingId: string): Promise<{ roomId: string
     message: `${me?.full_name ?? 'Someone'} accepted your video meeting request for ${dateStr} at ${meeting.preferred_time}. Join via the meeting link in your profile.`,
   })
 
-  // Email both parties
   const admin = createAdminClient()
-  const { data: requesterAuth } = await admin.auth.admin.getUserById(meeting.requester_id)
+  const [{ data: requesterAuth }, { data: requesterProfile }, { data: acceptorAuth }] = await Promise.all([
+    admin.auth.admin.getUserById(meeting.requester_id),
+    supabase.from('profiles').select('full_name, phone').eq('id', meeting.requester_id).single(),
+    admin.auth.admin.getUserById(user.id),
+  ])
+
   const requesterEmail = requesterAuth?.user?.email
+  const acceptorEmail = acceptorAuth?.user?.email
   const safeDateStr = meeting.preferred_date
     ? new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
     : 'your requested date'
-  const { data: requesterProfile } = await supabase.from('profiles').select('full_name').eq('id', meeting.requester_id).single()
   const requesterFirstName = firstNameOnly(requesterProfile?.full_name ?? '')
   const acceptorName = me?.full_name ?? 'Your match'
   const acceptorFirstName = firstNameOnly(me?.full_name ?? '')
-  const { data: acceptorAuth } = await admin.auth.admin.getUserById(user.id)
-  const acceptorEmail = acceptorAuth?.user?.email
+  const safeTime = meeting.preferred_time ?? ''
+
   await Promise.all([
+    // Email requester
     requesterEmail
-      ? sendMeetingAcceptedEmail(requesterEmail, requesterFirstName, acceptorName, safeDateStr, meeting.preferred_time ?? '', meeting.room_id)
+      ? sendMeetingAcceptedEmail(requesterEmail, requesterFirstName, acceptorName, safeDateStr, safeTime, meeting.room_id)
       : Promise.resolve(),
+    // Email acceptor
     acceptorEmail
-      ? sendMeetingConfirmedAcceptorEmail(acceptorEmail, acceptorFirstName, requesterProfile?.full_name ?? 'Your match', safeDateStr, meeting.preferred_time ?? '', meeting.room_id)
+      ? sendMeetingConfirmedAcceptorEmail(acceptorEmail, acceptorFirstName, requesterProfile?.full_name ?? 'Your match', safeDateStr, safeTime, meeting.room_id)
+      : Promise.resolve(),
+    // SMS requester
+    requesterProfile?.phone
+      ? sendMeetingAcceptedSMS(requesterProfile.phone, requesterFirstName, acceptorName, safeDateStr, safeTime, meeting.room_id)
+      : Promise.resolve(),
+    // SMS acceptor
+    me?.phone
+      ? sendMeetingConfirmedAcceptorSMS(me.phone, acceptorFirstName, requesterProfile?.full_name ?? 'Your match', safeDateStr, safeTime, meeting.room_id)
       : Promise.resolve(),
   ])
 
@@ -143,13 +170,19 @@ export async function declineMeeting(meetingId: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { data: meeting } = await supabase.from('video_meetings').select('requester_id, preferred_date, preferred_time').eq('id', meetingId).single()
+  const { data: meeting } = await supabase
+    .from('video_meetings')
+    .select('requester_id, preferred_date, preferred_time')
+    .eq('id', meetingId)
+    .single()
   if (!meeting) return
 
   await supabase.from('video_meetings').update({ status: 'declined' }).eq('id', meetingId)
 
   const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
-  const dateStr = meeting.preferred_date ? new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : 'your requested date'
+  const dateStr = meeting.preferred_date
+    ? new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+    : 'your requested date'
 
   await supabase.from('notifications').insert({
     recipient_id: meeting.requester_id,
@@ -158,4 +191,65 @@ export async function declineMeeting(meetingId: string): Promise<void> {
     message: `${me?.full_name ?? 'Someone'} is unavailable for ${dateStr} at ${meeting.preferred_time}. You can send a new request with a different date.`,
   })
 
+  // SMS the requester
+  const { data: requesterProfile } = await supabase
+    .from('profiles')
+    .select('full_name, phone')
+    .eq('id', meeting.requester_id)
+    .single()
+
+  if (requesterProfile?.phone) {
+    await sendMeetingDeclinedSMS(
+      requesterProfile.phone,
+      firstNameOnly(requesterProfile.full_name ?? ''),
+      me?.full_name ?? 'Your match',
+      dateStr,
+    )
+  }
+}
+
+export async function cancelMeeting(meetingId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: meeting } = await supabase
+    .from('video_meetings')
+    .select('requester_id, recipient_id, preferred_date, preferred_time, status')
+    .eq('id', meetingId)
+    .single()
+  if (!meeting) return
+  if (meeting.status !== 'pending') return
+
+  await supabase.from('video_meetings').update({ status: 'cancelled' }).eq('id', meetingId)
+
+  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const dateStr = meeting.preferred_date
+    ? new Date(meeting.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+    : 'the requested date'
+
+  // Notify the recipient (the other person)
+  const otherId = user.id === meeting.requester_id ? meeting.recipient_id : meeting.requester_id
+  await supabase.from('notifications').insert({
+    recipient_id: otherId,
+    sender_id: user.id,
+    type: 'meeting_cancelled',
+    message: `${me?.full_name ?? 'Someone'} has withdrawn their video meeting request for ${dateStr}.`,
+  })
+
+  // SMS the other person
+  const { data: otherProfile } = await supabase
+    .from('profiles')
+    .select('full_name, phone')
+    .eq('id', otherId)
+    .single()
+
+  if (otherProfile?.phone) {
+    await sendMeetingCancelledSMS(
+      otherProfile.phone,
+      firstNameOnly(otherProfile.full_name ?? ''),
+      me?.full_name ?? 'Your match',
+      dateStr,
+    )
+  }
 }

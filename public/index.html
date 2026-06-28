@@ -787,6 +787,8 @@
     .meeting-feat-item { padding: 0.9rem 1rem; }
     .meeting-feat-item h4 { font-size: 0.95rem; }
     .meeting-feat-item p { font-size: 0.85rem; }
+    .meeting-features { width: 100%; box-sizing: border-box; }
+    .meeting-features .btn-primary { box-sizing: border-box; width: 100%; margin-left: 0; margin-right: 0; }
   }
 
   @media (max-width: 400px) {
@@ -1803,7 +1805,7 @@
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(13,31,60,0.97);
+    background: #0b1728;
     z-index: 1050;
     flex-direction: column;
     align-items: center;
@@ -1833,6 +1835,7 @@
   @media (max-width: 900px) {
     .nav-links { display: none; }
     .nav-cta { display: none; }
+    .nav-signin-btn { display: none; }
     .hamburger { display: flex; }
 
     .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
@@ -1857,7 +1860,7 @@
     .hero-tagline { font-size: 0.62rem; letter-spacing: 0.18em; }
     .hero-desc { font-size: 1rem; }
     .hero-buttons { flex-direction: column; align-items: center; gap: 0.8rem; }
-    .btn-primary, .btn-outline { width: 100%; max-width: 280px; text-align: center; }
+    .btn-primary, .btn-outline { width: 100%; max-width: 320px; text-align: center; letter-spacing: 0.08em; padding: 0.9rem 1.2rem; }
 
     /* SECTIONS */
     .section { padding: 4rem 1.2rem; }
@@ -1955,6 +1958,23 @@
     50%  { transform: scale(1.04) translate(0.8%, 0.3%); }
     75%  { transform: scale(1.07) translate(0.5%, -0.8%); }
     100% { transform: scale(1)    translate(0%,   0%); }
+  }
+  /* Mobile: scale-only Ken Burns — translate causes scroll bleed on iOS */
+  @keyframes kenBurnsMobile {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.07); }
+    100% { transform: scale(1); }
+  }
+  @media (max-width: 768px) {
+    .hero-bg-img-el { animation-name: kenBurnsMobile; }
+    .hero-bg-overlay {
+      background: linear-gradient(
+        to bottom,
+        rgba(245,240,230,0.80) 0%,
+        rgba(245,240,230,0.65) 50%,
+        rgba(245,240,230,0.85) 100%
+      );
+    }
   }
   .hero > *:not(.hero-bg-wrap):not(.hero-bg-overlay) {
     position: relative;
@@ -2059,7 +2079,8 @@
   <a href="#personality" onclick="toggleMenu()">Personality</a>
   <a href="#pricing" onclick="toggleMenu()">Pricing</a>
   <a href="#safety" onclick="toggleMenu()">Safety</a>
-  <button class="btn-primary" onclick="toggleMenu(); openModal();" style="margin-top:1rem; max-width:220px;">Begin Journey</button>
+  <a href="/login" onclick="toggleMenu()" style="font-family:'Raleway',sans-serif;font-size:0.85rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ivory-dim,#bdb5a6);text-decoration:none;border:1px solid rgba(255,255,255,0.2);padding:0.55rem 1.4rem;border-radius:2px;">Sign In</a>
+  <button class="btn-primary" onclick="toggleMenu(); openModal();" style="margin-top:0.5rem; max-width:220px;">Begin Journey</button>
 </div>
 
 <!-- HERO -->

@@ -91,6 +91,25 @@ export async function sendMeetingAcceptedSMS(
   )
 }
 
+export async function sendMeetingCancelledSMS(
+  toPhone: string,
+  recipientFirstName: string,
+  cancellerName: string,
+  dateStr: string,
+) {
+  await twilioSend(
+    toPhone,
+    `Banduraa: Hi ${recipientFirstName}, ${cancellerName} has withdrawn their video meeting request for ${dateStr}. You can still connect with other members: https://banduraa.com/discover\n\nReply STOP to opt out.`
+  )
+}
+
+export async function sendBillingReminderSMS(toPhone: string, firstName: string, plan: string, amount: string) {
+  await twilioSend(
+    toPhone,
+    `Banduraa: Hi ${firstName}, your ${plan} plan renews soon. £${amount}/month will be charged to your payment method. To manage your subscription visit: https://banduraa.com/pricing\n\nReply STOP to opt out.`
+  )
+}
+
 export async function sendMeetingConfirmedAcceptorSMS(
   toPhone: string,
   acceptorFirstName: string,

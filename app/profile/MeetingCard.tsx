@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { acceptMeeting, declineMeeting } from './actions'
+import { acceptMeeting, declineMeeting, cancelMeeting } from './actions'
 import { maskName, firstNameOnly } from '@/lib/maskName'
 
 interface Props {
@@ -22,7 +22,7 @@ const c = { navy: '#0d1f3c', gold: '#8b6914', goldLight: '#c9a84c', sepia: '#5a6
 
 export default function MeetingCard({ meeting }: Props) {
   const [status, setStatus] = useState(meeting.status)
-  const [loading, setLoading] = useState<'accept' | 'decline' | null>(null)
+  const [loading, setLoading] = useState<'accept' | 'decline' | 'cancel' | null>(null)
 
   const meetingUrl = `https://meet.jit.si/Banduraa-${meeting.room_id}`
 
@@ -48,6 +48,12 @@ export default function MeetingCard({ meeting }: Props) {
   async function handleDecline() {
     setLoading('decline')
     try { await declineMeeting(meeting.id); setStatus('declined') }
+    finally { setLoading(null) }
+  }
+
+  async function handleCancel() {
+    setLoading('cancel')
+    try { await cancelMeeting(meeting.id); setStatus('cancelled') }
     finally { setLoading(null) }
   }
 
@@ -95,9 +101,15 @@ export default function MeetingCard({ meeting }: Props) {
       )}
 
       {status === 'pending' && meeting.i_requested && (
-        <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0.5rem 0 0', textAlign: 'center' }}>
-          Awaiting response from {firstNameOnly(meeting.other_name)}…
-        </p>
+        <div style={{ marginTop: '0.75rem' }}>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.6rem', textAlign: 'center' }}>
+            Awaiting response from {firstNameOnly(meeting.other_name)}…
+          </p>
+          <button onClick={handleCancel} disabled={!!loading}
+            style={{ width: '100%', padding: '0.55rem', background: 'transparent', border: '1px solid rgba(248,113,113,0.25)', color: '#f87171', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'default' : 'pointer', borderRadius: '4px', opacity: loading ? 0.7 : 1 }}>
+            {loading === 'cancel' ? 'Cancelling…' : 'Withdraw Request'}
+          </button>
+        </div>
       )}
 
       {status === 'accepted' && (
@@ -110,6 +122,12 @@ export default function MeetingCard({ meeting }: Props) {
       {status === 'declined' && (
         <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#f87171', margin: '0.5rem 0 0', textAlign: 'center' }}>
           This meeting was declined.
+        </p>
+      )}
+
+      {status === 'cancelled' && (
+        <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0.5rem 0 0', textAlign: 'center' }}>
+          This meeting request was withdrawn.
         </p>
       )}
     </div>

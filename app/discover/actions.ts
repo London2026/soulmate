@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPhotoRevealedEmail } from '@/lib/sendEmail'
+import { sendPhotoRevealSMS } from '@/lib/sendSMS'
 import { firstNameOnly } from '@/lib/maskName'
 
 
@@ -41,13 +42,18 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
 
     const viewerProfileId = user.id.slice(0, 8).toUpperCase()
 
-    // Email the photo owner
+    // Email + SMS the photo owner
     const admin = createAdminClient()
-    const { data: ownerAuth } = await admin.auth.admin.getUserById(viewedUserId)
+    const [{ data: ownerAuth }, { data: ownerProfile }] = await Promise.all([
+      admin.auth.admin.getUserById(viewedUserId),
+      supabase.from('profiles').select('phone').eq('id', viewedUserId).single(),
+    ])
     const ownerEmail = ownerAuth?.user?.email
-    if (ownerEmail) {
-      await sendPhotoRevealedEmail(ownerEmail, firstNameOnly(ownerName), viewerProfileId)
-    }
+    const ownerFirstName = firstNameOnly(ownerName)
+    await Promise.all([
+      ownerEmail ? sendPhotoRevealedEmail(ownerEmail, ownerFirstName, viewerProfileId) : Promise.resolve(),
+      ownerProfile?.phone ? sendPhotoRevealSMS(ownerProfile.phone, ownerFirstName) : Promise.resolve(),
+    ])
   }
 
   // Fetch the front photo path and generate a signed URL
