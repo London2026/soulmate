@@ -1,36 +1,39 @@
-async function twilioSend(toPhone: string, body: string) {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const authToken  = process.env.TWILIO_AUTH_TOKEN
-  const from       = process.env.TWILIO_SMS_FROM
+async function vonageSend(toPhone: string, body: string) {
+  const apiKey    = process.env.VONAGE_API_KEY
+  const apiSecret = process.env.VONAGE_API_SECRET
 
-  if (!accountSid || !authToken || !from) {
-    console.warn('Twilio SMS env vars not set — SMS skipped')
+  if (!apiKey || !apiSecret) {
+    console.warn('Vonage SMS env vars not set — SMS skipped')
     return
   }
 
+  // US & Canada (+1) don't support alphanumeric sender IDs — skip until a US number is added
+  const isNorthAmerica = toPhone.startsWith('+1') || toPhone.startsWith('1')
+  if (isNorthAmerica) {
+    console.info('SMS skipped for US/CA number (alphanumeric sender not supported):', toPhone)
+    return
+  }
+
+  const from = 'Banduraa'
+
   try {
-    const res = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
-        },
-        body: new URLSearchParams({ From: from, To: toPhone, Body: body }).toString(),
-      }
-    )
-    const json = await res.json() as { sid?: string; status?: string; to?: string; message?: string }
-    if (!res.ok) {
-      console.error('SMS send error:', JSON.stringify(json))
+    const res = await fetch('https://rest.nexmo.com/sms/json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ api_key: apiKey, api_secret: apiSecret, from, to: toPhone, text: body }).toString(),
+    })
+    const json = await res.json() as { messages?: Array<{ status: string; 'error-text'?: string }> }
+    const msg = json.messages?.[0]
+    if (msg?.status !== '0') {
+      console.error('Vonage SMS error:', msg?.['error-text'])
     }
   } catch (err) {
-    console.error('SMS send error:', err)
+    console.error('Vonage SMS error:', err)
   }
 }
 
 export async function sendOnboardingCompleteSMS(toPhone: string, firstName: string) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Hi ${firstName}, your Banduraa profile is now live. Start browsing matches: https://banduraa.com/discover\n\nReply STOP to opt out.`
   )
@@ -39,14 +42,14 @@ export async function sendOnboardingCompleteSMS(toPhone: string, firstName: stri
 export async function sendAdminNewSubscriberSMS(memberName: string, plan: string) {
   const adminPhone = process.env.ADMIN_PHONE
   if (!adminPhone) return
-  await twilioSend(
+  await vonageSend(
     adminPhone,
     `Banduraa: New subscriber - ${memberName} joined the ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan. https://banduraa.com/admin`
   )
 }
 
 export async function sendPhotoRevealSMS(toPhone: string, ownerFirstName: string) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Banduraa: Hi ${ownerFirstName}, someone revealed your photo. They may send you a video meeting request. Log in to view their profile: https://banduraa.com/discover\n\nReply STOP to opt out.`
   )
@@ -59,7 +62,7 @@ export async function sendMeetingRequestSMS(
   dateStr: string,
   time: string,
 ) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Banduraa: Hi ${recipientFirstName}, ${requesterName} has requested a video meeting on ${dateStr} at ${time}. Log in to accept or decline: https://banduraa.com/profile\n\nReply STOP to opt out.`
   )
@@ -71,7 +74,7 @@ export async function sendMeetingDeclinedSMS(
   declinerName: string,
   dateStr: string,
 ) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Banduraa: Hi ${requesterFirstName}, ${declinerName} is unavailable for ${dateStr}. You can send a new request with a different date: https://banduraa.com/discover\n\nReply STOP to opt out.`
   )
@@ -85,7 +88,7 @@ export async function sendMeetingAcceptedSMS(
   time: string,
   roomId: string,
 ) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Banduraa: Hi ${requesterFirstName}, your video meeting with ${acceptorName} is confirmed for ${dateStr} at ${time}. Join here: https://meet.jit.si/Banduraa-${roomId}\n\nSafety: Keep your ID ready and do not share your phone number unless you feel comfortable.\n\nReply STOP to opt out.`
   )
@@ -97,14 +100,14 @@ export async function sendMeetingCancelledSMS(
   cancellerName: string,
   dateStr: string,
 ) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Banduraa: Hi ${recipientFirstName}, ${cancellerName} has withdrawn their video meeting request for ${dateStr}. You can still connect with other members: https://banduraa.com/discover\n\nReply STOP to opt out.`
   )
 }
 
 export async function sendBillingReminderSMS(toPhone: string, firstName: string, plan: string, amount: string) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Banduraa: Hi ${firstName}, your ${plan} plan renews soon. £${amount}/month will be charged to your payment method. To manage your subscription visit: https://banduraa.com/pricing\n\nReply STOP to opt out.`
   )
@@ -118,7 +121,7 @@ export async function sendMeetingConfirmedAcceptorSMS(
   time: string,
   roomId: string,
 ) {
-  await twilioSend(
+  await vonageSend(
     toPhone,
     `Banduraa: Hi ${acceptorFirstName}, your video meeting with ${requesterName} is confirmed for ${dateStr} at ${time}. Join here: https://meet.jit.si/Banduraa-${roomId}\n\nSafety: Keep your ID ready and do not share your phone number unless you feel comfortable.\n\nReply STOP to opt out.`
   )
