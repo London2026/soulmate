@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendProfileLiveEmail } from '@/lib/sendEmail'
 import { sendOnboardingCompleteSMS } from '@/lib/sendSMS'
 import { Resend } from 'resend'
@@ -57,9 +58,11 @@ export async function POST() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
+  const admin = createAdminClient()
+
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, city, country, phone')
+    .select('full_name, city, country, phone, member_id')
     .eq('id', user.id)
     .single()
 
@@ -68,9 +71,20 @@ export async function POST() {
   const country    = profile?.country ?? '—'
   const firstName  = memberName.split(' ')[0] ?? memberName
 
+  // Generate a unique member ID if not already assigned
+  let memberId = profile?.member_id as string | null
+  if (!memberId) {
+    const { count } = await admin
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .not('member_id', 'is', null)
+    memberId = `BND-${String((count ?? 0) + 1).padStart(6, '0')}`
+    await admin.from('profiles').update({ member_id: memberId }).eq('id', user.id)
+  }
+
   await Promise.all([
     sendAdminOnboardingEmail(memberName, city, country),
-    user.email ? sendProfileLiveEmail(user.email, firstName) : Promise.resolve(),
+    user.email ? sendProfileLiveEmail(user.email, firstName, memberId) : Promise.resolve(),
     profile?.phone ? sendOnboardingCompleteSMS(profile.phone, firstName) : Promise.resolve(),
   ])
 

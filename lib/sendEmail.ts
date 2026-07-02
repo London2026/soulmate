@@ -143,17 +143,21 @@ export async function sendEncouragementEmail(to: string) {
   await send(to, subject, html)
 }
 
-export async function sendProfileLiveEmail(to: string, firstName: string) {
+export async function sendProfileLiveEmail(to: string, firstName: string, memberId: string) {
   const subject = `🎉 Your Banduraa profile is now live!`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 12px;">Your profile is live! 🎉</h2>
     <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
     <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 16px;">
-      Congratulations, <strong>${firstName}</strong>!
+      Congratulations, <strong>${firstName}</strong>! Your Banduraa profile is now complete and visible to other members. Your journey towards a meaningful connection begins here.
     </p>
-    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 20px;">
-      Your Banduraa profile is now complete and visible to other members. Your journey towards a meaningful connection begins here.
-    </p>
+
+    <div style="background:#0d1f3c;border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center;">
+      <p style="font-family:Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(201,168,76,0.7);margin:0 0 8px;">Your Unique Member ID</p>
+      <p style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#c9a84c;margin:0 0 8px;letter-spacing:0.1em;">${memberId}</p>
+      <p style="font-family:Arial,sans-serif;font-size:12px;color:rgba(232,227,216,0.55);margin:0;">Please keep this safe — you may need it when contacting Banduraa support.</p>
+    </div>
+
     <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:16px 20px;margin-bottom:24px;border-radius:0 6px 6px 0;">
       <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 12px;">What you can do next</p>
       <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
@@ -176,7 +180,7 @@ export async function sendProfileLiveEmail(to: string, firstName: string) {
     </div>
     <div style="background:#fff8ec;border:1px solid rgba(201,168,76,0.35);border-radius:8px;padding:16px 20px;">
       <p style="font-family:Georgia,serif;font-size:14px;color:#5a6e82;line-height:1.75;margin:0;">
-        If you have any questions or need help, simply reply to this email — we're here for you. Wishing you a beautiful journey on Banduraa. 🌹
+        If you have any questions or need help, simply reply to this email and quote your member ID. Wishing you a beautiful journey on Banduraa. 🌹
       </p>
     </div>
   `)

@@ -213,11 +213,12 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
               <div style={{ overflowX: 'auto', border: `1px solid ${c.border2}`, borderRadius: 6 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr>{['Name','Age','Location','Plan','Joined'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
+                    <tr>{['Member ID','Name','Age','Location','Plan','Joined'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
                   </thead>
                   <tbody>
                     {members.filter(m => m.onboarding_complete).slice(0, 10).map((m: any) => (
                       <tr key={m.id} className="admin-row">
+                        <td style={{ ...td, fontFamily: 'monospace', color: c.gold, fontSize: '0.78rem' }}>{m.member_id ?? '—'}</td>
                         <td style={td}>{m.full_name ?? '—'}</td>
                         <td style={td}>{m.age ?? '—'}</td>
                         <td style={td}>{[m.city, m.country].filter(Boolean).join(', ') || '—'}</td>
@@ -239,11 +240,12 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
             <div style={{ overflowX: 'auto', border: `1px solid ${c.border2}`, borderRadius: 6 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr>{['Name','Age','Gender','Location','Religion','Plan','WhatsApp','Joined'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
+                  <tr>{['Member ID','Name','Age','Gender','Location','Religion','Plan','WhatsApp','Joined'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {members.filter((m: any) => m.onboarding_complete).map((m: any) => (
                     <tr key={m.id} className="admin-row">
+                      <td style={{ ...td, fontFamily: 'monospace', color: c.gold, fontSize: '0.78rem' }}>{m.member_id ?? '—'}</td>
                       <td style={{ ...td, color: c.text, fontWeight: 500 }}>{m.full_name ?? '—'}</td>
                       <td style={td}>{m.age ?? '—'}</td>
                       <td style={td}>{m.gender ?? '—'}</td>
