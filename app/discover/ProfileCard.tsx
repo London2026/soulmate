@@ -25,10 +25,15 @@ export interface ProfileData {
   has_kids?: string | null
   sub_religion?: string | null
   hobby?: string | null
+  university?: string | null
+  other_qualifications?: string | null
+  housing?: string | null
+  zodiac_sign?: string | null
   id_verified?: boolean | null
   back_photo_1_url: string | null
   back_photo_2_url: string | null
   voice_url: string | null
+  voice_native_url?: string | null
   front_photo_url: string | null
   already_revealed: boolean
   meeting_room_id: string | null
@@ -39,7 +44,6 @@ export interface ProfileData {
   fav_travel?: string | null
   fav_foods?: string | null
   fav_ai_tools?: string | null
-  zodiac_sign?: string | null
   pref_gender?: string | null
   pref_age_min?: number | null
   pref_age_max?: number | null
@@ -52,10 +56,11 @@ export interface ProfileData {
 }
 
 const c = {
-  navy: '#0d1f3c', navyMid: '#1e3358', navyLight: '#253f6a',
+  navy: '#0d1f3c', navyMid: '#1a2d4e', navyLight: '#1e3a5f',
   ivory: '#f5f0e6', ivoryDim: '#bdb5a6',
   gold: '#8b6914', goldLight: '#c9a84c',
-  border: 'rgba(201,168,76,0.28)',
+  border: 'rgba(201,168,76,0.2)',
+  borderSub: 'rgba(201,168,76,0.1)',
 }
 
 function isPersonalityUrl(s: string): boolean {
@@ -67,20 +72,39 @@ function toFullUrl(s: string): string {
   return 'https://' + s.trim()
 }
 
-function shortPersonalityLabel(url: string): string {
+function shortLabel(url: string): string {
   try {
     const u = new URL(url)
-    const path = u.pathname.length > 22 ? u.pathname.slice(0, 22) + '…' : u.pathname
+    const path = u.pathname.length > 28 ? u.pathname.slice(0, 28) + '…' : u.pathname
     return (u.hostname.replace('www.', '') + path).replace(/\/$/, '')
   } catch {
-    return url.length > 34 ? url.slice(0, 34) + '…' : url
+    return url.length > 40 ? url.slice(0, 40) + '…' : url
   }
 }
 
-function splitPersonalityChips(value: string): string[] {
+function splitChips(value: string): string[] {
   if (!value) return []
   if (value.includes(' | ')) return value.split(' | ').map(s => s.trim()).filter(Boolean)
   return value.split(',').map(s => s.trim()).filter(Boolean)
+}
+
+function SectionHeader({ icon, title }: { icon: string; title: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+      <span style={{ fontSize: '1rem' }}>{icon}</span>
+      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight }}>{title}</span>
+    </div>
+  )
+}
+
+function DetailRow({ label, value }: { label: string; value: string | number | null | undefined }) {
+  if (!value) return null
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '0.5rem', padding: '0.6rem 0', borderBottom: `1px solid ${c.borderSub}` }}>
+      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, opacity: 0.8, paddingTop: '0.2rem' }}>{label}</span>
+      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.1rem', color: c.ivory, lineHeight: 1.4 }}>{value}</span>
+    </div>
+  )
 }
 
 export default function ProfileCard({ profile, canReveal = true, canMeet = true, meetingsLeft = 0, previewMode = false }: {
@@ -91,367 +115,292 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
   const [revealing, setRevealing] = useState(false)
   const [revealMsg, setRevealMsg] = useState('')
   const [revealError, setRevealError] = useState('')
+  const [meetDate, setMeetDate] = useState('')
+  const [meetTime, setMeetTime] = useState('')
+  const [meetMsg, setMeetMsg] = useState('')
+  const [requesting, setRequesting] = useState(false)
+  const [meetSent, setMeetSent] = useState(false)
+  const [meetError, setMeetError] = useState('')
   const [roomId, setRoomId] = useState<string | null>(
     profile.meeting_status === 'accepted' ? profile.meeting_room_id : null
   )
   const [meetPending] = useState(profile.meeting_status === 'pending')
-  const [requesting, setRequesting] = useState(false)
-  const [showForm, setShowForm] = useState(false)
-  const [meetDate, setMeetDate] = useState('')
-  const [meetTime, setMeetTime] = useState('18:00')
-  const [meetMsg, setMeetMsg] = useState('')
-  const [meetSent, setMeetSent] = useState(false)
-  const [meetError, setMeetError] = useState('')
-  const [buyingExtra, setBuyingExtra] = useState(false)
 
   const initials = profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase()
 
-  async function handleBuyExtra() {
-    setBuyingExtra(true)
-    try {
-      const res = await fetch('/api/create-extra-meeting-session', { method: 'POST' })
-      const { url } = await res.json()
-      if (url) window.location.href = url
-    } catch { setBuyingExtra(false) }
-  }
-
   async function handleReveal() {
-    if (revealed || revealing) return
     setRevealing(true); setRevealError('')
     try {
       const { signedUrl } = await revealPhoto(profile.id)
-      setFrontUrl(signedUrl); setRevealed(true)
+      setRevealed(true); setFrontUrl(signedUrl)
       setRevealMsg(`${firstNameOnly(profile.full_name)} has been notified.`)
     } catch (err) { setRevealError(err instanceof Error ? err.message : 'Something went wrong.') }
     finally { setRevealing(false) }
   }
 
-  async function handleRequestMeeting(e: React.FormEvent) {
-    e.preventDefault()
-    if (!meetDate) { setMeetError('Please select a preferred date.'); return }
-    setRequesting(true)
-    setMeetError('')
+  async function handleMeetRequest() {
+    if (!meetDate || !meetTime) { setMeetError('Please select a date and time.'); return }
+    setRequesting(true); setMeetError('')
     try {
       await requestVideoMeeting(profile.id, meetDate, meetTime, meetMsg || `I'd love to connect with you!`)
       setMeetSent(true)
-      setShowForm(false)
     } catch (err) {
       setMeetError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-    } finally {
-      setRequesting(false)
-    }
+    } finally { setRequesting(false) }
   }
 
-  const tags = [profile.zodiac_sign, profile.occupation, profile.education, profile.education_subject, profile.employment_status, profile.mother_tongue, profile.ethnicity, profile.height, profile.weight, profile.marital_status, profile.has_kids].filter(Boolean)
+  const personalityItems = [
+    { icon: '🎬', label: 'My Favourite Reels',            value: profile.fav_reels },
+    { icon: '▶️', label: 'My Favourite YouTube Channel',  value: profile.fav_youtube },
+    { icon: '📺', label: 'My Favourite Web Series',       value: profile.fav_web_series },
+    { icon: '✈️', label: 'My Favourite Travel',           value: profile.fav_travel },
+    { icon: '🍽️', label: 'My Favourite Foods',            value: profile.fav_foods },
+    { icon: '🤖', label: 'My Favourite AI Tools',         value: profile.fav_ai_tools },
+    { icon: '🎯', label: 'My Hobbies & Interests',        value: profile.hobby },
+  ].filter(p => p.value)
 
   return (
-    <article style={{ background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.1)', marginBottom: '2rem' }}>
+    <article style={{ background: c.navyMid, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }}>
       <style>{`
-        .pc-header { padding: 1.5rem 1.5rem 1.25rem; }
-        .pc-name { font-size: 1.9rem; }
-        .pc-meta { font-size: 1.2rem; }
-        .pc-tag { font-size: 0.8rem; padding: 0.32rem 0.85rem; }
-        .pc-id { font-size: 0.85rem; }
-        .pc-actions { padding: 1.25rem 1.5rem; }
+        .pc-name { font-size: 2rem; }
         @media (max-width: 500px) {
-          .pc-header { padding: 1rem 1rem 0.9rem; }
           .pc-name { font-size: 1.45rem !important; }
-          .pc-meta { font-size: 1.05rem !important; }
-          .pc-tag { font-size: 0.72rem !important; padding: 0.25rem 0.6rem !important; }
-          .pc-id { font-size: 0.7rem !important; }
-          .pc-actions { padding: 0.85rem 1rem; }
+          .pc-detail-grid { grid-template-columns: 120px 1fr !important; }
         }
       `}</style>
 
-      {/* Header */}
-      <div className="pc-header" style={{ borderBottom: `1px solid rgba(201,168,76,0.08)` }}>
-        <div style={{ marginBottom: '0.65rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem', flexWrap: 'wrap' }}>
-            <h2 className="pc-name" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, margin: 0 }}>
+      {/* ── Header ── */}
+      <div style={{ padding: '1.5rem 1.75rem 1.25rem', background: c.navyMid }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <h2 className="pc-name" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, margin: 0, lineHeight: 1 }}>
               {maskName(profile.full_name)}
             </h2>
-            {profile.id_verified && (
-              <span title="ID Verified" style={{ fontSize: '1rem', flexShrink: 0, lineHeight: 1, color: '#16a34a' }}>✅</span>
-            )}
-            <span className="pc-id" style={{ fontFamily: '"Courier New", monospace', fontWeight: 700, color: c.goldLight, background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.18rem 0.5rem', borderRadius: '4px', letterSpacing: '0.08em', flexShrink: 0 }}>
+            {profile.id_verified && <span title="ID Verified" style={{ fontSize: '1rem', color: '#16a34a' }}>✅</span>}
+            <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.82rem', fontWeight: 700, color: c.goldLight, background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, padding: '0.22rem 0.65rem', borderRadius: '6px', letterSpacing: '0.08em' }}>
               #{profile.id.slice(0, 8).toUpperCase()}
             </span>
           </div>
-          <p className="pc-meta" style={{ fontFamily: '"Cormorant Garamond", serif', color: c.ivoryDim, margin: 0 }}>
-            {profile.age} yrs · {profile.gender} · {profile.city}, {profile.country}
-          </p>
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
-          {/* Religion — always first, gold highlight */}
-          <span className="pc-tag" style={{ fontFamily: 'Raleway, sans-serif', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: 'rgba(201,168,76,0.12)', border: `1px solid ${c.border}`, color: c.goldLight, borderRadius: '20px' }}>
+          {/* Religion badge — top right */}
+          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, border: `1.5px solid ${c.goldLight}`, padding: '0.35rem 0.9rem', borderRadius: '20px', whiteSpace: 'nowrap', flexShrink: 0 }}>
             {profile.religion}{profile.sub_religion ? ` · ${profile.sub_religion}` : ''}
           </span>
-          {tags.map(tag => (
-            <span key={tag} className="pc-tag" style={{ fontFamily: 'Raleway, sans-serif', letterSpacing: '0.06em', background: 'rgba(14,26,53,0.7)', border: '1px solid rgba(201,168,76,0.15)', color: c.ivoryDim, borderRadius: '4px' }}>
-              {tag}
-            </span>
-          ))}
         </div>
+        <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.1rem', color: c.ivoryDim, margin: 0 }}>
+          {profile.age} yrs · {profile.gender} · {profile.city}, {profile.country}
+        </p>
       </div>
 
-      {/* Back Photos */}
-      {profile.back_photo_1_url || profile.back_photo_2_url ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
-          {[profile.back_photo_1_url, profile.back_photo_2_url].map((url, i) =>
-            url ? (
-              <div key={i} style={{ aspectRatio: '4/3', background: c.navy, overflow: 'hidden' }}>
-                <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              </div>
-            ) : null
-          )}
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
-          {[0, 1].map(i => (
-            <div key={i} style={{ aspectRatio: '4/3', background: `linear-gradient(135deg, #152d4e 0%, #1e3d66 100%)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '2rem', fontStyle: 'italic', color: 'rgba(201,168,76,0.3)' }}>{initials}</span>
-              <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.2)' }}>Photo coming soon</span>
+      {/* ── Back Photos ── */}
+      {(profile.back_photo_1_url || profile.back_photo_2_url) ? (
+        profile.back_photo_1_url && profile.back_photo_2_url ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+            <div style={{ aspectRatio: '2/3', overflow: 'hidden' }}>
+              <img src={profile.back_photo_1_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Voice */}
-      {profile.voice_url && (
-        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem' }}>🎙 Voice Introduction</p>
-          <audio controls src={profile.voice_url} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
-        </div>
-      )}
-
-      {/* Personality section */}
-      {[
-        { icon: '🎬', label: 'My Favourite Reels',            value: profile.fav_reels },
-        { icon: '▶️', label: 'My Favourite YouTube Channels', value: profile.fav_youtube },
-        { icon: '📺', label: 'My Favourite Web Series',       value: profile.fav_web_series },
-        { icon: '✈️', label: 'My Favourite Travel',           value: profile.fav_travel },
-        { icon: '🍽️', label: 'My Favourite Foods',            value: profile.fav_foods },
-        { icon: '🤖', label: 'My Favourite AI Tools',         value: profile.fav_ai_tools },
-        { icon: '🎯', label: 'My Hobbies & Interests',        value: profile.hobby },
-      ].some(p => p.value) && (
-        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 1rem' }}>✦ Personality &amp; Interests</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {[
-              { icon: '🎬', label: 'My Favourite Reels',            value: profile.fav_reels },
-              { icon: '▶️', label: 'My Favourite YouTube Channels', value: profile.fav_youtube },
-              { icon: '📺', label: 'My Favourite Web Series',       value: profile.fav_web_series },
-              { icon: '✈️', label: 'My Favourite Travel',           value: profile.fav_travel },
-              { icon: '🍽️', label: 'My Favourite Foods',            value: profile.fav_foods },
-              { icon: '🤖', label: 'My Favourite AI Tools',         value: profile.fav_ai_tools },
-              { icon: '🎯', label: 'My Hobbies & Interests',        value: profile.hobby },
-            ].filter(p => p.value).map(p => (
-              <div key={p.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
-                <span style={{ fontSize: '1.1rem', flexShrink: 0, marginTop: '0.1rem' }}>{p.icon}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.35rem' }}>{p.label}</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    {splitPersonalityChips(p.value!).map((tag, i) => (
-                      isPersonalityUrl(tag) ? (
-                        <a key={i} href={toFullUrl(tag)} target="_blank" rel="noopener noreferrer" title={tag}
-                          style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: '#7fb3f5', textDecoration: 'underline', padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                          {shortPersonalityLabel(toFullUrl(tag))}
-                        </a>
-                      ) : (
-                        <span key={i} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block' }}>
-                          {tag}
-                        </span>
-                      )
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Partner Preferences */}
-      {[
-        { label: 'Looking For',        value: profile.pref_gender },
-        { label: 'Age Range',          value: profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} yrs` : null },
-        { label: 'Location',           value: profile.pref_location },
-        { label: 'Religion',           value: profile.pref_religion ? (profile.pref_sub_religion ? `${profile.pref_religion} · ${profile.pref_sub_religion}` : profile.pref_religion) : null },
-        { label: 'Occupation',         value: profile.pref_occupation },
-        { label: 'Height Preference',  value: profile.pref_height },
-        { label: 'Ethnicity',          value: profile.pref_ethnicity },
-      ].some(f => f.value) && (
-        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 1rem' }}>💑 Partner Preferences</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-            {[
-              { label: 'Looking For',        value: profile.pref_gender },
-              { label: 'Age Range',          value: profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} yrs` : null },
-              { label: 'Location',           value: profile.pref_location },
-              { label: 'Religion',           value: profile.pref_religion ? (profile.pref_sub_religion ? `${profile.pref_religion} · ${profile.pref_sub_religion}` : profile.pref_religion) : null },
-              { label: 'Occupation',         value: profile.pref_occupation },
-              { label: 'Height Preference',  value: profile.pref_height },
-              { label: 'Ethnicity',          value: profile.pref_ethnicity },
-            ].filter(f => f.value).map(f => (
-              <div key={f.label} style={{ background: 'rgba(14,26,53,0.5)', border: '1px solid rgba(201,168,76,0.12)', borderRadius: '8px', padding: '0.6rem 0.8rem' }}>
-                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.25rem', opacity: 0.8 }}>{f.label}</p>
-                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', color: c.ivory, margin: 0 }}>{f.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Gold divider */}
-      <div style={{ height: '1px', margin: '0 1.5rem', background: `linear-gradient(to right, transparent, ${c.border}, transparent)` }} />
-
-      {previewMode ? (
-        <div style={{ padding: '1.25rem 1.5rem', textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.75rem' }}>🔒</div>
-          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.5rem' }}>
-            Your face photo stays hidden until a member chooses to reveal it.
-          </p>
-          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>
-            Members can request a video meeting with you from here.
-          </p>
-        </div>
-      ) : (
-      <div style={{ padding: '1.25rem 1.5rem' }}>
-        {!canReveal && !revealed ? (
-          <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(90,110,130,0.1)', border: '1px solid rgba(90,110,130,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.5rem' }}>🔒</div>
-            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>Face reveal requires a paid plan</p>
-            <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0.5rem 1.25rem', borderRadius: '4px' }}>
-              Upgrade Plan →
-            </a>
-          </div>
-        ) : !profile.front_photo_url && !revealed && canReveal ? (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.5rem' }}>🔒</div>
-            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>
-              {firstNameOnly(profile.full_name)} hasn&apos;t uploaded their reveal photo yet
-            </p>
-          </div>
-        ) : revealed && frontUrl ? (
-          <div>
-            <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, textAlign: 'center', margin: '0 0 0.75rem' }}>✦ Reveal Photo</p>
-            <div style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4' }}>
-              <img src={frontUrl} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <div style={{ aspectRatio: '2/3', overflow: 'hidden', borderLeft: '3px solid #07111f' }}>
+              <img src={profile.back_photo_2_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
-            {revealMsg && (
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, textAlign: 'center', margin: '0.75rem 0 0', padding: '0.65rem', background: 'rgba(201,168,76,0.06)', borderRadius: '4px' }}>
-                ✓ {revealMsg}
-              </p>
-            )}
           </div>
         ) : (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', margin: '0 auto 0.75rem' }}>🔒</div>
-            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
-              Face photo is hidden. Revealing notifies {firstNameOnly(profile.full_name)} instantly.
-            </p>
-            {revealError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{revealError}</p>}
-            <button onClick={handleReveal} disabled={revealing}
-              style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: revealing ? 'default' : 'pointer', borderRadius: '6px', transition: 'all 0.2s', opacity: revealing ? 0.6 : 1 }}>
-              {revealing ? 'Revealing…' : '🔓 Reveal Photo'}
-            </button>
+          <div style={{ aspectRatio: '16/9', overflow: 'hidden' }}>
+            <img src={profile.back_photo_1_url || profile.back_photo_2_url || ''} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
-        )}
+        )
+      ) : (
+        <div style={{ aspectRatio: '16/9', background: `linear-gradient(135deg, #152d4e 0%, #1e3d66 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontSize: '3rem', color: 'rgba(201,168,76,0.25)' }}>{initials}</span>
+        </div>
+      )}
 
-        {/* Meeting section */}
-        <div style={{ marginTop: '0.75rem' }}>
-          {!canMeet ? (
-            <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.ivoryDim, border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)', boxSizing: 'border-box' }}>
-              🔒 Upgrade to request meetings
-            </a>
-          ) : canMeet && meetingsLeft === 0 && !roomId && !meetPending && !meetSent ? (
-            <div style={{ textAlign: 'center', padding: '1rem 1.25rem', background: 'rgba(201,168,76,0.04)', border: `1px solid rgba(201,168,76,0.2)`, borderRadius: '8px' }}>
-              <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📅</div>
-              <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.3rem' }}>
-                No meeting requests left
-              </p>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.9rem', lineHeight: 1.5 }}>
-                You&apos;ve used all your meeting requests this month. Buy one extra request to connect with {firstNameOnly(profile.full_name)}.
-              </p>
-              <button onClick={handleBuyExtra} disabled={buyingExtra}
-                style={{ width: '100%', padding: '0.75rem', background: buyingExtra ? 'rgba(201,168,76,0.3)' : `linear-gradient(135deg, #e8c876, ${c.goldLight})`, color: c.navy, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', border: 'none', borderRadius: '6px', cursor: buyingExtra ? 'default' : 'pointer' }}>
-                {buyingExtra ? 'Redirecting…' : '✦ Buy Extra Request — $3'}
-              </button>
-            </div>
-          ) : roomId ? (
-            <a href={`https://meet.jit.si/Banduraa-${roomId}`} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.navy, background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, textDecoration: 'none', boxSizing: 'border-box', boxShadow: '0 4px 16px rgba(201,168,76,0.25)' }}>
-              🎥 Join Meeting
-            </a>
-          ) : meetPending && !meetSent ? (
-            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '6px' }}>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>
-                ✓ Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{maskName(profile.full_name)}</strong> and is waiting for their confirmation.
-              </p>
-            </div>
-          ) : meetSent ? (
-            <div style={{ textAlign: 'center', padding: '1rem 1.25rem', background: 'rgba(201,168,76,0.06)', border: `1px solid ${c.border}`, borderRadius: '8px' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>✅</div>
-              <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.35rem' }}>
-                Request Sent!
-              </p>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0, lineHeight: 1.5 }}>
-                Your meeting request has been successfully sent to <strong style={{ color: c.goldLight, fontStyle: 'normal' }}>{maskName(profile.full_name)}</strong> and is waiting for their confirmation.
-              </p>
-            </div>
-          ) : showForm ? (
-            <form onSubmit={handleRequestMeeting} style={{ background: 'rgba(14,26,53,0.6)', border: `1px solid ${c.border}`, borderRadius: '8px', padding: '1rem' }}>
-              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem' }}>📅 Request Meeting with {firstNameOnly(profile.full_name)}</p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.65rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.ivoryDim, marginBottom: '0.3rem' }}>Date</label>
-                  <input type="date" required value={meetDate} onChange={e => setMeetDate(e.target.value)} min={new Date().toISOString().split('T')[0]}
-                    style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '4px', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.ivoryDim, marginBottom: '0.3rem' }}>Time</label>
-                  <input type="time" required value={meetTime} onChange={e => setMeetTime(e.target.value)}
-                    style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '4px', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark' }} />
-                </div>
+      {/* ── Voice Introduction ── */}
+      {(profile.voice_url || profile.voice_native_url) && (
+        <div style={{ padding: '1.5rem 1.75rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
+          <SectionHeader icon="🎙" title="Voice Introduction" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {profile.voice_native_url && (
+              <div>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇮🇳 Mother Tongue</p>
+                <audio controls src={profile.voice_native_url} preload="none" style={{ width: '100%', borderRadius: '8px' }} />
               </div>
-
-              <div style={{ marginBottom: '0.75rem' }}>
-                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.ivoryDim, marginBottom: '0.3rem' }}>Message</label>
-                <textarea value={meetMsg} onChange={e => setMeetMsg(e.target.value)} placeholder={`Hi ${firstNameOnly(profile.full_name)}, I'd love to connect…`} rows={2}
-                  style={{ width: '100%', padding: '0.5rem', background: 'rgba(14,26,53,0.8)', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', fontStyle: 'italic', borderRadius: '4px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
+            )}
+            {profile.voice_url && (
+              <div>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇬🇧 English</p>
+                <audio controls src={profile.voice_url} preload="none" style={{ width: '100%', borderRadius: '8px' }} />
               </div>
+            )}
+          </div>
+        </div>
+      )}
 
-              {meetError && (
-                <div style={{ marginBottom: '0.65rem', padding: '0.5rem 0.75rem', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '4px', color: '#f87171', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem' }}>
-                  {meetError}
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button type="submit" disabled={requesting || !meetDate}
-                  style={{ flex: 1, padding: '0.65rem', background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, color: c.navy, border: 'none', fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: requesting ? 'default' : 'pointer', borderRadius: '4px', opacity: (requesting || !meetDate) ? 0.7 : 1 }}>
-                  {requesting ? 'Sending…' : 'Send Request'}
-                </button>
-                <button type="button" onClick={() => setShowForm(false)}
-                  style={{ padding: '0.65rem 1rem', background: 'transparent', border: `1px solid rgba(201,168,76,0.2)`, color: c.ivoryDim, fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', cursor: 'pointer', borderRadius: '4px' }}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div>
-              <button onClick={() => setShowForm(true)}
-                style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid rgba(201,168,76,0.3)`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer', borderRadius: '6px' }}>
-                📅 Request Video Meeting
-              </button>
-              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.55rem', color: c.ivoryDim, textAlign: 'center', margin: '0.4rem 0 0', letterSpacing: '0.06em' }}>
-                {meetingsLeft} meeting request{meetingsLeft !== 1 ? 's' : ''} remaining this month
-              </p>
-            </div>
-          )}
+      {/* ── Personal Details ── */}
+      <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
+        <SectionHeader icon="🧑" title="Personal Details" />
+        <div className="pc-detail-grid" style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
+          <DetailRow label="Mother Tongue"  value={profile.mother_tongue} />
+          <DetailRow label="Height"         value={profile.height} />
+          <DetailRow label="Weight"         value={profile.weight} />
+          <DetailRow label="Marital Status" value={profile.marital_status} />
+          <DetailRow label="Children"       value={profile.has_kids} />
+          <DetailRow label="Ethnicity"      value={profile.ethnicity} />
+          <DetailRow label="Zodiac Sign"    value={profile.zodiac_sign} />
         </div>
       </div>
+
+      {/* ── Education & Career ── */}
+      <div style={{ padding: '1.5rem 1.75rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
+        <SectionHeader icon="🎓" title="Education & Career" />
+        <div className="pc-detail-grid" style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
+          <DetailRow label="Education Level"        value={profile.education} />
+          <DetailRow label="Subject / Specialisation" value={profile.education_subject} />
+          <DetailRow label="Other Qualifications"   value={profile.other_qualifications} />
+          <DetailRow label="Employment Status"      value={profile.employment_status} />
+          <DetailRow label="Occupation"             value={profile.occupation} />
+          <DetailRow label="Housing"                value={profile.housing} />
+        </div>
+      </div>
+
+      {/* ── Looking For ── */}
+      {[profile.pref_gender, profile.pref_age_min, profile.pref_location, profile.pref_religion, profile.pref_occupation, profile.pref_height, profile.pref_ethnicity].some(Boolean) && (
+        <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
+          <SectionHeader icon="💑" title="Looking For" />
+          <div className="pc-detail-grid" style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
+            <DetailRow label="Gender"           value={profile.pref_gender} />
+            <DetailRow label="Age Range"        value={profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} years` : null} />
+            <DetailRow label="Religion"         value={profile.pref_religion} />
+            <DetailRow label="Caste / Sub-Religion" value={profile.pref_sub_religion} />
+            <DetailRow label="Location"         value={profile.pref_location} />
+            <DetailRow label="Occupation"       value={profile.pref_occupation} />
+            <DetailRow label="Preferred Height" value={profile.pref_height} />
+            <DetailRow label="Ethnicity"        value={profile.pref_ethnicity} />
+          </div>
+        </div>
+      )}
+
+      {/* ── Personality & Interests ── */}
+      {personalityItems.length > 0 && (
+        <div style={{ padding: '1.5rem 1.75rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
+          <SectionHeader icon="✦" title="Personality & Interests" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+            {personalityItems.map(p => (
+              <div key={p.label}>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.4rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>{p.icon}</span>{p.label}
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                  {splitChips(p.value!).map((chip, i) => (
+                    isPersonalityUrl(chip) ? (
+                      <a key={i} href={toFullUrl(chip)} target="_blank" rel="noopener noreferrer"
+                        style={{ display: 'block', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: '#7fb3f5', padding: '0.5rem 1rem', background: 'rgba(14,26,53,0.6)', border: '1px solid rgba(201,168,76,0.1)', borderRadius: '8px', textDecoration: 'underline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {shortLabel(toFullUrl(chip))}
+                      </a>
+                    ) : (
+                      <span key={i}
+                        style={{ display: 'block', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, padding: '0.5rem 1rem', background: 'rgba(14,26,53,0.6)', border: '1px solid rgba(201,168,76,0.1)', borderRadius: '8px' }}>
+                        {chip}
+                      </span>
+                    )
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Face Reveal + Meeting ── */}
+      {!previewMode && (
+        <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
+          {/* Reveal section */}
+          {!canReveal && !revealed ? (
+            <div style={{ textAlign: 'center', padding: '0.5rem 0 1rem' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>Face reveal requires a paid plan</p>
+              <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0.5rem 1.25rem', borderRadius: '4px' }}>
+                Upgrade Plan →
+              </a>
+            </div>
+          ) : !profile.front_photo_url && !revealed && canReveal ? (
+            <div style={{ textAlign: 'center', padding: '0.5rem 0 1rem' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>
+                {firstNameOnly(profile.full_name)} hasn&apos;t uploaded their reveal photo yet
+              </p>
+            </div>
+          ) : revealed && frontUrl ? (
+            <div style={{ marginBottom: '1rem' }}>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem', textAlign: 'center' }}>✦ Reveal Photo</p>
+              <div style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4' }}>
+                <img src={frontUrl} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              </div>
+              {revealMsg && <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, textAlign: 'center', margin: '0.75rem 0 0', padding: '0.65rem', background: 'rgba(201,168,76,0.06)', borderRadius: '4px' }}>✓ {revealMsg}</p>}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
+                Face photo is hidden. Revealing notifies {firstNameOnly(profile.full_name)} instantly.
+              </p>
+              {revealError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{revealError}</p>}
+              <button onClick={handleReveal} disabled={revealing}
+                style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: revealing ? 'default' : 'pointer', borderRadius: '6px', transition: 'all 0.2s', opacity: revealing ? 0.6 : 1 }}>
+                {revealing ? 'Revealing…' : '🔓 Reveal Photo'}
+              </button>
+            </div>
+          )}
+
+          {/* Meeting section */}
+          <div>
+            {!canMeet ? (
+              <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.ivoryDim, border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)', boxSizing: 'border-box' }}>
+                🔒 Upgrade to request meetings
+              </a>
+            ) : canMeet && meetingsLeft === 0 && !roomId && !meetPending && !meetSent ? (
+              <div style={{ textAlign: 'center', padding: '0.75rem 1rem', background: 'rgba(201,168,76,0.04)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '8px' }}>
+                <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.3rem' }}>No meeting requests left</p>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>Purchase additional meetings to continue</p>
+                <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0.45rem 1rem', borderRadius: '4px' }}>Buy More →</a>
+              </div>
+            ) : roomId ? (
+              <a href={`/meeting/${roomId}`} style={{ display: 'block', textAlign: 'center', padding: '0.85rem', background: 'linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.35))', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', borderRadius: '6px', textDecoration: 'none' }}>
+                🎥 Join Video Meeting
+              </a>
+            ) : meetPending ? (
+              <p style={{ textAlign: 'center', fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>⏳ Meeting request pending…</p>
+            ) : meetSent ? (
+              <p style={{ textAlign: 'center', fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#4ade80', margin: 0 }}>✓ Meeting request sent!</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: 0 }}>📅 Request a Video Meeting</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <input type="date" value={meetDate} onChange={e => setMeetDate(e.target.value)}
+                    style={{ padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }} />
+                  <input type="time" value={meetTime} onChange={e => setMeetTime(e.target.value)}
+                    style={{ padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+                <textarea value={meetMsg} onChange={e => setMeetMsg(e.target.value)} rows={2} placeholder="Add a personal message (optional)…"
+                  style={{ padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '6px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
+                {meetError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: 0 }}>{meetError}</p>}
+                <button onClick={handleMeetRequest} disabled={requesting}
+                  style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: requesting ? 'default' : 'pointer', borderRadius: '6px', transition: 'all 0.2s', opacity: requesting ? 0.6 : 1 }}>
+                  {requesting ? 'Sending…' : '📅 Send Meeting Request'}
+                </button>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.78rem', color: c.ivoryDim, margin: 0, textAlign: 'center' }}>
+                  {meetingsLeft} meeting request{meetingsLeft !== 1 ? 's' : ''} remaining
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {previewMode && (
+        <div style={{ padding: '1.25rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f', textAlign: 'center' }}>
+          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>
+            Your face photo stays hidden until a member chooses to reveal it. Members can request a video meeting with you from here.
+          </p>
+        </div>
       )}
     </article>
   )

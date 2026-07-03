@@ -12,7 +12,7 @@ const PROFILE_FIELDS = `
   height, weight, ethnicity, marital_status, has_kids, id_verified,
   back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
   fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
-  zodiac_sign, hobby,
+  zodiac_sign, hobby, university, other_qualifications, housing, voice_native_path,
   pref_gender, pref_age_min, pref_age_max, pref_location, pref_religion, pref_sub_religion,
   pref_occupation, pref_height, pref_ethnicity
 `
@@ -90,12 +90,16 @@ export default async function DiscoverPage() {
     if (p.back_photo_1_path) allPaths.push(p.back_photo_1_path)
     if (p.back_photo_2_path) allPaths.push(p.back_photo_2_path)
     if (p.voice_path) allPaths.push(p.voice_path)
+    const nativePath = (p as Record<string, unknown>).voice_native_path as string | null
+    if (nativePath) allPaths.push(nativePath)
     // front photo only for already-revealed profiles
     if (revealedSet.has(p.id) && p.front_photo_path) allPaths.push(p.front_photo_path)
   }
   if (myRow?.back_photo_1_path) allPaths.push(myRow.back_photo_1_path)
   if (myRow?.back_photo_2_path) allPaths.push(myRow.back_photo_2_path)
   if (myRow?.voice_path) allPaths.push(myRow.voice_path)
+  const myNativePath = (myRow as Record<string, unknown>)?.voice_native_path as string | null
+  if (myNativePath) allPaths.push(myNativePath)
 
   // Batch sign all URLs in one call
   const urlMap: Record<string, string> = {}
@@ -147,6 +151,12 @@ export default async function DiscoverPage() {
     zodiac_sign: (p as Record<string, unknown>).zodiac_sign as string ?? null,
     sub_religion: (p as Record<string, unknown>).sub_religion as string ?? null,
     hobby: (p as Record<string, unknown>).hobby as string ?? null,
+    university: (p as Record<string, unknown>).university as string ?? null,
+    other_qualifications: (p as Record<string, unknown>).other_qualifications as string ?? null,
+    housing: (p as Record<string, unknown>).housing as string ?? null,
+    voice_native_url: (p as Record<string, unknown>).voice_native_path
+      ? (urlMap[(p as Record<string, unknown>).voice_native_path as string] ?? null)
+      : null,
     pref_gender: (p as Record<string, unknown>).pref_gender as string ?? null,
     pref_age_min: (p as Record<string, unknown>).pref_age_min as number ?? null,
     pref_age_max: (p as Record<string, unknown>).pref_age_max as number ?? null,
@@ -194,6 +204,12 @@ export default async function DiscoverPage() {
     zodiac_sign: (myRow as Record<string, unknown>).zodiac_sign as string ?? null,
     sub_religion: (myRow as Record<string, unknown>).sub_religion as string ?? null,
     hobby: (myRow as Record<string, unknown>).hobby as string ?? null,
+    university: (myRow as Record<string, unknown>).university as string ?? null,
+    other_qualifications: (myRow as Record<string, unknown>).other_qualifications as string ?? null,
+    housing: (myRow as Record<string, unknown>).housing as string ?? null,
+    voice_native_url: (myRow as Record<string, unknown>).voice_native_path
+      ? (urlMap[(myRow as Record<string, unknown>).voice_native_path as string] ?? null)
+      : null,
     pref_gender: (myRow as Record<string, unknown>).pref_gender as string ?? null,
     pref_age_min: (myRow as Record<string, unknown>).pref_age_min as number ?? null,
     pref_age_max: (myRow as Record<string, unknown>).pref_age_max as number ?? null,
