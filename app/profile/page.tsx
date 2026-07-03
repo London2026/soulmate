@@ -218,6 +218,8 @@ export default async function ProfilePage() {
         .prof-personality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         .prof-revealed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .prof-card-info { padding: 1.5rem 1.5rem 1.25rem; }
+        .prof-detail-row { display: grid; grid-template-columns: 44% 1fr; padding: 0.85rem 0; border-bottom: 1px solid rgba(201,168,76,0.08); }
+        .prof-section { padding: 1.75rem 1.5rem 1.25rem; }
         @media (max-width: 600px) {
           .prof-main { padding: 5rem 0.75rem 7rem; }
           .prof-h1 { font-size: 1.5rem !important; }
@@ -227,6 +229,8 @@ export default async function ProfilePage() {
           .prof-personality-grid { grid-template-columns: 1fr; }
           .prof-revealed-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
           .prof-card-info { padding: 1rem 1rem 0.9rem; }
+          .prof-detail-row { grid-template-columns: 1fr !important; gap: 0.15rem !important; padding: 0.65rem 0 !important; }
+          .prof-section { padding: 1.25rem 1rem 0.9rem !important; }
         }
         @media (max-width: 400px) {
           .prof-revealed-grid { grid-template-columns: 1fr; }
@@ -367,7 +371,7 @@ export default async function ProfilePage() {
           )}
 
           {/* Personal Details */}
-          <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
+          <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
             <ProfileSectionHeader icon="🧑" title="Personal Details" />
             <div>
               <ProfileDetailRow label="Mother Tongue"  value={profile.mother_tongue} />
@@ -381,7 +385,7 @@ export default async function ProfilePage() {
           </div>
 
           {/* Education & Career */}
-          <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}` }}>
+          <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
             <ProfileSectionHeader icon="🎓" title="Education & Career" />
             <div>
               <ProfileDetailRow label="Education Level"          value={profile.education} />
@@ -396,7 +400,7 @@ export default async function ProfilePage() {
 
           {/* Looking For */}
           {prefFields.length > 0 && (
-            <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
+            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
               <ProfileSectionHeader icon="💑" title="Looking For" />
               <div>
                 <ProfileDetailRow label="Gender"               value={p.pref_gender as string} />
@@ -419,7 +423,7 @@ export default async function ProfilePage() {
 
           {/* Personality & Interests */}
           {personalityFields.length > 0 && (
-            <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}` }}>
+            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
               <ProfileSectionHeader icon="✨" title="Personality & Interests" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
                 {personalityFields.map((f) => (
@@ -510,7 +514,7 @@ export default async function ProfilePage() {
 function ProfileDetailRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (!value) return null
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '44% 1fr', padding: '0.85rem 0', borderBottom: 'rgba(201,168,76,0.08) 1px solid' }}>
+    <div className="prof-detail-row">
       <span style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', fontWeight: 500, color: '#a08840', lineHeight: 1.3 }}>{label}</span>
       <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.15rem', fontWeight: 500, color: '#f5f0e6', lineHeight: 1.4 }}>{value}</span>
     </div>

@@ -151,7 +151,10 @@ export default function DiscoverClient({
         }
         @media (max-width: 600px) {
           .disc-modal-overlay { align-items: flex-end; padding: 0; }
-          .disc-modal-inner { max-height: 92vh !important; border-radius: 16px 16px 0 0 !important; }
+          .disc-modal-inner { max-height: 92vh !important; border-radius: 16px 16px 0 0 !important; width: 100% !important; }
+        }
+        @media (max-width: 500px) {
+          .find-match-btn { font-size: 0.78rem !important; padding: 0.9rem 1.5rem !important; }
         }
 
         .disc-match-headline {
@@ -447,7 +450,7 @@ export default function DiscoverClient({
       {/* ── 8. Own profile preview modal ── */}
       {showMyProfile && myProfile && (
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setShowMyProfile(false) }}>
-          <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px', overflow: 'hidden' }}>
+          <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', borderRadius: '16px', overflow: 'hidden' }}>
             {/* Banner */}
             <div style={{ background: '#1a3a2a', borderBottom: '1px solid rgba(74,222,128,0.2)', padding: '0.7rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
               <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', color: '#4ade80', margin: 0 }}>

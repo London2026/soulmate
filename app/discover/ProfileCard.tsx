@@ -101,7 +101,7 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
 function DetailRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (!value) return null
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '44% 1fr', padding: '0.85rem 0', borderBottom: `1px solid rgba(201,168,76,0.08)` }}>
+    <div className="pc-detail-row">
       <span style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', fontWeight: 500, color: '#a08840', lineHeight: 1.3 }}>{label}</span>
       <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.15rem', fontWeight: 500, color: '#f5f0e6', lineHeight: 1.4 }}>{value}</span>
     </div>
@@ -164,7 +164,13 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
     <article style={{ background: c.navyMid, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }}>
       <style>{`
         .pc-name { font-size: 2rem; }
-        @media (max-width: 500px) { .pc-name { font-size: 1.45rem !important; } }
+        .pc-section { padding: 1.75rem 1.75rem 1.25rem; }
+        .pc-detail-row { display: grid; grid-template-columns: 44% 1fr; padding: 0.85rem 0; border-bottom: 1px solid rgba(201,168,76,0.08); }
+        @media (max-width: 500px) {
+          .pc-name { font-size: 1.4rem !important; }
+          .pc-section { padding: 1.25rem 1rem 0.9rem !important; }
+          .pc-detail-row { grid-template-columns: 1fr !important; gap: 0.2rem !important; padding: 0.65rem 0 !important; }
+        }
       `}</style>
 
       {/* ── Header ── */}
@@ -233,7 +239,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       )}
 
       {/* ── Personal Details ── */}
-      <div style={{ padding: '1.75rem 1.75rem 1.25rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
+      <div className="pc-section" style={{ background: c.navyMid, borderTop: '3px solid #07111f' }}>
         <SectionHeader icon="🧑" title="Personal Details" />
         <div>
           <DetailRow label="Mother Tongue"  value={profile.mother_tongue} />
@@ -247,7 +253,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       </div>
 
       {/* ── Education & Career ── */}
-      <div style={{ padding: '1.75rem 1.75rem 1.25rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
+      <div className="pc-section" style={{ background: c.navyLight, borderTop: '3px solid #07111f' }}>
         <SectionHeader icon="🎓" title="Education & Career" />
         <div>
           <DetailRow label="Education Level"          value={profile.education} />
@@ -261,7 +267,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
 
       {/* ── Looking For ── */}
       {[profile.pref_gender, profile.pref_age_min, profile.pref_location, profile.pref_religion, profile.pref_occupation, profile.pref_height, profile.pref_ethnicity].some(Boolean) && (
-        <div style={{ padding: '1.75rem 1.75rem 1.25rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
+        <div className="pc-section" style={{ background: c.navyMid, borderTop: '3px solid #07111f' }}>
           <SectionHeader icon="💑" title="Looking For" />
           <div>
             <DetailRow label="Gender"               value={profile.pref_gender} />
@@ -278,7 +284,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
 
       {/* ── Personality & Interests ── */}
       {personalityItems.length > 0 && (
-        <div style={{ padding: '1.5rem 1.75rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
+        <div className="pc-section" style={{ background: c.navyMid, borderTop: '3px solid #07111f' }}>
           <SectionHeader icon="✦" title="Personality & Interests" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             {personalityItems.map(p => (
