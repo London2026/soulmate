@@ -174,13 +174,13 @@ export default async function ProfilePage() {
   const idDocumentUrl = idDocumentPath ? ownUrlMap[idDocumentPath] ?? null : null
 
   const personalityFields = [
-    { label: 'Favourite Reels', value: profile.fav_reels },
-    { label: 'YouTube Channels', value: profile.fav_youtube },
-    { label: 'Web Series', value: profile.fav_web_series },
-    { label: 'Travel', value: profile.fav_travel },
-    { label: 'Foods', value: profile.fav_foods },
-    { label: 'AI Tools', value: profile.fav_ai_tools },
-    { label: 'Hobby', value: profile.hobby },
+    { label: 'My Favourite Reels', value: profile.fav_reels },
+    { label: 'My Favourite YouTube Channels', value: profile.fav_youtube },
+    { label: 'My Favourite Web Series', value: profile.fav_web_series },
+    { label: 'My Favourite Travel Destinations', value: profile.fav_travel },
+    { label: 'My Favourite Foods', value: profile.fav_foods },
+    { label: 'My Favourite AI Tools', value: profile.fav_ai_tools },
+    { label: 'My Hobby', value: profile.hobby },
   ].filter((f) => f.value)
 
   const p = profile as Record<string, unknown>
