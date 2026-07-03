@@ -6,7 +6,7 @@ import ProfileCard, { type ProfileData } from './ProfileCard'
 import DiscoverClient from './DiscoverClient'
 
 const PROFILE_FIELDS = `
-  id, full_name, age, gender, city, country,
+  id, member_id, full_name, age, gender, city, country,
   religion, sub_religion, mother_tongue, education, education_subject, employment_status, occupation,
   height, weight, ethnicity, marital_status, has_kids, id_verified,
   back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
@@ -115,6 +115,7 @@ export default async function DiscoverPage() {
 
   const profiles: ProfileData[] = (rows ?? []).map((p) => ({
     id: p.id,
+    member_id: (p as Record<string, unknown>).member_id as string ?? null,
     full_name: p.full_name,
     age: p.age,
     gender: p.gender,
@@ -171,6 +172,7 @@ export default async function DiscoverPage() {
   // Build a preview of the current user's own profile, as seen by other members
   const myProfile: ProfileData | null = myRow ? {
     id: myRow.id,
+    member_id: (myRow as Record<string, unknown>).member_id as string ?? null,
     full_name: myRow.full_name,
     age: myRow.age,
     gender: myRow.gender,

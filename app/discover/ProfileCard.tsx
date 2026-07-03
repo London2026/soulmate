@@ -7,6 +7,7 @@ import { maskName, firstNameOnly } from '@/lib/maskName'
 
 export interface ProfileData {
   id: string
+  member_id?: string | null
   full_name: string
   age: number
   gender: string
@@ -178,7 +179,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
             </h2>
             {profile.id_verified && <span title="ID Verified" style={{ fontSize: '1rem', color: '#16a34a' }}>✅</span>}
             <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.82rem', fontWeight: 700, color: c.goldLight, background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, padding: '0.22rem 0.65rem', borderRadius: '6px', letterSpacing: '0.08em' }}>
-              #{profile.id.slice(0, 8).toUpperCase()}
+              {profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()}
             </span>
           </div>
           {/* Religion badge — top right */}

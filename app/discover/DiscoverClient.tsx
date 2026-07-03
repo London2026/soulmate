@@ -21,7 +21,7 @@ const c = {
 
 interface AIMatch { id: string; score: number; reasons: string[]; profile: ProfileData }
 
-function profileId(id: string) { return '#' + id.slice(0, 8).toUpperCase() }
+function profileId(profile: ProfileData) { return profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase() }
 
 function scoreLabel(score: number) {
   if (score >= 90) return 'Exceptional Match'
@@ -91,6 +91,7 @@ export default function DiscoverClient({
     const q = search.trim().toLowerCase().replace(/^#/, '')
     if (q) list = list.filter(p =>
       p.full_name.toLowerCase().includes(q) ||
+      (p.member_id ?? '').toLowerCase().includes(q) ||
       p.id.slice(0, 8).toLowerCase().startsWith(q)
     )
     if (fLocation) list = list.filter(p =>
@@ -359,7 +360,7 @@ export default function DiscoverClient({
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,168,76,0.05)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', marginBottom: '0.65rem', flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: '"Courier New", monospace', fontSize: '1rem', fontWeight: 900, color: c.gold, letterSpacing: '0.08em', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.3rem 0.7rem', borderRadius: '6px' }}>{profileId(m.id)}</span>
+                <span style={{ fontFamily: '"Courier New", monospace', fontSize: '1rem', fontWeight: 900, color: c.gold, letterSpacing: '0.08em', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.3rem 0.7rem', borderRadius: '6px' }}>{profileId(m.profile)}</span>
                 <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, fontSize: '1.35rem' }}>{maskName(m.profile?.full_name ?? '')}</span>
                 <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem', color: c.sepia }}>{m.profile?.age} yrs · {m.profile?.city}</span>
                 <span className="disc-ai-match-score" style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.3rem 0.8rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>{scoreLabel(m.score)}</span>
@@ -371,7 +372,7 @@ export default function DiscoverClient({
                 <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.35rem', fontWeight: 700, color: scoreColor(m.score), minWidth: '64px', textAlign: 'right' }}>{m.score}/100</span>
               </div>
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.15rem', color: c.ivoryDim, margin: '0 0 0.8rem', lineHeight: 1.65 }}>
-                Profile {profileId(m.id)} matches your profile with a compatibility score of <strong style={{ color: scoreColor(m.score), fontStyle: 'normal' }}>{m.score} out of 100</strong> — a {scoreLabel(m.score).toLowerCase()}.
+                Profile {profileId(m.profile)} matches your profile with a compatibility score of <strong style={{ color: scoreColor(m.score), fontStyle: 'normal' }}>{m.score} out of 100</strong> — a {scoreLabel(m.score).toLowerCase()}.
               </p>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                 {m.reasons.map((r, j) => {
@@ -463,7 +464,7 @@ function EmptyState() {
 
 function MyProfileCard({ profile }: { profile: ProfileData }) {
   const initials = profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-  const pid = '#' + profile.id.slice(0, 8).toUpperCase()
+  const pid = profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()
   return (
     <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden' }}>
       {/* Photo with YOU badge */}
@@ -616,7 +617,7 @@ function InboxPanel({ notifications, meetings, onDismissNotification, onAcceptMe
 
 function CompactCard({ profile, onClick }: { profile: ProfileData; onClick: () => void }) {
   const initials = profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-  const pid = '#' + profile.id.slice(0, 8).toUpperCase()
+  const pid = profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()
   const hasTwo = !!(profile.back_photo_1_url && profile.back_photo_2_url)
   return (
     <div onClick={onClick}
