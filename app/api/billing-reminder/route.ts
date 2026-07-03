@@ -4,9 +4,8 @@ import { sendBillingReminderSMS } from '@/lib/sendSMS'
 import { firstNameOnly } from '@/lib/maskName'
 
 const PLAN_AMOUNTS: Record<string, string> = {
-  premium: '19.99',
-  gold:    '39.99',
-  elite:   '69.99',
+  starter:  '6',
+  standard: '9',
 }
 
 export async function POST(req: NextRequest) {
@@ -20,8 +19,8 @@ export async function POST(req: NextRequest) {
   // Fetch all paid subscribers with a phone number
   const { data: subscribers, error } = await admin
     .from('profiles')
-    .select('id, full_name, phone, subscription_tier')
-    .in('subscription_tier', ['premium', 'gold', 'elite'])
+    .select('id, full_name, phone, plan')
+    .in('plan', ['starter', 'standard'])
     .not('phone', 'is', null)
 
   if (error) {
@@ -30,12 +29,13 @@ export async function POST(req: NextRequest) {
 
   let sent = 0
   for (const sub of subscribers ?? []) {
-    const amount = PLAN_AMOUNTS[sub.subscription_tier] ?? '0'
+    const plan = (sub as Record<string, unknown>).plan as string
+    const amount = PLAN_AMOUNTS[plan] ?? '0'
     try {
       await sendBillingReminderSMS(
         sub.phone,
         firstNameOnly(sub.full_name ?? ''),
-        sub.subscription_tier,
+        plan,
         amount,
       )
       sent++

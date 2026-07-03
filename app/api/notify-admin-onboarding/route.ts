@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendProfileLiveEmail } from '@/lib/sendEmail'
-import { sendOnboardingCompleteSMS } from '@/lib/sendSMS'
+import { sendOnboardingCompleteSMS, sendAdminNewSubscriberSMS } from '@/lib/sendSMS'
 import { Resend } from 'resend'
 
 const ADMIN_EMAIL = 'london.anup@gmail.com'
@@ -62,7 +62,7 @@ export async function POST() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, city, country, phone, member_id')
+    .select('full_name, city, country, phone, member_id, plan')
     .eq('id', user.id)
     .single()
 
@@ -82,8 +82,11 @@ export async function POST() {
     await admin.from('profiles').update({ member_id: memberId }).eq('id', user.id)
   }
 
+  const plan = (profile as Record<string, unknown>)?.plan as string ?? 'free'
+
   await Promise.all([
     sendAdminOnboardingEmail(memberName, city, country),
+    sendAdminNewSubscriberSMS(memberName, plan),
     user.email ? sendProfileLiveEmail(user.email, firstName, memberId) : Promise.resolve(),
     profile?.phone ? sendOnboardingCompleteSMS(profile.phone, firstName) : Promise.resolve(),
   ])

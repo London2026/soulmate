@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendMeetingRequestEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail } from '@/lib/sendEmail'
+import { sendMeetingRequestEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendMeetingCancelledEmail } from '@/lib/sendEmail'
 import { firstNameOnly } from '@/lib/maskName'
 import {
   sendMeetingRequestSMS,
@@ -198,14 +198,15 @@ export async function declineMeeting(meetingId: string): Promise<void> {
     .eq('id', meeting.requester_id)
     .single()
 
-  if (requesterProfile?.phone) {
-    await sendMeetingDeclinedSMS(
-      requesterProfile.phone,
-      firstNameOnly(requesterProfile.full_name ?? ''),
-      me?.full_name ?? 'Your match',
-      dateStr,
-    )
-  }
+  const { data: requesterAuth } = await createAdminClient().auth.admin.getUserById(meeting.requester_id)
+  await Promise.all([
+    requesterProfile?.phone
+      ? sendMeetingDeclinedSMS(requesterProfile.phone, firstNameOnly(requesterProfile.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
+      : Promise.resolve(),
+    requesterAuth?.user?.email
+      ? sendMeetingDeclinedEmail(requesterAuth.user.email, firstNameOnly(requesterProfile?.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
+      : Promise.resolve(),
+  ])
 }
 
 export async function cancelMeeting(meetingId: string): Promise<void> {
@@ -237,19 +238,17 @@ export async function cancelMeeting(meetingId: string): Promise<void> {
     message: `${me?.full_name ?? 'Someone'} has withdrawn their video meeting request for ${dateStr}.`,
   })
 
-  // SMS the other person
-  const { data: otherProfile } = await supabase
-    .from('profiles')
-    .select('full_name, phone')
-    .eq('id', otherId)
-    .single()
+  const [{ data: otherProfile }, { data: otherAuth }] = await Promise.all([
+    supabase.from('profiles').select('full_name, phone').eq('id', otherId).single(),
+    createAdminClient().auth.admin.getUserById(otherId),
+  ])
 
-  if (otherProfile?.phone) {
-    await sendMeetingCancelledSMS(
-      otherProfile.phone,
-      firstNameOnly(otherProfile.full_name ?? ''),
-      me?.full_name ?? 'Your match',
-      dateStr,
-    )
-  }
+  await Promise.all([
+    otherProfile?.phone
+      ? sendMeetingCancelledSMS(otherProfile.phone, firstNameOnly(otherProfile.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
+      : Promise.resolve(),
+    otherAuth?.user?.email
+      ? sendMeetingCancelledEmail(otherAuth.user.email, firstNameOnly(otherProfile?.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
+      : Promise.resolve(),
+  ])
 }

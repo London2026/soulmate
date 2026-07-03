@@ -317,6 +317,69 @@ export async function sendMeetingAcceptedEmail(
   await send(to, subject, html)
 }
 
+export async function sendMeetingDeclinedEmail(
+  to: string,
+  requesterFirstName: string,
+  declinerName: string,
+  dateStr: string,
+) {
+  const subject = `Your Banduraa meeting request for ${dateStr} was declined`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Meeting request update</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
+      Hi <strong>${requesterFirstName}</strong>,
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
+      Unfortunately <strong style="color:#0d1f3c;">${declinerName}</strong> is unavailable for <strong>${dateStr}</strong>. Don&apos;t be disheartened — you can send a new request with a different date, or explore other compatible profiles on Banduraa.
+    </p>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Browse Profiles →
+      </a>
+    </div>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Georgia,serif;font-size:14px;color:#5a6e82;line-height:1.7;margin:0;">
+        The right connection takes patience. Your profile remains live and other members can still discover you. Wishing you the best on your journey. 🌹
+      </p>
+    </div>
+  `)
+  await send(to, subject, html)
+}
+
+export async function sendMeetingCancelledEmail(
+  to: string,
+  recipientFirstName: string,
+  cancellerName: string,
+  dateStr: string,
+) {
+  const subject = `Banduraa meeting request for ${dateStr} has been withdrawn`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Meeting request withdrawn</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
+      Hi <strong>${recipientFirstName}</strong>,
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
+      <strong style="color:#0d1f3c;">${cancellerName}</strong> has withdrawn their video meeting request for <strong>${dateStr}</strong>. No action is needed on your part.
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 24px;">
+      You can continue browsing and connecting with other members in Discover.
+    </p>
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Browse Profiles →
+      </a>
+    </div>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Georgia,serif;font-size:14px;color:#5a6e82;line-height:1.7;margin:0;">
+        Your profile remains fully active and other members can still discover you. Wishing you the best on your journey. 🌹
+      </p>
+    </div>
+  `)
+  await send(to, subject, html)
+}
+
 export async function sendMeetingConfirmedAcceptorEmail(
   to: string,
   acceptorFirstName: string,
@@ -360,4 +423,26 @@ export async function sendMeetingConfirmedAcceptorEmail(
     </div>
   `)
   await send(to, subject, html)
+}
+
+export async function sendReportNotificationEmail(reporterName: string, reporterMemberId: string, reportedMemberId: string, reason: string, message: string | null) {
+  const subject = `🚩 Profile report — ${reportedMemberId} reported by ${reporterMemberId}`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Profile Report Filed</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;margin-bottom:20px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 8px;">Report Details</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">👤 Reporter: <strong>${reporterName}</strong> (${reporterMemberId})</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">🚩 Reported profile: <strong>${reportedMemberId}</strong></p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">📋 Reason: <strong>${reason}</strong></p>
+      ${message ? `<p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">💬 Note: ${message}</p>` : ''}
+      <p style="font-family:Georgia,serif;font-size:13px;color:#5a6e82;margin:0;">🕐 ${new Date().toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })}</p>
+    </div>
+    <div style="text-align:center;">
+      <a href="https://banduraa.com/admin" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Review in Admin Panel →
+      </a>
+    </div>
+  `)
+  await send('london.anup@gmail.com', subject, html)
 }

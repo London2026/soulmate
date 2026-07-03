@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import { maskName } from '@/lib/maskName'
-import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox } from './actions'
+import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox, toggleShortlist, reportProfile } from './actions'
 
 interface InboxNotification {
   id: string; message: string; type: string; read: boolean; created_at: string; sender_name: string | null
@@ -55,13 +55,22 @@ function isPositiveReason(reason: string) {
 
 export default function DiscoverClient({
   profiles, canReveal, canMeet, meetingsLeft, myProfile,
-  inboxNotifications, inboxMeetings, unreadCount,
+  inboxNotifications, inboxMeetings, unreadCount, shortlistedIds,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
   inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
+  shortlistedIds: string[]
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [shortlist, setShortlist] = useState<Set<string>>(() => new Set(shortlistedIds))
+  const [showShortlistOnly, setShowShortlistOnly] = useState(false)
+  const [reportTarget, setReportTarget] = useState<ProfileData | null>(null)
+  const [reportReason, setReportReason] = useState('')
+  const [reportMessage, setReportMessage] = useState('')
+  const [reportSubmitting, setReportSubmitting] = useState(false)
+  const [reportDone, setReportDone] = useState<string | null>(null)
+  const [fGender, setFGender] = useState('')
   const [fLocation, setFLocation] = useState('')
   const [fAgeMin, setFAgeMin] = useState('')
   const [fAgeMax, setFAgeMax] = useState('')
@@ -73,15 +82,60 @@ export default function DiscoverClient({
   const [showMyProfile, setShowMyProfile] = useState(false)
   const [notifications, setNotifications] = useState(inboxNotifications)
   const [meetings, setMeetings] = useState(inboxMeetings)
+  const [liveUnread, setLiveUnread] = useState(unreadCount)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    async function poll() {
+      try {
+        const res = await fetch('/api/inbox')
+        if (!res.ok) return
+        const data = await res.json()
+        setNotifications(data.notifications)
+        setMeetings(data.meetings)
+        setLiveUnread(data.unreadCount)
+      } catch { /* silent — don't disrupt the page */ }
+    }
+
+    pollRef.current = setInterval(poll, 60_000)
+    return () => { if (pollRef.current) clearInterval(pollRef.current) }
+  }, [])
+
   const [aiLoading, setAiLoading] = useState(false)
   const [aiMatches, setAiMatches] = useState<AIMatch[] | null>(null)
   const [aiError, setAiError] = useState('')
 
-  const activeFilterCount = [fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation].filter(Boolean).length
+  const activeFilterCount = [fGender, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation].filter(Boolean).length
 
   function clearFilters() {
-    setFLocation(''); setFAgeMin(''); setFAgeMax('')
+    setFGender(''); setFLocation(''); setFAgeMin(''); setFAgeMax('')
     setFReligion(''); setFEducation(''); setFOccupation('')
+  }
+
+  async function handleShortlist(profileId: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    setShortlist(prev => {
+      const next = new Set(prev)
+      if (next.has(profileId)) next.delete(profileId)
+      else next.add(profileId)
+      return next
+    })
+    try { await toggleShortlist(profileId) }
+    catch { setShortlist(prev => { const next = new Set(prev); if (next.has(profileId)) next.delete(profileId); else next.add(profileId); return next }) }
+  }
+
+  async function handleReport() {
+    if (!reportTarget || !reportReason) return
+    setReportSubmitting(true)
+    try {
+      const res = await reportProfile(reportTarget.id, reportReason, reportMessage)
+      setReportDone(res.alreadyReported ? 'already' : 'sent')
+    } catch { setReportDone('error') }
+    finally { setReportSubmitting(false) }
+  }
+
+  function closeReportModal() {
+    setReportTarget(null); setReportReason(''); setReportMessage(''); setReportDone(null); setReportSubmitting(false)
   }
 
   const religions  = useMemo(() => [...new Set(profiles.map(p => p.religion).filter(Boolean))].sort(), [profiles])
@@ -89,12 +143,14 @@ export default function DiscoverClient({
 
   const filtered = useMemo(() => {
     let list = profiles
+    if (showShortlistOnly) list = list.filter(p => shortlist.has(p.id))
     const q = search.trim().toLowerCase().replace(/^#/, '')
     if (q) list = list.filter(p =>
       p.full_name.toLowerCase().includes(q) ||
       (p.member_id ?? '').toLowerCase().includes(q) ||
       p.id.slice(0, 8).toLowerCase().startsWith(q)
     )
+    if (fGender) list = list.filter(p => p.gender === fGender)
     if (fLocation) list = list.filter(p =>
       p.city?.toLowerCase().includes(fLocation.toLowerCase()) ||
       p.country?.toLowerCase().includes(fLocation.toLowerCase())
@@ -107,7 +163,7 @@ export default function DiscoverClient({
       p.occupation?.toLowerCase().includes(fOccupation.toLowerCase())
     )
     return list
-  }, [profiles, search, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation])
+  }, [profiles, shortlist, showShortlistOnly, search, fGender, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation])
 
   async function handleAiMatch() {
     setAiLoading(true); setAiError(''); setAiMatches(null)
@@ -207,20 +263,28 @@ export default function DiscoverClient({
           box-shadow: 0 0 48px rgba(201,168,76,0.25);
         }
         .find-match-btn:disabled { opacity: 0.55; cursor: default; }
+
+        .disc-h1 { font-size: 2rem; }
+        @media (max-width: 600px) { .disc-h1 { font-size: 1.5rem; } }
       `}</style>
 
-      {/* ── 0. Inbox button + panel ── */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+      {/* ── 0. Heading row + Inbox ── */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.5rem' }}>
+        <h1 className="disc-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: '#f5f0e6', margin: 0 }}>
+          Discover
+        </h1>
         <button onClick={() => setShowInbox(v => !v)}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 1.1rem', background: showInbox ? 'rgba(201,168,76,0.18)' : '#1e3358', border: `1.5px solid ${unreadCount > 0 ? '#c9a84c' : 'rgba(201,168,76,0.25)'}`, color: '#c9a84c', fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
-          ✦ Inbox
-          {unreadCount > 0 && (
-            <span style={{ background: '#c9a84c', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center' }}>
-              {unreadCount}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#f5f0e6', fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+          className="disc-h1">
+          Inbox
+          {liveUnread > 0 && (
+            <span style={{ background: '#c9a84c', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center', verticalAlign: 'middle' }}>
+              {liveUnread}
             </span>
           )}
         </button>
       </div>
+      <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)', marginBottom: '1.5rem' }} />
 
       {showInbox && (
         <InboxPanel
@@ -265,6 +329,18 @@ export default function DiscoverClient({
           <div style={{ marginTop: '0.6rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '10px', padding: '1.1rem 1.25rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
               <div>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>⚧ Gender</label>
+                <select value={fGender} onChange={e => setFGender(e.target.value)} className="disc-filter-inp"
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: fGender ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+                  onFocus={e => (e.target.style.borderColor = c.gold)}
+                  onBlur={e => (e.target.style.borderColor = c.border)}>
+                  <option value="">Any gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>📍 Location</label>
                 <input type="text" value={fLocation} onChange={e => setFLocation(e.target.value)}
                   placeholder="City or country…" className="disc-filter-inp"
@@ -290,7 +366,7 @@ export default function DiscoverClient({
               </div>
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🕊 Religion</label>
-                <select value={fReligion} onChange={e => setFReligion(e.target.value)}
+                <select value={fReligion} onChange={e => setFReligion(e.target.value)} className="disc-filter-inp"
                   style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: fReligion ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)}>
@@ -300,7 +376,7 @@ export default function DiscoverClient({
               </div>
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🎓 Education</label>
-                <select value={fEducation} onChange={e => setFEducation(e.target.value)}
+                <select value={fEducation} onChange={e => setFEducation(e.target.value)} className="disc-filter-inp"
                   style={{ width: '100%', padding: '0.55rem 0.75rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: fEducation ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', borderRadius: '6px', outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)}>
@@ -413,21 +489,30 @@ export default function DiscoverClient({
         <EmptyState />
       ) : (
       <>
-        {/* ── 5. Profile count ── */}
-        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: c.sepia, letterSpacing: '0.08em', marginBottom: '1rem' }}>
-          {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{(search || activeFilterCount > 0) ? ' found' : ''}
-          {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
-        </p>
+        {/* ── 5. Profile count + shortlist toggle ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: c.sepia, letterSpacing: '0.08em', margin: 0 }}>
+            {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{(search || activeFilterCount > 0 || showShortlistOnly) ? ' found' : ''}
+            {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
+          </p>
+          <button onClick={() => setShowShortlistOnly(v => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: showShortlistOnly ? 'rgba(201,168,76,0.18)' : 'transparent', border: `1px solid ${showShortlistOnly ? c.gold : 'rgba(201,168,76,0.3)'}`, borderRadius: '20px', padding: '0.25rem 0.75rem', color: showShortlistOnly ? c.gold : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <span style={{ fontSize: '0.85rem' }}>{showShortlistOnly ? '♥' : '♡'}</span>
+            Shortlisted{shortlist.size > 0 ? ` (${shortlist.size})` : ''}
+          </button>
+        </div>
 
         {/* ── 6. Grid ── */}
         {filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 0', color: c.sepia, fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.1rem' }}>
-            No profiles match your search.
+            {showShortlistOnly ? 'No shortlisted profiles yet. Tap ♡ on any profile to save it.' : 'No profiles match your search.'}
           </div>
         ) : (
           <div className="disc-grid">
             {filtered.map(p => (
-              <CompactCard key={p.id} profile={p} onClick={() => setSelected(p)} />
+              <CompactCard key={p.id} profile={p} onClick={() => setSelected(p)}
+                shortlisted={shortlist.has(p.id)}
+                onShortlist={(e: React.MouseEvent) => handleShortlist(p.id, e)} />
             ))}
           </div>
         )}
@@ -438,11 +523,81 @@ export default function DiscoverClient({
       {selected && (
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setSelected(null) }}>
           <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px' }}>
-            <button onClick={() => setSelected(null)}
-              style={{ position: 'sticky', top: '0.75rem', float: 'right', marginRight: '0.75rem', zIndex: 10, width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: c.ivoryDim, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              ✕
-            </button>
+            <div style={{ position: 'sticky', top: '0.75rem', float: 'right', marginRight: '0.75rem', zIndex: 10, display: 'flex', gap: '0.4rem' }}>
+              <button onClick={() => { setReportTarget(selected); setSelected(null) }}
+                title="Report this profile"
+                style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#e57373', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                ⚑
+              </button>
+              <button onClick={() => setSelected(null)}
+                style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: c.ivoryDim, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                ✕
+              </button>
+            </div>
             <ProfileCard profile={selected} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} />
+          </div>
+        </div>
+      )}
+
+      {/* ── 7b. Report modal ── */}
+      {reportTarget && (
+        <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) closeReportModal() }}>
+          <div className="disc-modal-inner" style={{ width: '100%', maxWidth: '480px', borderRadius: '16px', padding: '2rem', background: c.card }}>
+            {reportDone ? (
+              <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+                {reportDone === 'sent' && <>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>✓</div>
+                  <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.2rem', color: c.ivory, marginBottom: '0.5rem' }}>Report submitted</p>
+                  <p style={{ fontFamily: '"Cormorant Garamond", serif', color: c.sepia, fontSize: '0.95rem' }}>Thank you. We will review this profile within 24 hours.</p>
+                </>}
+                {reportDone === 'already' && <>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>ℹ</div>
+                  <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.2rem', color: c.ivory, marginBottom: '0.5rem' }}>Already reported</p>
+                  <p style={{ fontFamily: '"Cormorant Garamond", serif', color: c.sepia, fontSize: '0.95rem' }}>You have already submitted a report for this profile.</p>
+                </>}
+                {reportDone === 'error' && <>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>✕</div>
+                  <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.2rem', color: '#e57373', marginBottom: '0.5rem' }}>Something went wrong</p>
+                  <p style={{ fontFamily: '"Cormorant Garamond", serif', color: c.sepia, fontSize: '0.95rem' }}>Please try again or contact support.</p>
+                </>}
+                <button onClick={closeReportModal} style={{ marginTop: '1.25rem', padding: '0.6rem 1.5rem', background: c.gold, color: c.navy, border: 'none', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.08em', cursor: 'pointer' }}>
+                  Close
+                </button>
+              </div>
+            ) : (
+              <>
+                <h3 style={{ fontFamily: '"Playfair Display", serif', color: c.ivory, margin: '0 0 0.35rem', fontSize: '1.3rem' }}>Report Profile</h3>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', color: c.sepia, fontSize: '0.95rem', margin: '0 0 1.5rem' }}>
+                  Help us keep Banduraa safe. Your report is confidential and reviewed by our team within 24 hours.
+                </p>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: c.gold, marginBottom: '0.4rem' }}>
+                  REASON *
+                </label>
+                <select value={reportReason} onChange={e => setReportReason(e.target.value)}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.08)', border: `1px solid ${reportReason ? c.gold : 'rgba(201,168,76,0.3)'}`, color: reportReason ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '6px', outline: 'none', marginBottom: '1rem', cursor: 'pointer', boxSizing: 'border-box' }}>
+                  <option value="" disabled>Select a reason</option>
+                  <option value="Fake or impersonation">Fake or impersonation</option>
+                  <option value="Inappropriate content">Inappropriate content</option>
+                  <option value="Harassment or threatening behaviour">Harassment or threatening behaviour</option>
+                  <option value="Spam or scam">Spam or scam</option>
+                  <option value="Other">Other</option>
+                </select>
+                <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: c.gold, marginBottom: '0.4rem' }}>
+                  ADDITIONAL DETAILS (optional)
+                </label>
+                <textarea value={reportMessage} onChange={e => setReportMessage(e.target.value)} rows={3} placeholder="Provide any extra context that might help our review..."
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(201,168,76,0.3)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '6px', outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: '1.5rem' }} />
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                  <button onClick={closeReportModal} style={{ padding: '0.6rem 1.25rem', background: 'transparent', border: `1px solid ${c.border}`, color: c.sepia, borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                  <button onClick={handleReport} disabled={!reportReason || reportSubmitting}
+                    style={{ padding: '0.6rem 1.5rem', background: reportReason && !reportSubmitting ? '#c0392b' : 'rgba(192,57,43,0.4)', color: '#fff', border: 'none', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', cursor: reportReason && !reportSubmitting ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}>
+                    {reportSubmitting ? 'Submitting…' : 'Submit Report'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -640,7 +795,10 @@ function InboxPanel({ notifications, meetings, onDismissNotification, onAcceptMe
   )
 }
 
-function CompactCard({ profile, onClick }: { profile: ProfileData; onClick: () => void }) {
+function CompactCard({ profile, onClick, shortlisted = false, onShortlist }: {
+  profile: ProfileData; onClick: () => void
+  shortlisted?: boolean; onShortlist?: (e: React.MouseEvent) => void
+}) {
   const initials = profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
   const pid = profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()
   return (
@@ -650,15 +808,24 @@ function CompactCard({ profile, onClick }: { profile: ProfileData; onClick: () =
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}>
 
       {/* Photo area — single square crop */}
-      {profile.back_photo_1_url ? (
-        <div style={{ aspectRatio: '1/1', overflow: 'hidden' }}>
-          <img src={profile.back_photo_1_url} alt={maskName(profile.full_name)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
-        </div>
-      ) : (
-        <div style={{ aspectRatio: '1/1', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontSize: '2rem', color: 'rgba(201,168,76,0.45)' }}>{initials}</span>
-        </div>
-      )}
+      <div style={{ position: 'relative' }}>
+        {profile.back_photo_1_url ? (
+          <div style={{ aspectRatio: '1/1', overflow: 'hidden' }}>
+            <img src={profile.back_photo_1_url} alt={maskName(profile.full_name)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+          </div>
+        ) : (
+          <div style={{ aspectRatio: '1/1', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontSize: '2rem', color: 'rgba(201,168,76,0.45)' }}>{initials}</span>
+          </div>
+        )}
+        {onShortlist && (
+          <button onClick={onShortlist}
+            style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: '50%', width: '2rem', height: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.1rem', color: shortlisted ? '#c9a84c' : 'rgba(255,255,255,0.7)', transition: 'all 0.15s', lineHeight: 1 }}
+            title={shortlisted ? 'Remove from shortlist' : 'Add to shortlist'}>
+            {shortlisted ? '♥' : '♡'}
+          </button>
+        )}
+      </div>
 
       <div className="compact-card-info">
         <p className="compact-card-name" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem', lineHeight: 1.2 }}>

@@ -64,12 +64,13 @@ export default async function DiscoverPage() {
     .single()
 
   // Which profiles has the current user already revealed?
-  const { data: myReveals } = await supabase
-    .from('photo_reveals')
-    .select('viewed_id')
-    .eq('viewer_id', user.id)
+  const [{ data: myReveals }, { data: myShortlist }] = await Promise.all([
+    supabase.from('photo_reveals').select('viewed_id').eq('viewer_id', user.id),
+    supabase.from('shortlist').select('profile_id').eq('user_id', user.id),
+  ])
 
-  const revealedSet = new Set((myReveals ?? []).map((r) => r.viewed_id as string))
+  const revealedSet   = new Set((myReveals ?? []).map((r) => r.viewed_id as string))
+  const shortlistedIds = (myShortlist ?? []).map((r) => r.profile_id as string)
 
   // Existing video meetings
   const { data: meetingRows } = await supabase
@@ -284,10 +285,8 @@ export default async function DiscoverPage() {
     <div style={{ minHeight: '100vh', backgroundColor: '#07111f' }}>
       <style>{`
         .disc-main { padding: 5.5rem 1.5rem 5rem; }
-        .disc-h1 { font-size: 2rem; }
         @media (max-width: 600px) {
           .disc-main { padding: 5rem 0.75rem 7rem; }
-          .disc-h1 { font-size: 1.5rem; }
         }
         @media (max-width: 400px) {
           .disc-main { padding: 4.5rem 0.5rem 7rem; }
@@ -299,20 +298,11 @@ export default async function DiscoverPage() {
 
       <main className="disc-main" style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
-        {/* Heading + Inbox button */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ flex: 1 }}>
-            <h1 className="disc-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.5rem' }}>
-              Discover
-            </h1>
-            <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)' }} />
-          </div>
-        </div>
-
         {/* Grid client — search, AI, inbox, cards */}
         <DiscoverClient
           profiles={profiles} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} myProfile={myProfile}
           inboxNotifications={inboxNotifications} inboxMeetings={inboxMeetings} unreadCount={unreadCount}
+          shortlistedIds={shortlistedIds}
         />
       </main>
     </div>

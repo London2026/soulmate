@@ -48,10 +48,10 @@ export async function sendAdminNewSubscriberSMS(memberName: string, plan: string
   )
 }
 
-export async function sendPhotoRevealSMS(toPhone: string, ownerFirstName: string) {
+export async function sendPhotoRevealSMS(toPhone: string, ownerFirstName: string, viewerProfileId: string) {
   await vonageSend(
     toPhone,
-    `Banduraa: Hi ${ownerFirstName}, someone revealed your photo. They may send you a video meeting request. Log in to view their profile: https://banduraa.com/discover\n\nReply STOP to opt out.`
+    `Banduraa: Hi ${ownerFirstName}, member ${viewerProfileId} has revealed your photo. You may receive a video meeting request from them, or you can visit their profile and send one yourself. Log in to Banduraa: https://banduraa.com/discover\n\nReply STOP to opt out.`
   )
 }
 
@@ -109,7 +109,7 @@ export async function sendMeetingCancelledSMS(
 export async function sendBillingReminderSMS(toPhone: string, firstName: string, plan: string, amount: string) {
   await vonageSend(
     toPhone,
-    `Banduraa: Hi ${firstName}, your ${plan} plan renews soon. £${amount}/month will be charged to your payment method. To manage your subscription visit: https://banduraa.com/pricing\n\nReply STOP to opt out.`
+    `Banduraa: Hi ${firstName}, your ${plan} plan renews soon. $${amount}/month will be charged to your payment method. To manage your subscription visit: https://banduraa.com/pricing\n\nReply STOP to opt out.`
   )
 }
 

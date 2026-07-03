@@ -9,7 +9,7 @@ const RELIGIONS         = ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Budd
 const EDUCATIONS        = ["High School", "Diploma", "Bachelor's Degree", "Master's Degree", "Doctorate (PhD)", "Other"]
 const EMPLOYMENT_STATUS = ['Working Full Time', 'Working Part Time', 'Looking for a Job', 'Student']
 const MARITAL_STATUS    = ['Single', 'Married', 'Separated', 'Widowed']
-const KIDS_OPTIONS      = ['No children', 'Has children']
+const KIDS_OPTIONS      = ['Have children', 'No children', 'Not applicable']
 const HOUSING_OPTIONS   = ['Own House', 'Rented Property', 'Family Home', 'Council House', 'Flat / Apartment']
 
 interface Props {

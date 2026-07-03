@@ -1,5 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navigation from '@/components/Navigation'
+
+export const metadata: Metadata = {
+  title: 'Terms & Conditions — Banduraa',
+  description: 'The terms and conditions governing your use of the Banduraa matrimony platform.',
+  alternates: { canonical: 'https://banduraa.com/terms' },
+}
 
 const c = {
   bg: '#07111f', navy: '#0d1f3c', gold: '#c9a84c',

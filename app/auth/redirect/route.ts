@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return NextResponse.redirect(`${origin}/login`)
+  if (user.email === 'london.anup@gmail.com') return NextResponse.redirect(`${origin}/admin`)
 
   const { data: profile } = await supabase
     .from('profiles')

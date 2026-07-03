@@ -1,5 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navigation from '@/components/Navigation'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy — Banduraa',
+  description: 'How Banduraa collects, uses, and protects your personal data. Your privacy is our priority.',
+  alternates: { canonical: 'https://banduraa.com/privacy' },
+}
 
 const c = {
   bg: '#07111f', navy: '#0d1f3c', gold: '#c9a84c',
