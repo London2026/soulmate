@@ -215,23 +215,23 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
 
       {/* Personality section */}
       {[
-        { icon: '🎬', label: 'Favourite Reels',    value: profile.fav_reels },
-        { icon: '▶️', label: 'YouTube Channels',    value: profile.fav_youtube },
-        { icon: '📺', label: 'Web Series',          value: profile.fav_web_series },
-        { icon: '✈️', label: 'Travel',              value: profile.fav_travel },
-        { icon: '🍽️', label: 'Favourite Foods',     value: profile.fav_foods },
-        { icon: '🤖', label: 'AI Tools',            value: profile.fav_ai_tools },
+        { icon: '🎬', label: 'My Favourite Reels',            value: profile.fav_reels },
+        { icon: '▶️', label: 'My Favourite YouTube Channels', value: profile.fav_youtube },
+        { icon: '📺', label: 'My Favourite Web Series',       value: profile.fav_web_series },
+        { icon: '✈️', label: 'My Favourite Travel',           value: profile.fav_travel },
+        { icon: '🍽️', label: 'My Favourite Foods',            value: profile.fav_foods },
+        { icon: '🤖', label: 'My Favourite AI Tools',         value: profile.fav_ai_tools },
       ].some(p => p.value) && (
         <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 1rem' }}>✦ Personality &amp; Interests</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {[
-              { icon: '🎬', label: 'Favourite Reels',       value: profile.fav_reels },
-              { icon: '▶️', label: 'Favourite YouTube',      value: profile.fav_youtube },
-              { icon: '📺', label: 'Favourite Web Series',   value: profile.fav_web_series },
-              { icon: '✈️', label: 'Favourite Travel',       value: profile.fav_travel },
-              { icon: '🍽️', label: 'Favourite Foods',        value: profile.fav_foods },
-              { icon: '🤖', label: 'Favourite AI Tools',     value: profile.fav_ai_tools },
+              { icon: '🎬', label: 'My Favourite Reels',            value: profile.fav_reels },
+              { icon: '▶️', label: 'My Favourite YouTube Channels', value: profile.fav_youtube },
+              { icon: '📺', label: 'My Favourite Web Series',       value: profile.fav_web_series },
+              { icon: '✈️', label: 'My Favourite Travel',           value: profile.fav_travel },
+              { icon: '🍽️', label: 'My Favourite Foods',            value: profile.fav_foods },
+              { icon: '🤖', label: 'My Favourite AI Tools',         value: profile.fav_ai_tools },
             ].filter(p => p.value).map(p => (
               <div key={p.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
                 <span style={{ fontSize: '1.1rem', flexShrink: 0, marginTop: '0.1rem' }}>{p.icon}</span>
