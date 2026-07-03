@@ -360,88 +360,101 @@ export default async function ProfilePage() {
           {/* Voice introductions */}
           {(voiceUrl || nativeVoiceUrl) && (
             <div style={{ padding: '1.25rem 1.5rem', borderTop: `1px solid ${c.borderSub}`, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {voiceUrl && (
-                <div>
-                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.6rem' }}>
-                    🇬🇧 English Introduction
-                  </p>
-                  <audio controls src={voiceUrl} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
-                </div>
-              )}
+              <ProfileSectionHeader icon="🎙" title="Voice Introduction" />
               {nativeVoiceUrl && (
                 <div>
-                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.6rem' }}>
-                    🗣️ Mother Tongue Introduction
-                  </p>
+                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇮🇳 Mother Tongue</p>
                   <audio controls src={nativeVoiceUrl} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
+                </div>
+              )}
+              {voiceUrl && (
+                <div>
+                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇬🇧 English</p>
+                  <audio controls src={voiceUrl} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
                 </div>
               )}
             </div>
           )}
-        </div>
 
-        {/* Personality section */}
-        {personalityFields.length > 0 && (
-          <div style={{ marginBottom: '2rem' }}>
-            <SectionHeader title="My Personality" count={0} />
-            <div className="prof-personality-grid">
-              {personalityFields.map((f) => (
-                <div key={f.label} style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem' }}>
-                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.4rem' }}>
-                    {f.label}
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                    {splitChips(f.value!).map((chip) => (
-                      <div key={chip} style={{ display: 'flex', alignItems: 'center', padding: '0.2rem 0.55rem', background: 'rgba(201,168,76,0.08)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '20px', minWidth: 0, overflow: 'hidden' }}>
-                        {isProfileUrl(chip) ? (
-                          <a href={toFullUrl(chip)} target="_blank" rel="noopener noreferrer" title={chip}
-                            style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.goldLight, textDecoration: 'underline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                            {shortProfileLabel(toFullUrl(chip))}
-                          </a>
-                        ) : (
-                          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.ivory, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {chip}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          {/* Personal Details */}
+          <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
+            <ProfileSectionHeader icon="🧑" title="Personal Details" />
+            <div>
+              <ProfileDetailRow label="Mother Tongue"  value={profile.mother_tongue} />
+              <ProfileDetailRow label="Height"         value={p.height as string} />
+              <ProfileDetailRow label="Weight"         value={p.weight as string} />
+              <ProfileDetailRow label="Marital Status" value={profile.marital_status} />
+              <ProfileDetailRow label="Children"       value={profile.has_kids} />
+              <ProfileDetailRow label="Ethnicity"      value={p.ethnicity as string} />
+              <ProfileDetailRow label="Zodiac Sign"    value={p.zodiac_sign as string} />
             </div>
           </div>
-        )}
 
-        {/* Partner preferences */}
-        {(prefFields.length > 0 || otherPreferences) && (
-          <div style={{ marginBottom: '2rem' }}>
-            <SectionHeader title="Partner Preferences" count={0} />
-            {prefFields.length > 0 && (
-              <div className="prof-personality-grid">
-                {prefFields.map((f) => (
-                  <div key={f.label} style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem' }}>
-                    <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.35rem' }}>
-                      {f.label}
-                    </p>
-                    <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0 }}>
-                      {f.value}
-                    </p>
+          {/* Education & Career */}
+          <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}` }}>
+            <ProfileSectionHeader icon="🎓" title="Education & Career" />
+            <div>
+              <ProfileDetailRow label="Education Level"          value={profile.education} />
+              <ProfileDetailRow label="Subject / Specialisation" value={p.education_subject as string} />
+              <ProfileDetailRow label="University"               value={p.university as string} />
+              <ProfileDetailRow label="Other Qualifications"     value={p.other_qualifications as string} />
+              <ProfileDetailRow label="Employment Status"        value={p.employment_status as string} />
+              <ProfileDetailRow label="Occupation"               value={profile.occupation} />
+              <ProfileDetailRow label="Housing"                  value={p.housing as string} />
+            </div>
+          </div>
+
+          {/* Looking For */}
+          {prefFields.length > 0 && (
+            <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
+              <ProfileSectionHeader icon="💑" title="Looking For" />
+              <div>
+                <ProfileDetailRow label="Gender"               value={p.pref_gender as string} />
+                <ProfileDetailRow label="Age Range"            value={p.pref_age_min && p.pref_age_max ? `${p.pref_age_min} – ${p.pref_age_max} years` : null} />
+                <ProfileDetailRow label="Religion"             value={p.pref_religion as string} />
+                <ProfileDetailRow label="Caste / Sub-Religion" value={p.pref_sub_religion as string} />
+                <ProfileDetailRow label="Location"             value={p.pref_location as string} />
+                <ProfileDetailRow label="Occupation"           value={p.pref_occupation as string} />
+                <ProfileDetailRow label="Preferred Height"     value={p.pref_height as string} />
+                <ProfileDetailRow label="Ethnicity"            value={p.pref_ethnicity as string} />
+              </div>
+              {otherPreferences && (
+                <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(201,168,76,0.05)', borderRadius: '8px', border: '1px solid rgba(201,168,76,0.1)' }}>
+                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.4rem' }}>Other Preferences</p>
+                  <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0, lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{otherPreferences}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Personality & Interests */}
+          {personalityFields.length > 0 && (
+            <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderTop: `1px solid ${c.borderSub}` }}>
+              <ProfileSectionHeader icon="✨" title="Personality & Interests" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
+                {personalityFields.map((f) => (
+                  <div key={f.label}>
+                    <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.4rem', opacity: 0.85 }}>{f.label}</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      {splitChips(f.value!).map((chip) => (
+                        <div key={chip} style={{ padding: '0.25rem 0.7rem', background: 'rgba(201,168,76,0.07)', border: '1px solid rgba(201,168,76,0.18)', borderRadius: '20px' }}>
+                          {isProfileUrl(chip) ? (
+                            <a href={toFullUrl(chip)} target="_blank" rel="noopener noreferrer"
+                              style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', color: c.goldLight, textDecoration: 'underline' }}>
+                              {shortProfileLabel(toFullUrl(chip))}
+                            </a>
+                          ) : (
+                            <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', color: c.ivory }}>{chip}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
-            {otherPreferences && (
-              <div style={{ marginTop: prefFields.length > 0 ? '0.75rem' : 0, background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '0.75rem 1rem' }}>
-                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 0.35rem' }}>
-                  Other Preferences
-                </p>
-                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0, lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
-                  {otherPreferences}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         {/* ID Document */}
         {(idCountry || idDocumentUrl) && (
@@ -500,6 +513,25 @@ export default async function ProfilePage() {
       </main>
 
       <BottomNav />
+    </div>
+  )
+}
+
+function ProfileDetailRow({ label, value }: { label: string; value: string | number | null | undefined }) {
+  if (!value) return null
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '44% 1fr', padding: '0.85rem 0', borderBottom: 'rgba(201,168,76,0.08) 1px solid' }}>
+      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', fontWeight: 500, color: '#a08840', lineHeight: 1.3 }}>{label}</span>
+      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.15rem', fontWeight: 500, color: '#f5f0e6', lineHeight: 1.4 }}>{value}</span>
+    </div>
+  )
+}
+
+function ProfileSectionHeader({ icon, title }: { icon: string; title: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+      <span style={{ fontSize: '0.95rem', opacity: 0.8 }}>{icon}</span>
+      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#c9a84c' }}>{title}</span>
     </div>
   )
 }
