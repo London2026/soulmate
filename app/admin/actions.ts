@@ -22,3 +22,15 @@ export async function rejectMemberId(profileId: string): Promise<void> {
   const admin = createAdminClient()
   await admin.from('profiles').update({ id_document_path: null, id_country: null }).eq('id', profileId)
 }
+
+export async function updateMemberCRM(profileId: string, data: { crm_status?: string; crm_notes?: string }): Promise<void> {
+  await assertAdmin()
+  const admin = createAdminClient()
+  await admin.from('profiles').update(data).eq('id', profileId)
+}
+
+export async function markMemberContacted(profileId: string): Promise<void> {
+  await assertAdmin()
+  const admin = createAdminClient()
+  await admin.from('profiles').update({ crm_last_contacted: new Date().toISOString() }).eq('id', profileId)
+}

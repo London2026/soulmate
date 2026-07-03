@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { verifyMember, rejectMemberId } from './actions'
+import React, { useState } from 'react'
+import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted } from './actions'
 
 const c = {
   navy: '#0d1f3c', navy2: '#122d52', navy3: '#1a3a6b',
@@ -12,7 +12,7 @@ const c = {
   green: '#2e7d52', amber: '#c97a2e', rose: '#9e2a2b',
 }
 
-type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions' | 'id_verification'
+type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions' | 'id_verification' | 'crm'
 
 interface IdVerification {
   id: string
@@ -39,6 +39,15 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'reveals',         icon: '💘', label: 'Reveals' },
   { id: 'subscriptions',   icon: '💳', label: 'Subscriptions' },
   { id: 'id_verification', icon: '🪪', label: 'ID Verify' },
+  { id: 'crm',             icon: '📋', label: 'CRM' },
+]
+
+const CRM_STATUSES = [
+  { value: 'active',    label: 'Active',    color: '#4ade80', bg: 'rgba(46,125,82,0.2)' },
+  { value: 'follow_up', label: 'Follow Up', color: '#fbbf24', bg: 'rgba(201,122,46,0.2)' },
+  { value: 'vip',       label: 'VIP',       color: '#c9a84c', bg: 'rgba(201,168,76,0.2)' },
+  { value: 'inactive',  label: 'Inactive',  color: '#9aabb8', bg: 'rgba(154,171,184,0.15)' },
+  { value: 'churned',   label: 'Churned',   color: '#f87171', bg: 'rgba(158,42,43,0.2)' },
 ]
 
 function fmt(dateStr: string) {
@@ -104,6 +113,47 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
   const [tab, setTab] = useState<Tab>(defaultTab ?? 'dashboard')
   const [idDocs, setIdDocs] = useState<IdVerification[]>(idVerifications)
   const [idAction, setIdAction] = useState<Record<string, 'verifying' | 'rejecting' | 'done'>>({})
+
+  const [crmFilter, setCrmFilter] = useState('all')
+  const [crmData, setCrmData] = useState<Record<string, { status: string; notes: string; last_contacted: string | null }>>(() => {
+    const init: Record<string, { status: string; notes: string; last_contacted: string | null }> = {}
+    for (const m of members as any[]) {
+      if (m.onboarding_complete) {
+        init[m.id] = { status: m.crm_status ?? 'active', notes: m.crm_notes ?? '', last_contacted: m.crm_last_contacted ?? null }
+      }
+    }
+    return init
+  })
+  const [editingNote, setEditingNote] = useState<string | null>(null)
+  const [noteText, setNoteText] = useState('')
+  const [savingCrm, setSavingCrm] = useState<Record<string, boolean>>({})
+
+  async function handleStatusChange(profileId: string, status: string) {
+    setCrmData(prev => ({ ...prev, [profileId]: { ...prev[profileId], status } }))
+    await updateMemberCRM(profileId, { crm_status: status })
+  }
+
+  function startEditNote(profileId: string, current: string) {
+    setEditingNote(profileId)
+    setNoteText(current)
+  }
+
+  async function handleSaveNote(profileId: string) {
+    setSavingCrm(prev => ({ ...prev, [profileId]: true }))
+    try {
+      await updateMemberCRM(profileId, { crm_notes: noteText })
+      setCrmData(prev => ({ ...prev, [profileId]: { ...prev[profileId], notes: noteText } }))
+      setEditingNote(null)
+    } finally {
+      setSavingCrm(prev => { const n = { ...prev }; delete n[profileId]; return n })
+    }
+  }
+
+  async function handleMarkContacted(profileId: string) {
+    const now = new Date().toISOString()
+    await markMemberContacted(profileId)
+    setCrmData(prev => ({ ...prev, [profileId]: { ...prev[profileId], last_contacted: now } }))
+  }
 
   async function handleVerify(profileId: string) {
     setIdAction(p => ({ ...p, [profileId]: 'verifying' }))
@@ -433,6 +483,101 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
             </div>
           </div>
         )}
+        {/* ── CRM ── */}
+        {tab === 'crm' && (
+          <div>
+            {sectionTitle('CRM', members.filter((m: any) => m.onboarding_complete).length)}
+
+            {/* Filter pills */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              {[{ value: 'all', label: 'All' }, ...CRM_STATUSES].map(s => {
+                const count = s.value === 'all'
+                  ? members.filter((m: any) => m.onboarding_complete).length
+                  : members.filter((m: any) => m.onboarding_complete && (crmData[m.id]?.status ?? 'active') === s.value).length
+                return (
+                  <button key={s.value} onClick={() => setCrmFilter(s.value)}
+                    style={{ padding: '0.35rem 0.85rem', border: `1px solid ${crmFilter === s.value ? c.gold : c.border}`, borderRadius: 20, background: crmFilter === s.value ? 'rgba(201,168,76,0.12)' : 'transparent', color: crmFilter === s.value ? c.gold : c.text2, fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    {s.label}
+                    <span style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '0 0.35rem', fontSize: '0.65rem' }}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div style={{ overflowX: 'auto', border: `1px solid ${c.border2}`, borderRadius: 6 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>{['Member ID', 'Name', 'Plan', 'Status', 'Last Contacted', 'Notes', 'Actions'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {members
+                    .filter((m: any) => m.onboarding_complete)
+                    .filter((m: any) => crmFilter === 'all' || (crmData[m.id]?.status ?? 'active') === crmFilter)
+                    .map((m: any) => {
+                      const crm = crmData[m.id] ?? { status: 'active', notes: '', last_contacted: null }
+                      const statusInfo = CRM_STATUSES.find(s => s.value === crm.status) ?? CRM_STATUSES[0]
+                      const isEditing = editingNote === m.id
+                      return (
+                        <React.Fragment key={m.id}>
+                          <tr className="admin-row">
+                            <td style={{ ...td, fontFamily: 'monospace', color: c.gold, fontSize: '0.78rem' }}>{m.member_id ?? '—'}</td>
+                            <td style={{ ...td, color: c.text, fontWeight: 500 }}>{m.full_name ?? '—'}</td>
+                            <td style={td}>{planBadge(m.plan ?? 'free')}</td>
+                            <td style={td}>
+                              <select value={crm.status} onChange={e => handleStatusChange(m.id, e.target.value)}
+                                style={{ background: statusInfo.bg, color: statusInfo.color, border: `1px solid ${statusInfo.color}44`, borderRadius: 4, padding: '0.25rem 0.5rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', outline: 'none' }}>
+                                {CRM_STATUSES.map(s => <option key={s.value} value={s.value} style={{ background: '#0d1f3c', color: '#e8e3d8' }}>{s.label}</option>)}
+                              </select>
+                            </td>
+                            <td style={td}>{crm.last_contacted ? fmt(crm.last_contacted) : <span style={{ color: c.text3 }}>Never</span>}</td>
+                            <td style={{ ...td, maxWidth: 220 }}>
+                              {isEditing ? (
+                                <span style={{ color: c.gold, fontSize: '0.72rem' }}>editing…</span>
+                              ) : crm.notes ? (
+                                <span style={{ fontSize: '0.78rem', color: c.text2 }} title={crm.notes}>
+                                  {crm.notes.length > 45 ? crm.notes.slice(0, 45) + '…' : crm.notes}
+                                </span>
+                              ) : (
+                                <span style={{ color: c.text3, fontSize: '0.72rem' }}>—</span>
+                              )}
+                            </td>
+                            <td style={td}>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button onClick={() => handleMarkContacted(m.id)}
+                                  style={{ padding: '0.3rem 0.6rem', background: 'rgba(46,125,82,0.15)', border: '1px solid rgba(46,125,82,0.4)', color: '#4ade80', borderRadius: 4, cursor: 'pointer', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                                  ✓ Contacted
+                                </button>
+                                <button onClick={() => isEditing ? setEditingNote(null) : startEditNote(m.id, crm.notes)}
+                                  style={{ padding: '0.3rem 0.6rem', background: 'rgba(201,168,76,0.12)', border: `1px solid ${c.border}`, color: c.gold, borderRadius: 4, cursor: 'pointer', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700 }}>
+                                  {isEditing ? '✕' : '📝'}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          {isEditing && (
+                            <tr>
+                              <td colSpan={7} style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderBottom: `1px solid ${c.border2}` }}>
+                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                                  <textarea value={noteText} onChange={e => setNoteText(e.target.value)}
+                                    placeholder="Add a note about this member…" rows={3}
+                                    style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: `1px solid ${c.border}`, borderRadius: 4, padding: '0.5rem 0.75rem', color: c.text, fontFamily: 'Georgia, serif', fontSize: '0.85rem', lineHeight: 1.6, resize: 'vertical', outline: 'none' }} />
+                                  <button onClick={() => handleSaveNote(m.id)} disabled={savingCrm[m.id]}
+                                    style={{ padding: '0.5rem 1rem', background: 'linear-gradient(135deg,#e8c876,#c9a84c)', color: '#0d1f3c', border: 'none', borderRadius: 4, cursor: savingCrm[m.id] ? 'default' : 'pointer', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', opacity: savingCrm[m.id] ? 0.6 : 1, whiteSpace: 'nowrap' }}>
+                                    {savingCrm[m.id] ? 'Saving…' : 'Save Note'}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      )
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   )

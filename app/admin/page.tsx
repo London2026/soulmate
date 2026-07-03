@@ -15,7 +15,7 @@ export default async function AdminPage() {
 
   const [membersRes, meetingsRes, revealsRes] = await Promise.all([
     admin.from('profiles')
-      .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at, id_verified, id_document_path, id_country, member_id')
+      .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at, id_verified, id_document_path, id_country, member_id, crm_status, crm_notes, crm_last_contacted')
       .order('created_at', { ascending: false }),
     admin.from('video_meetings')
       .select('id, room_id, requester_id, recipient_id, status, preferred_date, preferred_time, created_at')
