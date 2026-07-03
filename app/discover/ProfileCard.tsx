@@ -40,6 +40,15 @@ export interface ProfileData {
   fav_foods?: string | null
   fav_ai_tools?: string | null
   zodiac_sign?: string | null
+  pref_gender?: string | null
+  pref_age_min?: number | null
+  pref_age_max?: number | null
+  pref_location?: string | null
+  pref_religion?: string | null
+  pref_sub_religion?: string | null
+  pref_occupation?: string | null
+  pref_height?: string | null
+  pref_ethnicity?: string | null
 }
 
 const c = {
@@ -256,6 +265,37 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
                     ))}
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Partner Preferences */}
+      {[
+        { label: 'Looking For',        value: profile.pref_gender },
+        { label: 'Age Range',          value: profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} yrs` : null },
+        { label: 'Location',           value: profile.pref_location },
+        { label: 'Religion',           value: profile.pref_religion ? (profile.pref_sub_religion ? `${profile.pref_religion} · ${profile.pref_sub_religion}` : profile.pref_religion) : null },
+        { label: 'Occupation',         value: profile.pref_occupation },
+        { label: 'Height Preference',  value: profile.pref_height },
+        { label: 'Ethnicity',          value: profile.pref_ethnicity },
+      ].some(f => f.value) && (
+        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 1rem' }}>💑 Partner Preferences</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+            {[
+              { label: 'Looking For',        value: profile.pref_gender },
+              { label: 'Age Range',          value: profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} yrs` : null },
+              { label: 'Location',           value: profile.pref_location },
+              { label: 'Religion',           value: profile.pref_religion ? (profile.pref_sub_religion ? `${profile.pref_religion} · ${profile.pref_sub_religion}` : profile.pref_religion) : null },
+              { label: 'Occupation',         value: profile.pref_occupation },
+              { label: 'Height Preference',  value: profile.pref_height },
+              { label: 'Ethnicity',          value: profile.pref_ethnicity },
+            ].filter(f => f.value).map(f => (
+              <div key={f.label} style={{ background: 'rgba(14,26,53,0.5)', border: '1px solid rgba(201,168,76,0.12)', borderRadius: '8px', padding: '0.6rem 0.8rem' }}>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.25rem', opacity: 0.8 }}>{f.label}</p>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', color: c.ivory, margin: 0 }}>{f.value}</p>
               </div>
             ))}
           </div>

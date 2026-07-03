@@ -12,7 +12,9 @@ const PROFILE_FIELDS = `
   height, weight, ethnicity, marital_status, has_kids, id_verified,
   back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
   fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
-  zodiac_sign, hobby
+  zodiac_sign, hobby,
+  pref_gender, pref_age_min, pref_age_max, pref_location, pref_religion, pref_sub_religion,
+  pref_occupation, pref_height, pref_ethnicity
 `
 
 export default async function DiscoverPage() {
