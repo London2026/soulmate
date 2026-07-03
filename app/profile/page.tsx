@@ -284,7 +284,7 @@ export default async function ProfilePage() {
             <div className="prof-id-badge">
               <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.sepia }}>Profile ID</span>
               <span className="prof-id-code" style={{ fontFamily: '"Courier New", monospace', fontWeight: 900, color: c.goldLight, letterSpacing: '0.12em' }}>
-                #{user.id.slice(0, 8).toUpperCase()}
+                {(profile as Record<string, unknown>).member_id as string ?? '#' + user.id.slice(0, 8).toUpperCase()}
               </span>
             </div>
           </div>
