@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted } from './actions'
+import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket } from './actions'
 
 const c = {
   navy: '#0d1f3c', navy2: '#122d52', navy3: '#1a3a6b',
@@ -12,7 +12,7 @@ const c = {
   green: '#2e7d52', amber: '#c97a2e', rose: '#9e2a2b',
 }
 
-type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions' | 'id_verification' | 'crm'
+type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions' | 'id_verification' | 'crm' | 'tickets'
 
 interface IdVerification {
   id: string
@@ -29,6 +29,7 @@ interface Props {
   reveals: Record<string, unknown>[]
   planCounts: Record<string, number>
   idVerifications: IdVerification[]
+  tickets: Record<string, unknown>[]
   defaultTab?: Tab
 }
 
@@ -40,6 +41,13 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'subscriptions',   icon: '💳', label: 'Subscriptions' },
   { id: 'id_verification', icon: '🪪', label: 'ID Verify' },
   { id: 'crm',             icon: '📋', label: 'CRM' },
+  { id: 'tickets',         icon: '🎫', label: 'Tickets' },
+]
+
+const TICKET_STATUSES = [
+  { value: 'open',        label: 'Open',        color: '#fbbf24', bg: 'rgba(201,122,46,0.2)' },
+  { value: 'in_progress', label: 'In Progress', color: '#60a5fa', bg: 'rgba(37,99,235,0.2)'  },
+  { value: 'resolved',    label: 'Resolved',    color: '#4ade80', bg: 'rgba(46,125,82,0.2)'  },
 ]
 
 const CRM_STATUSES = [
@@ -109,7 +117,7 @@ const td: React.CSSProperties = {
   borderBottom: `1px solid ${c.border2}`, whiteSpace: 'nowrap',
 }
 
-export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, defaultTab }: Props) {
+export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, tickets, defaultTab }: Props) {
   const [tab, setTab] = useState<Tab>(defaultTab ?? 'dashboard')
   const [idDocs, setIdDocs] = useState<IdVerification[]>(idVerifications)
   const [idAction, setIdAction] = useState<Record<string, 'verifying' | 'rejecting' | 'done'>>({})
@@ -153,6 +161,29 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
     const now = new Date().toISOString()
     await markMemberContacted(profileId)
     setCrmData(prev => ({ ...prev, [profileId]: { ...prev[profileId], last_contacted: now } }))
+  }
+
+  const [ticketFilter, setTicketFilter] = useState('open')
+  const [ticketData, setTicketData] = useState<Record<string, { status: string; admin_notes: string }>>(() => {
+    const init: Record<string, { status: string; admin_notes: string }> = {}
+    for (const t of tickets as any[]) {
+      init[t.id] = { status: t.status ?? 'open', admin_notes: t.admin_notes ?? '' }
+    }
+    return init
+  })
+  const [expandedTicket, setExpandedTicket] = useState<string | null>(null)
+  const [ticketNoteText, setTicketNoteText] = useState('')
+  const [savingTicket, setSavingTicket] = useState<Record<string, boolean>>({})
+
+  async function handleUpdateTicket(ticketId: string, updates: { status?: string; admin_notes?: string }) {
+    setSavingTicket(prev => ({ ...prev, [ticketId]: true }))
+    try {
+      await updateTicket(ticketId, updates)
+      setTicketData(prev => ({ ...prev, [ticketId]: { ...prev[ticketId], ...updates } }))
+      if (updates.admin_notes !== undefined) setExpandedTicket(null)
+    } finally {
+      setSavingTicket(prev => { const n = { ...prev }; delete n[ticketId]; return n })
+    }
   }
 
   async function handleVerify(profileId: string) {
@@ -483,6 +514,99 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
             </div>
           </div>
         )}
+        {/* ── TICKETS ── */}
+        {tab === 'tickets' && (
+          <div>
+            {sectionTitle('Support Tickets', (tickets as any[]).length)}
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              {[{ value: 'all', label: 'All' }, ...TICKET_STATUSES].map(s => {
+                const count = s.value === 'all'
+                  ? (tickets as any[]).length
+                  : (tickets as any[]).filter(t => (ticketData[t.id]?.status ?? 'open') === s.value).length
+                return (
+                  <button key={s.value} onClick={() => setTicketFilter(s.value)}
+                    style={{ padding: '0.35rem 0.85rem', border: `1px solid ${ticketFilter === s.value ? c.gold : c.border}`, borderRadius: 20, background: ticketFilter === s.value ? 'rgba(201,168,76,0.12)' : 'transparent', color: ticketFilter === s.value ? c.gold : c.text2, fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    {s.label}
+                    <span style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '0 0.35rem', fontSize: '0.65rem' }}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {(tickets as any[])
+                .filter(t => ticketFilter === 'all' || (ticketData[t.id]?.status ?? 'open') === ticketFilter)
+                .map(t => {
+                  const tdata = ticketData[t.id] ?? { status: 'open', admin_notes: '' }
+                  const statusInfo = TICKET_STATUSES.find(s => s.value === tdata.status) ?? TICKET_STATUSES[0]
+                  const isExpanded = expandedTicket === t.id
+                  return (
+                    <div key={t.id} style={{ background: c.card2, border: `1px solid ${isExpanded ? c.border : c.border2}`, borderRadius: 8, overflow: 'hidden' }}>
+                      <div style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', cursor: 'pointer' }}
+                        onClick={() => { setExpandedTicket(isExpanded ? null : t.id); setTicketNoteText(tdata.admin_notes) }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem', flexWrap: 'wrap' }}>
+                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '0.95rem', color: c.text, fontWeight: 500 }}>{t.subject}</span>
+                            <span style={{ padding: '0.15rem 0.5rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, background: statusInfo.bg, color: statusInfo.color }}>{statusInfo.label}</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '1rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.text3, flexWrap: 'wrap' }}>
+                            <span>👤 {t.name}</span>
+                            <span>📧 {t.email}</span>
+                            <span>🕐 {fmt(t.created_at)}</span>
+                          </div>
+                        </div>
+                        <span style={{ color: c.text3, fontSize: '0.8rem', flexShrink: 0 }}>{isExpanded ? '▲' : '▼'}</span>
+                      </div>
+
+                      {isExpanded && (
+                        <div style={{ borderTop: `1px solid ${c.border2}`, padding: '1.25rem 1.5rem' }}>
+                          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: c.text3, margin: '0 0 0.5rem' }}>Message</p>
+                          <div style={{ background: 'rgba(0,0,0,0.2)', border: `1px solid ${c.border2}`, borderRadius: 6, padding: '1rem', marginBottom: '1.25rem' }}>
+                            <p style={{ fontFamily: 'Georgia, serif', fontSize: '0.9rem', color: c.text2, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{t.message}</p>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                            <div>
+                              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: c.text3, margin: '0 0 0.4rem' }}>Status</p>
+                              <select value={tdata.status} onChange={e => handleUpdateTicket(t.id, { status: e.target.value })}
+                                style={{ background: statusInfo.bg, color: statusInfo.color, border: `1px solid ${statusInfo.color}44`, borderRadius: 4, padding: '0.35rem 0.75rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', outline: 'none' }}>
+                                {TICKET_STATUSES.map(s => <option key={s.value} value={s.value} style={{ background: '#0d1f3c', color: '#e8e3d8' }}>{s.label}</option>)}
+                              </select>
+                            </div>
+                            <a href={`mailto:${t.email}?subject=Re: ${encodeURIComponent(t.subject)} — Banduraa Support`}
+                              style={{ display: 'inline-block', padding: '0.4rem 1rem', background: 'linear-gradient(135deg,#e8c876,#c9a84c)', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textDecoration: 'none', borderRadius: 4 }}>
+                              ✉ Reply via Email
+                            </a>
+                          </div>
+
+                          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: c.text3, margin: '0 0 0.4rem' }}>Internal Notes</p>
+                          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                            <textarea value={ticketNoteText} onChange={e => setTicketNoteText(e.target.value)}
+                              placeholder="Add internal notes about this ticket…" rows={2}
+                              style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: `1px solid ${c.border}`, borderRadius: 4, padding: '0.5rem 0.75rem', color: c.text, fontFamily: 'Georgia, serif', fontSize: '0.85rem', lineHeight: 1.6, resize: 'vertical' as const, outline: 'none' }} />
+                            <button onClick={() => handleUpdateTicket(t.id, { admin_notes: ticketNoteText })} disabled={savingTicket[t.id]}
+                              style={{ padding: '0.5rem 1rem', background: 'linear-gradient(135deg,#e8c876,#c9a84c)', color: '#0d1f3c', border: 'none', borderRadius: 4, cursor: savingTicket[t.id] ? 'default' : 'pointer', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, opacity: savingTicket[t.id] ? 0.6 : 1, whiteSpace: 'nowrap' as const }}>
+                              {savingTicket[t.id] ? 'Saving…' : 'Save Note'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+
+              {(tickets as any[]).filter(t => ticketFilter === 'all' || (ticketData[t.id]?.status ?? 'open') === ticketFilter).length === 0 && (
+                <div style={{ textAlign: 'center', padding: '4rem 2rem', background: c.card, border: `1px solid ${c.border2}`, borderRadius: 8 }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>✅</div>
+                  <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.2rem', color: c.text, margin: '0 0 0.4rem' }}>All clear</p>
+                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', color: c.text3 }}>No {ticketFilter === 'all' ? '' : ticketFilter.replace('_', ' ') + ' '}tickets at this time.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ── CRM ── */}
         {tab === 'crm' && (
           <div>

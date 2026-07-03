@@ -34,3 +34,9 @@ export async function markMemberContacted(profileId: string): Promise<void> {
   const admin = createAdminClient()
   await admin.from('profiles').update({ crm_last_contacted: new Date().toISOString() }).eq('id', profileId)
 }
+
+export async function updateTicket(ticketId: string, data: { status?: string; admin_notes?: string }): Promise<void> {
+  await assertAdmin()
+  const admin = createAdminClient()
+  await admin.from('support_tickets').update({ ...data, updated_at: new Date().toISOString() }).eq('id', ticketId)
+}

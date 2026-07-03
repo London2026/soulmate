@@ -13,7 +13,7 @@ export default async function AdminPage() {
 
   const admin = createAdminClient()
 
-  const [membersRes, meetingsRes, revealsRes] = await Promise.all([
+  const [membersRes, meetingsRes, revealsRes, ticketsRes] = await Promise.all([
     admin.from('profiles')
       .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at, id_verified, id_document_path, id_country, member_id, crm_status, crm_notes, crm_last_contacted')
       .order('created_at', { ascending: false }),
@@ -25,11 +25,16 @@ export default async function AdminPage() {
       .select('id, viewer_id, viewed_id, revealed_at')
       .order('revealed_at', { ascending: false })
       .limit(200),
+    admin.from('support_tickets')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200),
   ])
 
   const members   = membersRes.data   ?? []
   const meetings  = meetingsRes.data  ?? []
   const reveals   = revealsRes.data   ?? []
+  const tickets   = ticketsRes.data   ?? []
 
   // Build name lookup from members
   const nameById: Record<string, string> = {}
@@ -92,6 +97,7 @@ export default async function AdminPage() {
       reveals={revealsWithNames}
       planCounts={planCounts}
       idVerifications={idVerifications}
+      tickets={tickets}
     />
   )
 }

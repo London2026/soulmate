@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const ADMIN_EMAIL = 'london.anup@gmail.com'
 
@@ -91,6 +92,8 @@ export async function POST(request: Request) {
   </table>
 </body></html>`
 
+  const admin = createAdminClient()
+
   await Promise.all([
     resend.emails.send({
       from: 'Banduraa Support <support@banduraa.com>',
@@ -106,6 +109,7 @@ export async function POST(request: Request) {
       subject: `We've received your query — Banduraa Support`,
       html: confirmHtml,
     }),
+    admin.from('support_tickets').insert({ name, email, subject, message }),
   ])
 
   return NextResponse.json({ ok: true })
