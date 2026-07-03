@@ -91,9 +91,9 @@ function splitChips(value: string): string[] {
 
 function SectionHeader({ icon, title }: { icon: string; title: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-      <span style={{ fontSize: '1rem' }}>{icon}</span>
-      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight }}>{title}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
+      <span style={{ fontSize: '0.95rem', opacity: 0.8 }}>{icon}</span>
+      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight }}>{title}</span>
     </div>
   )
 }
@@ -101,9 +101,9 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
 function DetailRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (!value) return null
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '0.5rem', padding: '0.6rem 0', borderBottom: `1px solid ${c.borderSub}` }}>
-      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, opacity: 0.8, paddingTop: '0.2rem' }}>{label}</span>
-      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.1rem', color: c.ivory, lineHeight: 1.4 }}>{value}</span>
+    <div style={{ display: 'grid', gridTemplateColumns: '44% 1fr', padding: '0.85rem 0', borderBottom: `1px solid rgba(201,168,76,0.08)` }}>
+      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', fontWeight: 500, color: '#a08840', lineHeight: 1.3 }}>{label}</span>
+      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.15rem', fontWeight: 500, color: '#f5f0e6', lineHeight: 1.4 }}>{value}</span>
     </div>
   )
 }
@@ -233,7 +233,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       )}
 
       {/* ── Personal Details ── */}
-      <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
+      <div style={{ padding: '1.75rem 1.75rem 1.25rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
         <SectionHeader icon="🧑" title="Personal Details" />
         <div>
           <DetailRow label="Mother Tongue"  value={profile.mother_tongue} />
@@ -247,7 +247,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       </div>
 
       {/* ── Education & Career ── */}
-      <div style={{ padding: '1.5rem 1.75rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
+      <div style={{ padding: '1.75rem 1.75rem 1.25rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
         <SectionHeader icon="🎓" title="Education & Career" />
         <div>
           <DetailRow label="Education Level"          value={profile.education} />
@@ -261,7 +261,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
 
       {/* ── Looking For ── */}
       {[profile.pref_gender, profile.pref_age_min, profile.pref_location, profile.pref_religion, profile.pref_occupation, profile.pref_height, profile.pref_ethnicity].some(Boolean) && (
-        <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
+        <div style={{ padding: '1.75rem 1.75rem 1.25rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
           <SectionHeader icon="💑" title="Looking For" />
           <div>
             <DetailRow label="Gender"               value={profile.pref_gender} />
