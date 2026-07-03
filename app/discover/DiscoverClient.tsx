@@ -70,6 +70,7 @@ export default function DiscoverClient({
   const [fOccupation, setFOccupation] = useState('')
   const [selected, setSelected] = useState<ProfileData | null>(null)
   const [showInbox, setShowInbox] = useState(false)
+  const [showMyProfile, setShowMyProfile] = useState(false)
   const [notifications, setNotifications] = useState(inboxNotifications)
   const [meetings, setMeetings] = useState(inboxMeetings)
   const [aiLoading, setAiLoading] = useState(false)
@@ -398,7 +399,7 @@ export default function DiscoverClient({
             <span style={{ fontSize: '0.7rem' }}>🧑</span>
             <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#4ade80' }}>Your Profile — This is how others see you</span>
           </div>
-          <div style={{ maxWidth: '260px' }}>
+          <div style={{ maxWidth: '260px', cursor: 'pointer' }} onClick={() => setShowMyProfile(true)}>
             <MyProfileCard profile={myProfile} />
           </div>
           <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.25), transparent)', margin: '1.75rem 0 0' }} />
@@ -439,6 +440,27 @@ export default function DiscoverClient({
               ✕
             </button>
             <ProfileCard profile={selected} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} />
+          </div>
+        </div>
+      )}
+
+      {/* ── 8. Own profile preview modal ── */}
+      {showMyProfile && myProfile && (
+        <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setShowMyProfile(false) }}>
+          <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px', overflow: 'hidden' }}>
+            {/* Banner */}
+            <div style={{ background: '#1a3a2a', borderBottom: '1px solid rgba(74,222,128,0.2)', padding: '0.7rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', color: '#4ade80', margin: 0 }}>
+                🧑 This is your profile — exactly as other members see it
+              </p>
+              <button onClick={() => setShowMyProfile(false)}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#bdb5a6', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                ✕
+              </button>
+            </div>
+            <div style={{ overflowY: 'auto', maxHeight: 'calc(92vh - 48px)' }}>
+              <ProfileCard profile={myProfile} previewMode canReveal={false} canMeet={false} meetingsLeft={0} />
+            </div>
           </div>
         </div>
       )}
