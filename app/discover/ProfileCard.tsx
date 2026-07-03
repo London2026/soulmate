@@ -396,10 +396,36 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       )}
 
       {previewMode && (
-        <div style={{ padding: '1.25rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f', textAlign: 'center' }}>
-          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>
-            Your face photo stays hidden until a member chooses to reveal it. Members can request a video meeting with you from here.
-          </p>
+        <div style={{ borderTop: '3px solid #07111f' }}>
+          {/* Blurred face photo preview */}
+          {profile.front_photo_url ? (
+            <div style={{ position: 'relative', overflow: 'hidden' }}>
+              <img
+                src={profile.front_photo_url}
+                alt=""
+                style={{ width: '100%', display: 'block', filter: 'blur(18px)', transform: 'scale(1.08)', objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,31,60,0.25)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                <span style={{ fontSize: '2.2rem', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}>🔒</span>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem', color: '#f5f0e6', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+                  Your face photo — blurred as others see it
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '1.5rem 1.75rem', textAlign: 'center' }}>
+              <span style={{ fontSize: '2rem' }}>🔒</span>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: '0.5rem 0 0' }}>
+                Upload a face photo in your profile to see the preview here.
+              </p>
+            </div>
+          )}
+          {/* Explanation box */}
+          <div style={{ margin: '1.25rem 1.75rem 1.5rem', padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+            <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0, lineHeight: 1.65 }}>
+              This is exactly how other members see your face photo — blurred until they choose to reveal it. When they click &ldquo;Reveal Face Photo&rdquo;, you will be notified immediately.
+            </p>
+          </div>
         </div>
       )}
     </article>
