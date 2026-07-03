@@ -618,20 +618,14 @@ function InboxPanel({ notifications, meetings, onDismissNotification, onAcceptMe
 function CompactCard({ profile, onClick }: { profile: ProfileData; onClick: () => void }) {
   const initials = profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
   const pid = profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()
-  const hasTwo = !!(profile.back_photo_1_url && profile.back_photo_2_url)
   return (
     <div onClick={onClick}
       style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.5)' }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}>
 
-      {/* Photo area — two side-by-side (each square) or single square or initials */}
-      {hasTwo ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', aspectRatio: '2/1', overflow: 'hidden' }}>
-          <img src={profile.back_photo_1_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          <img src={profile.back_photo_2_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderLeft: '2px solid #07111f' }} />
-        </div>
-      ) : profile.back_photo_1_url ? (
+      {/* Photo area — single square crop */}
+      {profile.back_photo_1_url ? (
         <div style={{ aspectRatio: '1/1', overflow: 'hidden' }}>
           <img src={profile.back_photo_1_url} alt={maskName(profile.full_name)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
         </div>
