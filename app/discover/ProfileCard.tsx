@@ -23,6 +23,8 @@ export interface ProfileData {
   employment_status?: string | null
   marital_status?: string | null
   has_kids?: string | null
+  sub_religion?: string | null
+  hobby?: string | null
   id_verified?: boolean | null
   back_photo_1_url: string | null
   back_photo_2_url: string | null
@@ -131,7 +133,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
     }
   }
 
-  const tags = [profile.zodiac_sign, profile.occupation, profile.education, profile.education_subject, profile.employment_status, profile.mother_tongue, profile.ethnicity, profile.height, profile.marital_status, profile.has_kids].filter(Boolean)
+  const tags = [profile.zodiac_sign, profile.occupation, profile.education, profile.education_subject, profile.employment_status, profile.mother_tongue, profile.ethnicity, profile.height, profile.weight, profile.marital_status, profile.has_kids].filter(Boolean)
 
   return (
     <article style={{ background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.1)', marginBottom: '2rem' }}>
@@ -167,13 +169,13 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
             </span>
           </div>
           <p className="pc-meta" style={{ fontFamily: '"Cormorant Garamond", serif', color: c.ivoryDim, margin: 0 }}>
-            {profile.age} yrs · {profile.city}, {profile.country}
+            {profile.age} yrs · {profile.gender} · {profile.city}, {profile.country}
           </p>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
           {/* Religion — always first, gold highlight */}
           <span className="pc-tag" style={{ fontFamily: 'Raleway, sans-serif', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: 'rgba(201,168,76,0.12)', border: `1px solid ${c.border}`, color: c.goldLight, borderRadius: '20px' }}>
-            {profile.religion}
+            {profile.religion}{profile.sub_religion ? ` · ${profile.sub_religion}` : ''}
           </span>
           {tags.map(tag => (
             <span key={tag} className="pc-tag" style={{ fontFamily: 'Raleway, sans-serif', letterSpacing: '0.06em', background: 'rgba(14,26,53,0.7)', border: '1px solid rgba(201,168,76,0.15)', color: c.ivoryDim, borderRadius: '4px' }}>
@@ -221,6 +223,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
         { icon: '✈️', label: 'My Favourite Travel',           value: profile.fav_travel },
         { icon: '🍽️', label: 'My Favourite Foods',            value: profile.fav_foods },
         { icon: '🤖', label: 'My Favourite AI Tools',         value: profile.fav_ai_tools },
+        { icon: '🎯', label: 'My Hobbies & Interests',        value: profile.hobby },
       ].some(p => p.value) && (
         <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid rgba(201,168,76,0.07)' }}>
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 1rem' }}>✦ Personality &amp; Interests</p>
@@ -232,6 +235,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
               { icon: '✈️', label: 'My Favourite Travel',           value: profile.fav_travel },
               { icon: '🍽️', label: 'My Favourite Foods',            value: profile.fav_foods },
               { icon: '🤖', label: 'My Favourite AI Tools',         value: profile.fav_ai_tools },
+              { icon: '🎯', label: 'My Hobbies & Interests',        value: profile.hobby },
             ].filter(p => p.value).map(p => (
               <div key={p.label} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
                 <span style={{ fontSize: '1.1rem', flexShrink: 0, marginTop: '0.1rem' }}>{p.icon}</span>

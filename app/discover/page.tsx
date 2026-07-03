@@ -8,11 +8,11 @@ import DiscoverClient from './DiscoverClient'
 
 const PROFILE_FIELDS = `
   id, full_name, age, gender, city, country,
-  religion, mother_tongue, education, education_subject, employment_status, occupation,
+  religion, sub_religion, mother_tongue, education, education_subject, employment_status, occupation,
   height, weight, ethnicity, marital_status, has_kids, id_verified,
   back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
   fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
-  zodiac_sign
+  zodiac_sign, hobby
 `
 
 export default async function DiscoverPage() {
