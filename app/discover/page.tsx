@@ -3,7 +3,6 @@ import Navigation from '@/components/Navigation'
 import BottomNav from '@/components/BottomNav'
 import { createClient } from '@/lib/supabase/server'
 import ProfileCard, { type ProfileData } from './ProfileCard'
-import NotificationBanner from './NotificationBanner'
 import DiscoverClient from './DiscoverClient'
 
 const PROFILE_FIELDS = `
@@ -222,14 +221,62 @@ export default async function DiscoverPage() {
     pref_ethnicity: (myRow as Record<string, unknown>).pref_ethnicity as string ?? null,
   } : null
 
-  // Fetch unread notifications for the current user
-  const { data: notifications } = await supabase
-    .from('notifications')
-    .select('id, message, read, created_at')
-    .eq('recipient_id', user.id)
-    .eq('read', false)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  // Inbox: notifications + pending meeting requests received
+  const [notifRes, pendingMeetingsRes] = await Promise.all([
+    supabase
+      .from('notifications')
+      .select('id, message, type, read, created_at, sender_id')
+      .eq('recipient_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(30),
+    supabase
+      .from('video_meetings')
+      .select('id, room_id, requester_id, status, preferred_date, preferred_time, message, created_at')
+      .eq('recipient_id', user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false }),
+  ])
+
+  const notifications = notifRes.data ?? []
+  const pendingMeetings = pendingMeetingsRes.data ?? []
+
+  // Fetch sender names for notifications and meeting requesters
+  const senderIds = [
+    ...new Set([
+      ...notifications.map(n => n.sender_id).filter(Boolean),
+      ...pendingMeetings.map(m => m.requester_id),
+    ])
+  ]
+  const senderNames: Record<string, string> = {}
+  if (senderIds.length > 0) {
+    const { data: senders } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', senderIds)
+    for (const s of senders ?? []) senderNames[s.id] = s.full_name ?? 'Someone'
+  }
+
+  const inboxNotifications = notifications.map(n => ({
+    id: n.id,
+    message: n.message,
+    type: (n as Record<string, unknown>).type as string ?? 'general',
+    read: n.read,
+    created_at: n.created_at,
+    sender_name: n.sender_id ? (senderNames[n.sender_id] ?? 'Someone') : null,
+  }))
+
+  const inboxMeetings = pendingMeetings.map(m => ({
+    id: m.id,
+    room_id: m.room_id,
+    requester_name: senderNames[m.requester_id] ?? 'Someone',
+    requester_id: m.requester_id,
+    preferred_date: (m as Record<string, unknown>).preferred_date as string ?? null,
+    preferred_time: (m as Record<string, unknown>).preferred_time as string ?? null,
+    message: m.message ?? null,
+    created_at: m.created_at,
+  }))
+
+  const unreadCount = notifications.filter(n => !n.read).length + pendingMeetings.length
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#07111f' }}>
@@ -250,19 +297,21 @@ export default async function DiscoverPage() {
 
       <main className="disc-main" style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
-        {/* Heading */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h1 className="disc-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.5rem' }}>
-            Discover
-          </h1>
-          <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)' }} />
+        {/* Heading + Inbox button */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ flex: 1 }}>
+            <h1 className="disc-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.5rem' }}>
+              Discover
+            </h1>
+            <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)' }} />
+          </div>
         </div>
 
-        {/* Notifications */}
-        <NotificationBanner notifications={notifications ?? []} />
-
-        {/* Grid client — search, AI, cards */}
-        <DiscoverClient profiles={profiles} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} myProfile={myProfile} />
+        {/* Grid client — search, AI, inbox, cards */}
+        <DiscoverClient
+          profiles={profiles} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} myProfile={myProfile}
+          inboxNotifications={inboxNotifications} inboxMeetings={inboxMeetings} unreadCount={unreadCount}
+        />
       </main>
     </div>
   )

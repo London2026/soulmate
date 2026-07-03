@@ -3,6 +3,15 @@
 import { useState, useMemo } from 'react'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import { maskName } from '@/lib/maskName'
+import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox } from './actions'
+
+interface InboxNotification {
+  id: string; message: string; type: string; read: boolean; created_at: string; sender_name: string | null
+}
+interface InboxMeeting {
+  id: string; room_id: string; requester_name: string; requester_id: string
+  preferred_date: string | null; preferred_time: string | null; message: string | null; created_at: string
+}
 
 const c = {
   page: '#07111f', card: '#1e3358', border: 'rgba(201,168,76,0.25)',
@@ -46,8 +55,10 @@ function isPositiveReason(reason: string) {
 
 export default function DiscoverClient({
   profiles, canReveal, canMeet, meetingsLeft, myProfile,
+  inboxNotifications, inboxMeetings, unreadCount,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
+  inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -58,6 +69,9 @@ export default function DiscoverClient({
   const [fEducation, setFEducation] = useState('')
   const [fOccupation, setFOccupation] = useState('')
   const [selected, setSelected] = useState<ProfileData | null>(null)
+  const [showInbox, setShowInbox] = useState(false)
+  const [notifications, setNotifications] = useState(inboxNotifications)
+  const [meetings, setMeetings] = useState(inboxMeetings)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiMatches, setAiMatches] = useState<AIMatch[] | null>(null)
   const [aiError, setAiError] = useState('')
@@ -189,6 +203,38 @@ export default function DiscoverClient({
         }
         .find-match-btn:disabled { opacity: 0.55; cursor: default; }
       `}</style>
+
+      {/* ── 0. Inbox button + panel ── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button onClick={() => setShowInbox(v => !v)}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 1.1rem', background: showInbox ? 'rgba(201,168,76,0.18)' : '#1e3358', border: `1.5px solid ${unreadCount > 0 ? '#c9a84c' : 'rgba(201,168,76,0.25)'}`, color: '#c9a84c', fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
+          ✦ Inbox
+          {unreadCount > 0 && (
+            <span style={{ background: '#c9a84c', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center' }}>
+              {unreadCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {showInbox && (
+        <InboxPanel
+          notifications={notifications}
+          meetings={meetings}
+          onDismissNotification={async (id) => {
+            await markNotificationRead(id)
+            setNotifications(prev => prev.filter(n => n.id !== id))
+          }}
+          onAcceptMeeting={async (id) => {
+            await acceptMeetingInbox(id)
+            setMeetings(prev => prev.filter(m => m.id !== id))
+          }}
+          onDeclineMeeting={async (id) => {
+            await declineMeetingInbox(id)
+            setMeetings(prev => prev.filter(m => m.id !== id))
+          }}
+        />
+      )}
 
       {/* ── 1. Search + Filters ── */}
       <div style={{ marginBottom: '1rem' }}>
@@ -455,6 +501,115 @@ function MyProfileCard({ profile }: { profile: ProfileData }) {
           <span className="compact-card-pid" style={{ fontFamily: '"Courier New", monospace', fontWeight: 700, color: c.gold, letterSpacing: '0.06em' }}>{pid}</span>
         </div>
       </div>
+    </div>
+  )
+}
+
+function typeIcon(type: string) {
+  if (type === 'photo_revealed') return '📸'
+  if (type === 'meeting_request') return '📅'
+  if (type === 'meeting_accepted') return '✅'
+  if (type === 'meeting_declined') return '❌'
+  return '🔔'
+}
+
+function InboxPanel({ notifications, meetings, onDismissNotification, onAcceptMeeting, onDeclineMeeting }: {
+  notifications: InboxNotification[]
+  meetings: InboxMeeting[]
+  onDismissNotification: (id: string) => Promise<void>
+  onAcceptMeeting: (id: string) => Promise<void>
+  onDeclineMeeting: (id: string) => Promise<void>
+}) {
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+
+  async function handleAction(id: string, fn: (id: string) => Promise<void>) {
+    setLoadingId(id)
+    try { await fn(id) } finally { setLoadingId(null) }
+  }
+
+  const isEmpty = notifications.length === 0 && meetings.length === 0
+
+  return (
+    <div style={{ marginBottom: '1.5rem', background: '#1a2d4e', border: '1px solid rgba(201,168,76,0.25)', borderRadius: '12px', overflow: 'hidden' }}>
+      <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(201,168,76,0.1)', background: 'linear-gradient(to right, rgba(201,168,76,0.08), transparent)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c9a84c' }}>✦ Inbox</span>
+      </div>
+
+      {isEmpty ? (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#5a6e82', fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1rem' }}>
+          No messages yet. When someone reveals your photo or requests a meeting, it will appear here.
+        </div>
+      ) : (
+        <div>
+          {meetings.length > 0 && (
+            <div>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#c9a84c', margin: 0, padding: '0.75rem 1.25rem 0.5rem', borderBottom: '1px solid rgba(201,168,76,0.07)' }}>
+                📅 Meeting Requests
+              </p>
+              {meetings.map(m => (
+                <div key={m.id} style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.6rem' }}>
+                    <div>
+                      <p style={{ fontFamily: 'var(--font-playfair,"Playfair Display",serif)', fontSize: '1rem', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.2rem' }}>
+                        {maskName(m.requester_name)} wants to meet you
+                      </p>
+                      {(m.preferred_date || m.preferred_time) && (
+                        <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.9rem', color: '#bdb5a6', margin: '0 0 0.3rem' }}>
+                          📆 {m.preferred_date}{m.preferred_time ? ` at ${m.preferred_time}` : ''}
+                        </p>
+                      )}
+                      {m.message && (
+                        <p style={{ fontFamily: '"Cormorant Garamond",serif', fontStyle: 'italic', fontSize: '0.9rem', color: '#bdb5a6', margin: 0 }}>
+                          &ldquo;{m.message}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                    <span style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.75rem', color: '#5a6e82', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {new Date(m.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.6rem' }}>
+                    <button onClick={() => handleAction(m.id, onAcceptMeeting)} disabled={loadingId === m.id}
+                      style={{ flex: 1, padding: '0.55rem', background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', fontFamily: 'Raleway,sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: '6px', cursor: loadingId === m.id ? 'default' : 'pointer', opacity: loadingId === m.id ? 0.6 : 1 }}>
+                      ✓ Accept
+                    </button>
+                    <button onClick={() => handleAction(m.id, onDeclineMeeting)} disabled={loadingId === m.id}
+                      style={{ flex: 1, padding: '0.55rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171', fontFamily: 'Raleway,sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', borderRadius: '6px', cursor: loadingId === m.id ? 'default' : 'pointer', opacity: loadingId === m.id ? 0.6 : 1 }}>
+                      ✕ Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {notifications.length > 0 && (
+            <div>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#c9a84c', margin: 0, padding: '0.75rem 1.25rem 0.5rem', borderBottom: '1px solid rgba(201,168,76,0.07)' }}>
+                🔔 Notifications
+              </p>
+              {notifications.map(n => (
+                <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.9rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: n.read ? 'transparent' : 'rgba(201,168,76,0.03)' }}>
+                  <span style={{ fontSize: '1.1rem', flexShrink: 0, marginTop: '0.1rem' }}>{typeIcon(n.type)}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.95rem', color: '#f5f0e6', margin: '0 0 0.25rem', lineHeight: 1.5 }}>{n.message}</p>
+                    <p style={{ fontFamily: 'Raleway,sans-serif', fontSize: '0.62rem', color: '#5a6e82', margin: 0 }}>
+                      {new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  {!n.read && (
+                    <button onClick={() => handleAction(n.id, onDismissNotification)} disabled={loadingId === n.id}
+                      style={{ flexShrink: 0, background: 'none', border: 'none', color: '#5a6e82', fontSize: '1.2rem', cursor: 'pointer', padding: '0', lineHeight: 1, opacity: loadingId === n.id ? 0.4 : 1 }}
+                      title="Mark as read">
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -84,3 +84,59 @@ export async function markNotificationRead(notificationId: string) {
     .eq('id', notificationId)
     .eq('recipient_id', user.id)
 }
+
+export async function acceptMeetingInbox(meetingId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: meeting } = await supabase
+    .from('video_meetings')
+    .select('room_id, requester_id')
+    .eq('id', meetingId)
+    .eq('recipient_id', user.id)
+    .single()
+  if (!meeting) throw new Error('Meeting not found')
+  await supabase
+    .from('video_meetings')
+    .update({ status: 'accepted' })
+    .eq('id', meetingId)
+    .eq('recipient_id', user.id)
+  const [meRes] = await Promise.all([
+    supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+  ])
+  const myName = meRes.data?.full_name ?? 'Someone'
+  await supabase.from('notifications').insert({
+    recipient_id: meeting.requester_id,
+    sender_id: user.id,
+    type: 'meeting_accepted',
+    message: `${myName} has accepted your meeting request! Join via your Meetings tab.`,
+  })
+}
+
+export async function declineMeetingInbox(meetingId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: meeting } = await supabase
+    .from('video_meetings')
+    .select('requester_id')
+    .eq('id', meetingId)
+    .eq('recipient_id', user.id)
+    .single()
+  if (!meeting) throw new Error('Meeting not found')
+  await supabase
+    .from('video_meetings')
+    .update({ status: 'declined' })
+    .eq('id', meetingId)
+    .eq('recipient_id', user.id)
+  const [meRes] = await Promise.all([
+    supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+  ])
+  const myName = meRes.data?.full_name ?? 'Someone'
+  await supabase.from('notifications').insert({
+    recipient_id: meeting.requester_id,
+    sender_id: user.id,
+    type: 'meeting_declined',
+    message: `${myName} has declined your meeting request.`,
+  })
+}
