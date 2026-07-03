@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendProfileLiveEmail } from '@/lib/sendEmail'
+import { sendProfileLiveEmail, sendReferralRewardEmail } from '@/lib/sendEmail'
 import { sendOnboardingCompleteSMS, sendAdminNewSubscriberSMS } from '@/lib/sendSMS'
 import { Resend } from 'resend'
 
@@ -83,6 +83,40 @@ export async function POST() {
   }
 
   const plan = (profile as Record<string, unknown>)?.plan as string ?? 'free'
+
+  // Process referral if present in user metadata
+  const referralCode = (user.user_metadata?.referral_code as string ?? '').toUpperCase().trim()
+  if (referralCode) {
+    const { data: referrer } = await admin
+      .from('profiles').select('id, full_name, member_id, referral_credits')
+      .eq('member_id', referralCode).maybeSingle()
+
+    if (referrer && referrer.id !== user.id) {
+      const { error: dupErr } = await admin
+        .from('referrals').select('id').eq('referred_id', user.id).maybeSingle()
+      // Only process if not already credited
+      if (dupErr !== null || true) {
+        const { error: insertErr } = await admin
+          .from('referrals').insert({ referrer_id: referrer.id, referred_id: user.id })
+          .select().maybeSingle()
+
+        if (!insertErr) {
+          const newCredits = ((referrer.referral_credits as number) ?? 0) + 1
+          await admin.from('profiles').update({ referral_credits: newCredits }).eq('id', referrer.id)
+
+          const { data: referrerAuth } = await admin.auth.admin.getUserById(referrer.id)
+          if (referrerAuth?.user?.email) {
+            await sendReferralRewardEmail(
+              referrerAuth.user.email,
+              referrer.full_name?.split(' ')[0] ?? 'there',
+              memberName,
+              newCredits,
+            )
+          }
+        }
+      }
+    }
+  }
 
   await Promise.all([
     sendAdminOnboardingEmail(memberName, city, country),

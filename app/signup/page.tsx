@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const c = {
@@ -40,7 +40,7 @@ const STYLE = `
   }
 `
 
-export default function SignupPage() {
+function SignupForm() {
   const [step, setStep] = useState<'details' | 'code'>('details')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -48,6 +48,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref')?.trim().toUpperCase() ?? ''
 
   async function sendCode(e: React.FormEvent) {
     e.preventDefault()
@@ -55,9 +57,11 @@ export default function SignupPage() {
     if (!email.trim()) { setError('Please enter your email address.'); return }
     setLoading(true); setError('')
     const supabase = createClient()
+    const metadata: Record<string, string> = { full_name: name.trim() }
+    if (refCode) metadata.referral_code = refCode
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { shouldCreateUser: true, data: { full_name: name.trim() } },
+      options: { shouldCreateUser: true, data: metadata },
     })
     setLoading(false)
     if (error) { setError(error.message); return }
@@ -178,5 +182,13 @@ export default function SignupPage() {
       </div>
       <p className="auth-footer">By continuing you agree to our Terms &amp; Privacy Policy</p>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   )
 }

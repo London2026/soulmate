@@ -56,15 +56,18 @@ function isPositiveReason(reason: string) {
 export default function DiscoverClient({
   profiles, canReveal, canMeet, meetingsLeft, myProfile,
   inboxNotifications, inboxMeetings, unreadCount, shortlistedIds,
+  myMemberId, referralCredits, referralCount,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
   inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
   shortlistedIds: string[]
+  myMemberId: string | null; referralCredits: number; referralCount: number
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [shortlist, setShortlist] = useState<Set<string>>(() => new Set(shortlistedIds))
   const [showShortlistOnly, setShowShortlistOnly] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [reportTarget, setReportTarget] = useState<ProfileData | null>(null)
   const [reportReason, setReportReason] = useState('')
   const [reportMessage, setReportMessage] = useState('')
@@ -514,6 +517,42 @@ export default function DiscoverClient({
                 shortlisted={shortlist.has(p.id)}
                 onShortlist={(e: React.MouseEvent) => handleShortlist(p.id, e)} />
             ))}
+          </div>
+        )}
+
+        {/* ── Invite & Earn ── */}
+        {myMemberId && (
+          <div style={{ marginTop: '2.5rem', background: 'linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.03))', border: '1px solid rgba(201,168,76,0.25)', borderRadius: '12px', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+              <div>
+                <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem' }}>Invite &amp; Earn</p>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', color: c.sepia, margin: 0, fontStyle: 'italic' }}>
+                  Share your link — earn 1 free month of Starter per friend who joins
+                </p>
+              </div>
+              {referralCredits > 0 && (
+                <div style={{ background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)', borderRadius: '8px', padding: '0.5rem 1rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em', color: c.gold, margin: '0 0 0.1rem' }}>FREE MONTHS</p>
+                  <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.5rem', fontWeight: 700, color: c.gold, margin: 0, lineHeight: 1 }}>{referralCredits}</p>
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '200px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '6px', padding: '0.55rem 0.75rem', fontFamily: '"Courier New", monospace', fontSize: '0.82rem', color: c.gold, letterSpacing: '0.04em', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                https://banduraa.com/signup?ref={myMemberId}
+              </div>
+              <button onClick={() => { navigator.clipboard.writeText(`https://banduraa.com/signup?ref=${myMemberId}`); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+                style={{ padding: '0.55rem 1.1rem', background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(201,168,76,0.15)', border: `1px solid ${copied ? '#4ade80' : c.gold}`, borderRadius: '6px', color: copied ? '#4ade80' : c.gold, fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+                {copied ? '✓ Copied!' : 'Copy Link'}
+              </button>
+            </div>
+            {referralCount > 0 && (
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: c.sepia, margin: '0.75rem 0 0', letterSpacing: '0.05em' }}>
+                {referralCount} friend{referralCount !== 1 ? 's' : ''} joined via your link
+                {referralCredits > 0 ? ' · ' : ''}
+                {referralCredits > 0 && <span style={{ color: c.gold }}>Contact support to redeem your {referralCredits} free month{referralCredits !== 1 ? 's' : ''}</span>}
+              </p>
+            )}
           </div>
         )}
       </>

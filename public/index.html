@@ -3116,7 +3116,15 @@
   // Simple in-memory user store (demo)
   const users = {};
 
+  // Capture referral code from URL and persist across navigation
+  (function() {
+    const ref = new URLSearchParams(window.location.search).get('ref')
+    if (ref) sessionStorage.setItem('banduraa_ref', ref.trim().toUpperCase())
+  })()
+
   async function openModal() {
+    const ref = sessionStorage.getItem('banduraa_ref')
+    const refParam = ref ? '?ref=' + encodeURIComponent(ref) : ''
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
@@ -3125,9 +3133,9 @@
           .eq('id', session.user.id).maybeSingle()
         window.location.href = p?.onboarding_complete ? '/discover' : '/onboarding'
       } else {
-        window.location.href = '/signup'
+        window.location.href = '/signup' + refParam
       }
-    } catch { window.location.href = '/signup' }
+    } catch { window.location.href = '/signup' + refParam }
   }
 
   function closeModal() {

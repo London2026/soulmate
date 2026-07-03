@@ -446,3 +446,30 @@ export async function sendReportNotificationEmail(reporterName: string, reporter
   `)
   await send('london.anup@gmail.com', subject, html)
 }
+
+export async function sendReferralRewardEmail(to: string, referrerFirstName: string, referredName: string, creditsTotal: number) {
+  const subject = `🎁 You've earned a free month on Banduraa!`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">You've Earned a Free Month!</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
+      Hi <strong>${referrerFirstName}</strong>,
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
+      Great news — <strong style="color:#0d1f3c;">${referredName}</strong> just joined Banduraa using your referral link. As a thank you, you have earned <strong style="color:#0d1f3c;">1 free month of Starter</strong>.
+    </p>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;margin-bottom:20px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 8px;">Your Referral Credits</p>
+      <p style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#0d1f3c;margin:0;">🎁 ${creditsTotal} free month${creditsTotal !== 1 ? 's' : ''} available</p>
+    </div>
+    <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;line-height:1.7;margin:0 0 20px;">
+      To redeem your free month, simply reply to this email or contact our support team and we will apply it to your next billing cycle.
+    </p>
+    <div style="text-align:center;">
+      <a href="https://banduraa.com/support" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Redeem via Support →
+      </a>
+    </div>
+  `)
+  await send(to, subject, html)
+}

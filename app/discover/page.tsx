@@ -24,7 +24,7 @@ export default async function DiscoverPage() {
   // Guard: onboarding must be complete + get plan
   const { data: me } = await supabase
     .from('profiles')
-    .select('onboarding_complete, plan')
+    .select('onboarding_complete, plan, member_id, referral_credits')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -64,9 +64,10 @@ export default async function DiscoverPage() {
     .single()
 
   // Which profiles has the current user already revealed?
-  const [{ data: myReveals }, { data: myShortlist }] = await Promise.all([
+  const [{ data: myReveals }, { data: myShortlist }, { count: referralCount }] = await Promise.all([
     supabase.from('photo_reveals').select('viewed_id').eq('viewer_id', user.id),
     supabase.from('shortlist').select('profile_id').eq('user_id', user.id),
+    supabase.from('referrals').select('*', { count: 'exact', head: true }).eq('referrer_id', user.id),
   ])
 
   const revealedSet   = new Set((myReveals ?? []).map((r) => r.viewed_id as string))
@@ -303,6 +304,9 @@ export default async function DiscoverPage() {
           profiles={profiles} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} myProfile={myProfile}
           inboxNotifications={inboxNotifications} inboxMeetings={inboxMeetings} unreadCount={unreadCount}
           shortlistedIds={shortlistedIds}
+          myMemberId={(me as Record<string, unknown>)?.member_id as string ?? null}
+          referralCredits={(me as Record<string, unknown>)?.referral_credits as number ?? 0}
+          referralCount={referralCount ?? 0}
         />
       </main>
     </div>
