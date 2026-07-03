@@ -164,10 +164,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
     <article style={{ background: c.navyMid, borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }}>
       <style>{`
         .pc-name { font-size: 2rem; }
-        @media (max-width: 500px) {
-          .pc-name { font-size: 1.45rem !important; }
-          .pc-detail-grid { grid-template-columns: 120px 1fr !important; }
-        }
+        @media (max-width: 500px) { .pc-name { font-size: 1.45rem !important; } }
       `}</style>
 
       {/* ── Header ── */}
@@ -238,7 +235,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       {/* ── Personal Details ── */}
       <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
         <SectionHeader icon="🧑" title="Personal Details" />
-        <div className="pc-detail-grid" style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
+        <div>
           <DetailRow label="Mother Tongue"  value={profile.mother_tongue} />
           <DetailRow label="Height"         value={profile.height} />
           <DetailRow label="Weight"         value={profile.weight} />
@@ -252,13 +249,13 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       {/* ── Education & Career ── */}
       <div style={{ padding: '1.5rem 1.75rem', background: c.navyMid, borderTop: '3px solid #07111f' }}>
         <SectionHeader icon="🎓" title="Education & Career" />
-        <div className="pc-detail-grid" style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
-          <DetailRow label="Education Level"        value={profile.education} />
+        <div>
+          <DetailRow label="Education Level"          value={profile.education} />
           <DetailRow label="Subject / Specialisation" value={profile.education_subject} />
-          <DetailRow label="Other Qualifications"   value={profile.other_qualifications} />
-          <DetailRow label="Employment Status"      value={profile.employment_status} />
-          <DetailRow label="Occupation"             value={profile.occupation} />
-          <DetailRow label="Housing"                value={profile.housing} />
+          <DetailRow label="Other Qualifications"     value={profile.other_qualifications} />
+          <DetailRow label="Employment Status"        value={profile.employment_status} />
+          <DetailRow label="Occupation"               value={profile.occupation} />
+          <DetailRow label="Housing"                  value={profile.housing} />
         </div>
       </div>
 
@@ -266,15 +263,15 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       {[profile.pref_gender, profile.pref_age_min, profile.pref_location, profile.pref_religion, profile.pref_occupation, profile.pref_height, profile.pref_ethnicity].some(Boolean) && (
         <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
           <SectionHeader icon="💑" title="Looking For" />
-          <div className="pc-detail-grid" style={{ display: 'grid', gridTemplateColumns: '160px 1fr' }}>
-            <DetailRow label="Gender"           value={profile.pref_gender} />
-            <DetailRow label="Age Range"        value={profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} years` : null} />
-            <DetailRow label="Religion"         value={profile.pref_religion} />
+          <div>
+            <DetailRow label="Gender"               value={profile.pref_gender} />
+            <DetailRow label="Age Range"            value={profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} years` : null} />
+            <DetailRow label="Religion"             value={profile.pref_religion} />
             <DetailRow label="Caste / Sub-Religion" value={profile.pref_sub_religion} />
-            <DetailRow label="Location"         value={profile.pref_location} />
-            <DetailRow label="Occupation"       value={profile.pref_occupation} />
-            <DetailRow label="Preferred Height" value={profile.pref_height} />
-            <DetailRow label="Ethnicity"        value={profile.pref_ethnicity} />
+            <DetailRow label="Location"             value={profile.pref_location} />
+            <DetailRow label="Occupation"           value={profile.pref_occupation} />
+            <DetailRow label="Preferred Height"     value={profile.pref_height} />
+            <DetailRow label="Ethnicity"            value={profile.pref_ethnicity} />
           </div>
         </div>
       )}
