@@ -470,11 +470,11 @@ function MyProfileCard({ profile }: { profile: ProfileData }) {
       {/* Photo with YOU badge */}
       <div style={{ position: 'relative' }}>
         {profile.back_photo_1_url ? (
-          <div style={{ aspectRatio: '3/4', overflow: 'hidden' }}>
-            <img src={profile.back_photo_1_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <div style={{ aspectRatio: '1/1', overflow: 'hidden' }}>
+            <img src={profile.back_photo_1_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
           </div>
         ) : (
-          <div style={{ aspectRatio: '3/4', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ aspectRatio: '1/1', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontSize: '2.5rem', color: 'rgba(201,168,76,0.35)' }}>{initials}</span>
           </div>
         )}
@@ -625,18 +625,18 @@ function CompactCard({ profile, onClick }: { profile: ProfileData; onClick: () =
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.5)' }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}>
 
-      {/* Photo area — two side-by-side if available, else single or initials */}
+      {/* Photo area — two side-by-side (each square) or single square or initials */}
       {hasTwo ? (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', aspectRatio: '3/2', overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', aspectRatio: '2/1', overflow: 'hidden' }}>
           <img src={profile.back_photo_1_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           <img src={profile.back_photo_2_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderLeft: '2px solid #07111f' }} />
         </div>
       ) : profile.back_photo_1_url ? (
-        <div style={{ aspectRatio: '3/2', overflow: 'hidden' }}>
-          <img src={profile.back_photo_1_url} alt={maskName(profile.full_name)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <div style={{ aspectRatio: '1/1', overflow: 'hidden' }}>
+          <img src={profile.back_photo_1_url} alt={maskName(profile.full_name)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
         </div>
       ) : (
-        <div style={{ aspectRatio: '3/2', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ aspectRatio: '1/1', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontSize: '2rem', color: 'rgba(201,168,76,0.45)' }}>{initials}</span>
         </div>
       )}
