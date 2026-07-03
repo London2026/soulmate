@@ -180,7 +180,7 @@ export default async function ProfilePage() {
     { label: 'My Favourite Travel Destinations', value: profile.fav_travel },
     { label: 'My Favourite Foods', value: profile.fav_foods },
     { label: 'My Favourite AI Tools', value: profile.fav_ai_tools },
-    { label: 'My Hobby', value: profile.hobby },
+    { label: 'My Hobbies & Interests', value: profile.hobby },
   ].filter((f) => f.value)
 
   const p = profile as Record<string, unknown>
