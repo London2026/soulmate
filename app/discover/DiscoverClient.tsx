@@ -69,7 +69,6 @@ export default function DiscoverClient({
     setFReligion(''); setFEducation(''); setFOccupation('')
   }
 
-  // Unique values from loaded profiles for dropdowns
   const religions  = useMemo(() => [...new Set(profiles.map(p => p.religion).filter(Boolean))].sort(), [profiles])
   const educations = useMemo(() => [...new Set(profiles.map(p => p.education).filter(Boolean))].sort(), [profiles])
 
@@ -126,15 +125,6 @@ export default function DiscoverClient({
           .disc-grid { grid-template-columns: 1fr; }
         }
 
-        .ai-btn {
-          padding: 1rem 2.5rem;
-          display: flex; align-items: center; gap: 0.6rem;
-          transition: all 0.2s;
-        }
-        @media (max-width: 600px) {
-          .ai-btn { width: 100%; justify-content: center; padding: 0.95rem 1rem; }
-        }
-
         .disc-modal-overlay {
           position: fixed; inset: 0;
           background: rgba(0,0,0,0.88);
@@ -144,14 +134,8 @@ export default function DiscoverClient({
           overflow-y: auto;
         }
         @media (max-width: 600px) {
-          .disc-modal-overlay {
-            align-items: flex-end;
-            padding: 0;
-          }
-          .disc-modal-inner {
-            max-height: 92vh !important;
-            border-radius: 16px 16px 0 0 !important;
-          }
+          .disc-modal-overlay { align-items: flex-end; padding: 0; }
+          .disc-modal-inner { max-height: 92vh !important; border-radius: 16px 16px 0 0 !important; }
         }
 
         .disc-match-headline {
@@ -178,39 +162,36 @@ export default function DiscoverClient({
           .compact-card-pid { font-size: 0.62rem !important; }
         }
 
-        /* Filter input placeholder text */
         .disc-filter-inp::placeholder { color: #8a9db5 !important; }
         .disc-filter-inp:focus { border-color: #c9a84c !important; }
-        /* Prevent iOS auto-zoom on input focus (requires font-size >= 16px) */
         @media (max-width: 600px) {
           .disc-search-inp, .disc-filter-inp { font-size: 16px !important; }
           .disc-ai-match-score { margin-left: 0 !important; }
         }
+
+        .find-match-btn {
+          display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+          width: 100%; max-width: 420px;
+          padding: 1.1rem 2rem;
+          background: transparent;
+          border: 1.5px solid #c9a84c;
+          color: #c9a84c;
+          font-family: Raleway, sans-serif;
+          font-size: 0.88rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+          border-radius: 50px;
+          cursor: pointer;
+          transition: all 0.25s;
+          box-shadow: 0 0 32px rgba(201,168,76,0.12);
+        }
+        .find-match-btn:hover:not(:disabled) {
+          background: rgba(201,168,76,0.1);
+          box-shadow: 0 0 48px rgba(201,168,76,0.25);
+        }
+        .find-match-btn:disabled { opacity: 0.55; cursor: default; }
       `}</style>
 
-      {/* My profile preview — exactly how other members see your card */}
-      {myProfile && (
-        <div style={{ marginBottom: '2rem' }}>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.4rem' }}>
-            👁 Your Profile Preview
-          </p>
-          <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 1rem' }}>
-            This is exactly how other members see your card on Discover.
-          </p>
-          <div style={{ maxWidth: '420px' }}>
-            <ProfileCard profile={myProfile} previewMode />
-          </div>
-          <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.3), transparent)', margin: '2rem 0 0' }} />
-        </div>
-      )}
-
-      {profiles.length === 0 ? (
-        <EmptyState />
-      ) : (
-      <>
-
-      {/* Search bar + filter toggle */}
-      <div style={{ marginBottom: '0.75rem' }}>
+      {/* ── 1. Search + Filters ── */}
+      <div style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', gap: '0.6rem' }}>
           <div style={{ position: 'relative', flex: 1 }}>
             <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: c.sepia, fontSize: '0.9rem' }}>🔍</span>
@@ -218,24 +199,20 @@ export default function DiscoverClient({
               type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by name or Profile ID…"
               className="disc-search-inp"
-              style={{ width: '100%', padding: '0.75rem 0.9rem 0.75rem 2.4rem', background: c.card, border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '8px', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '0.85rem 0.9rem 0.85rem 2.4rem', background: c.card, border: `1px solid ${c.border}`, color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '8px', outline: 'none', boxSizing: 'border-box' }}
               onFocus={e => (e.target.style.borderColor = c.gold)}
               onBlur={e => (e.target.style.borderColor = c.border)}
             />
           </div>
-          {/* Filter toggle button */}
           <button onClick={() => setShowFilters(f => !f)}
-            style={{ padding: '0.75rem 1.1rem', background: showFilters ? 'rgba(201,168,76,0.18)' : c.card, border: `1px solid ${activeFilterCount > 0 ? c.gold : c.border}`, color: activeFilterCount > 0 ? c.gold : c.sepia, borderRadius: '8px', cursor: 'pointer', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+            style={{ padding: '0.85rem 1.1rem', background: showFilters ? 'rgba(201,168,76,0.18)' : c.card, border: `1px solid ${activeFilterCount > 0 ? c.gold : c.border}`, color: activeFilterCount > 0 ? c.gold : c.sepia, borderRadius: '8px', cursor: 'pointer', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '0.4rem', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
             ⚙ Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
           </button>
         </div>
 
-        {/* Filter panel */}
         {showFilters && (
           <div style={{ marginTop: '0.6rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '10px', padding: '1.1rem 1.25rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
-
-              {/* Location */}
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>📍 Location</label>
                 <input type="text" value={fLocation} onChange={e => setFLocation(e.target.value)}
@@ -244,8 +221,6 @@ export default function DiscoverClient({
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)} />
               </div>
-
-              {/* Age range */}
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🎂 Age Range</label>
                 <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
@@ -262,8 +237,6 @@ export default function DiscoverClient({
                     onBlur={e => (e.target.style.borderColor = c.border)} />
                 </div>
               </div>
-
-              {/* Religion */}
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🕊 Religion</label>
                 <select value={fReligion} onChange={e => setFReligion(e.target.value)}
@@ -274,8 +247,6 @@ export default function DiscoverClient({
                   {religions.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
-
-              {/* Education */}
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>🎓 Education</label>
                 <select value={fEducation} onChange={e => setFEducation(e.target.value)}
@@ -286,8 +257,6 @@ export default function DiscoverClient({
                   {educations.map(e => <option key={e} value={e}>{e}</option>)}
                 </select>
               </div>
-
-              {/* Occupation */}
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>💼 Occupation</label>
                 <input type="text" value={fOccupation} onChange={e => setFOccupation(e.target.value)}
@@ -296,10 +265,7 @@ export default function DiscoverClient({
                   onFocus={e => (e.target.style.borderColor = c.gold)}
                   onBlur={e => (e.target.style.borderColor = c.border)} />
               </div>
-
             </div>
-
-            {/* Clear filters */}
             {activeFilterCount > 0 && (
               <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <button onClick={clearFilters}
@@ -312,31 +278,21 @@ export default function DiscoverClient({
         )}
       </div>
 
-      {/* Find My Banduraa button */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.75rem' }}>
-        <button onClick={handleAiMatch} disabled={aiLoading} className="ai-btn"
-          style={{
-            background: aiLoading ? 'rgba(201,168,76,0.15)' : 'linear-gradient(135deg, rgba(201,168,76,0.2) 0%, rgba(201,168,76,0.35) 100%)',
-            border: `1.5px solid ${c.gold}`, color: c.gold,
-            fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 700,
-            letterSpacing: '0.18em', textTransform: 'uppercase', borderRadius: '10px',
-            cursor: aiLoading ? 'default' : 'pointer',
-            boxShadow: aiLoading ? 'none' : '0 0 28px rgba(201,168,76,0.18)',
-          }}>
+      {/* ── 2. FIND MY MATCH button ── */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+        <button onClick={handleAiMatch} disabled={aiLoading} className="find-match-btn">
           {aiLoading
-            ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', fontSize: '1rem' }}>✦</span> Analysing your profile…</>
-            : <><span style={{ fontSize: '1.1rem' }}>✨</span> Find My Banduraa</>}
+            ? <><span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>✦</span> Analysing your profile…</>
+            : <><span style={{ fontSize: '1rem' }}>✦</span> Find My Match</>}
         </button>
       </div>
 
-      {/* AI error */}
+      {/* ── 3. AI error / results ── */}
       {aiError && (
         <div style={{ marginBottom: '1.5rem', padding: '0.75rem 1rem', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: '8px', color: '#f87171', fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem' }}>
           {aiError}
         </div>
       )}
-
-      {/* AI Match Results */}
       {aiMatches && (
         <div style={{ marginBottom: '2rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid rgba(201,168,76,0.12)`, background: 'linear-gradient(to right, rgba(201,168,76,0.08), transparent)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
@@ -344,102 +300,90 @@ export default function DiscoverClient({
               <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem' }}>✨ Your Banduraa Matches</p>
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.sepia, margin: 0 }}>Showing matches with 50+ compatibility · Tap any result to view their full profile</p>
             </div>
-            <button
-              onClick={() => { setAiMatches(null); setAiError('') }}
+            <button onClick={() => { setAiMatches(null); setAiError('') }}
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#bdb5a6', fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.08em', padding: '0.35rem 0.85rem', borderRadius: '6px', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
-            >
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}>
               ✕ Close
             </button>
           </div>
-
           {aiMatches.filter(m => m.score >= 50).map((m, i, arr) => (
             <div key={m.id} onClick={() => setSelected(m.profile)}
               style={{ padding: '1.4rem 1.5rem', borderBottom: i < arr.length - 1 ? `1px solid rgba(201,168,76,0.08)` : 'none', cursor: 'pointer', transition: 'background 0.2s' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,168,76,0.05)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-
-              {/* Match headline */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', marginBottom: '0.65rem', flexWrap: 'wrap' }}>
-                <span style={{ fontFamily: '"Courier New", monospace', fontSize: '1rem', fontWeight: 900, color: c.gold, letterSpacing: '0.08em', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.3rem 0.7rem', borderRadius: '6px' }}>
-                  {profileId(m.id)}
-                </span>
-                <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, fontSize: '1.35rem' }}>
-                  {maskName(m.profile?.full_name ?? '')}
-                </span>
-                <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem', color: c.sepia }}>
-                  {m.profile?.age} yrs · {m.profile?.city}
-                </span>
-                <span className="disc-ai-match-score" style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.3rem 0.8rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>
-                  {scoreLabel(m.score)}
-                </span>
+                <span style={{ fontFamily: '"Courier New", monospace', fontSize: '1rem', fontWeight: 900, color: c.gold, letterSpacing: '0.08em', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', padding: '0.3rem 0.7rem', borderRadius: '6px' }}>{profileId(m.id)}</span>
+                <span style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, fontSize: '1.35rem' }}>{maskName(m.profile?.full_name ?? '')}</span>
+                <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem', color: c.sepia }}>{m.profile?.age} yrs · {m.profile?.city}</span>
+                <span className="disc-ai-match-score" style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.3rem 0.8rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>{scoreLabel(m.score)}</span>
               </div>
-
-              {/* Score bar */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.9rem' }}>
                 <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px' }}>
                   <div style={{ height: '100%', width: `${m.score}%`, background: scoreGradient(m.score), borderRadius: '4px', transition: 'width 0.6s ease' }} />
                 </div>
-                <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.35rem', fontWeight: 700, color: scoreColor(m.score), minWidth: '64px', textAlign: 'right' }}>
-                  {m.score}/100
-                </span>
+                <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.35rem', fontWeight: 700, color: scoreColor(m.score), minWidth: '64px', textAlign: 'right' }}>{m.score}/100</span>
               </div>
-
-              {/* Narrative */}
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.15rem', color: c.ivoryDim, margin: '0 0 0.8rem', lineHeight: 1.65 }}>
-                Profile {profileId(m.id)} matches your profile with a compatibility score of <strong style={{ color: scoreColor(m.score), fontStyle: 'normal' }}>{m.score} out of 100</strong> — a {scoreLabel(m.score).toLowerCase()}. Here is why this is a good match for you:
+                Profile {profileId(m.id)} matches your profile with a compatibility score of <strong style={{ color: scoreColor(m.score), fontStyle: 'normal' }}>{m.score} out of 100</strong> — a {scoreLabel(m.score).toLowerCase()}.
               </p>
-
-              {/* Reasons */}
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                 {m.reasons.map((r, j) => {
                   const positive = isPositiveReason(r)
                   return (
-                    <li key={j} style={{
-                      display: 'flex', alignItems: 'flex-start', gap: '0.6rem',
-                      padding: positive ? '0.5rem 0.75rem' : '0.35rem 0.5rem',
-                      borderRadius: '6px',
-                      background: positive ? 'rgba(74,222,128,0.07)' : 'transparent',
-                      border: positive ? '1px solid rgba(74,222,128,0.18)' : '1px solid transparent',
-                    }}>
-                      <span style={{ fontSize: '0.85rem', marginTop: '0.2rem', flexShrink: 0 }}>
-                        {positive ? '✅' : '⚠️'}
-                      </span>
+                    <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: positive ? '0.5rem 0.75rem' : '0.35rem 0.5rem', borderRadius: '6px', background: positive ? 'rgba(74,222,128,0.07)' : 'transparent', border: positive ? '1px solid rgba(74,222,128,0.18)' : '1px solid transparent' }}>
+                      <span style={{ fontSize: '0.85rem', marginTop: '0.2rem', flexShrink: 0 }}>{positive ? '✅' : '⚠️'}</span>
                       <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.1rem', color: positive ? '#e8f5e0' : '#bdb5a6', lineHeight: 1.6, fontWeight: positive ? 600 : 400 }}>{r}</span>
                     </li>
                   )
                 })}
               </ul>
-
-              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', color: c.gold, textTransform: 'uppercase', margin: '0.9rem 0 0', textAlign: 'right' }}>
-                Tap to view full profile →
-              </p>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', color: c.gold, textTransform: 'uppercase', margin: '0.9rem 0 0', textAlign: 'right' }}>Tap to view full profile →</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* Profile count */}
-      <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', color: c.sepia, letterSpacing: '0.08em', marginBottom: '1rem' }}>
-        {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{(search || activeFilterCount > 0) ? ' found' : ''}
-        {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
-      </p>
-
-      {/* Grid */}
-      {filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0', color: c.sepia, fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.1rem' }}>
-          No profiles match your search.
-        </div>
-      ) : (
-        <div className="disc-grid">
-          {filtered.map(p => (
-            <CompactCard key={p.id} profile={p} onClick={() => setSelected(p)} />
-          ))}
+      {/* ── 4. Your profile preview ── */}
+      {myProfile && (
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: '#1a4731', border: '1px solid rgba(74,222,128,0.3)', borderRadius: '20px', padding: '0.35rem 0.9rem', marginBottom: '0.9rem' }}>
+            <span style={{ fontSize: '0.7rem' }}>🧑</span>
+            <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#4ade80' }}>Your Profile — This is how others see you</span>
+          </div>
+          <div style={{ maxWidth: '260px' }}>
+            <MyProfileCard profile={myProfile} />
+          </div>
+          <div style={{ height: '1px', background: 'linear-gradient(to right, rgba(201,168,76,0.25), transparent)', margin: '1.75rem 0 0' }} />
         </div>
       )}
 
-      {/* Expanded modal */}
+      {profiles.length === 0 ? (
+        <EmptyState />
+      ) : (
+      <>
+        {/* ── 5. Profile count ── */}
+        <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: c.sepia, letterSpacing: '0.08em', marginBottom: '1rem' }}>
+          {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{(search || activeFilterCount > 0) ? ' found' : ''}
+          {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
+        </p>
+
+        {/* ── 6. Grid ── */}
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: c.sepia, fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.1rem' }}>
+            No profiles match your search.
+          </div>
+        ) : (
+          <div className="disc-grid">
+            {filtered.map(p => (
+              <CompactCard key={p.id} profile={p} onClick={() => setSelected(p)} />
+            ))}
+          </div>
+        )}
+      </>
+      )}
+
+      {/* ── 7. Expanded modal ── */}
       {selected && (
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setSelected(null) }}>
           <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px' }}>
@@ -450,9 +394,6 @@ export default function DiscoverClient({
             <ProfileCard profile={selected} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} />
           </div>
         </div>
-      )}
-
-      </>
       )}
     </>
   )
@@ -474,21 +415,72 @@ function EmptyState() {
   )
 }
 
+function MyProfileCard({ profile }: { profile: ProfileData }) {
+  const initials = profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+  const pid = '#' + profile.id.slice(0, 8).toUpperCase()
+  return (
+    <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden' }}>
+      {/* Photo with YOU badge */}
+      <div style={{ position: 'relative' }}>
+        {profile.back_photo_1_url ? (
+          <div style={{ aspectRatio: '3/4', overflow: 'hidden' }}>
+            <img src={profile.back_photo_1_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
+        ) : (
+          <div style={{ aspectRatio: '3/4', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontSize: '2.5rem', color: 'rgba(201,168,76,0.35)' }}>{initials}</span>
+          </div>
+        )}
+        <span style={{ position: 'absolute', top: '0.6rem', left: '0.6rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#fff', background: '#16a34a', padding: '0.2rem 0.55rem', borderRadius: '4px' }}>YOU</span>
+      </div>
+      {/* Info */}
+      <div className="compact-card-info">
+        <p className="compact-card-name" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem', lineHeight: 1.2 }}>
+          {maskName(profile.full_name)}
+        </p>
+        <p className="compact-card-sub" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: c.sepia, margin: '0 0 0.4rem' }}>
+          {profile.age} · {profile.city}
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.4rem' }}>
+          <span className="compact-card-rel" style={{ fontFamily: 'Raleway, sans-serif', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0.15rem 0.5rem', background: 'rgba(201,168,76,0.1)', border: `1px solid rgba(201,168,76,0.25)`, color: c.gold, borderRadius: '20px' }}>
+            {profile.religion}
+          </span>
+        </div>
+        {profile.occupation && (
+          <p className="compact-card-occ" style={{ fontFamily: 'Raleway, sans-serif', letterSpacing: '0.04em', color: c.ivoryDim, margin: '0 0 0.4rem' }}>
+            {profile.occupation}
+          </p>
+        )}
+        <div style={{ display: 'inline-flex', alignItems: 'center', padding: '0.14rem 0.5rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '4px' }}>
+          <span className="compact-card-pid" style={{ fontFamily: '"Courier New", monospace', fontWeight: 700, color: c.gold, letterSpacing: '0.06em' }}>{pid}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function CompactCard({ profile, onClick }: { profile: ProfileData; onClick: () => void }) {
   const initials = profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
   const pid = '#' + profile.id.slice(0, 8).toUpperCase()
+  const hasTwo = !!(profile.back_photo_1_url && profile.back_photo_2_url)
   return (
     <div onClick={onClick}
       style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.5)' }}
       onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}>
 
-      {profile.back_photo_1_url ? (
-        <div style={{ aspectRatio: '1', overflow: 'hidden' }}>
+      {/* Photo area — two side-by-side if available, else single or initials */}
+      {hasTwo ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', aspectRatio: '3/2', overflow: 'hidden' }}>
+          <img src={profile.back_photo_1_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={profile.back_photo_2_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderLeft: '2px solid #07111f' }} />
+        </div>
+      ) : profile.back_photo_1_url ? (
+        <div style={{ aspectRatio: '3/2', overflow: 'hidden' }}>
           <img src={profile.back_photo_1_url} alt={maskName(profile.full_name)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </div>
       ) : (
-        <div style={{ aspectRatio: '1', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ aspectRatio: '3/2', background: 'linear-gradient(135deg, #152d4e, #1e3d66)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ fontFamily: '"Playfair Display", serif', fontStyle: 'italic', fontSize: '2rem', color: 'rgba(201,168,76,0.45)' }}>{initials}</span>
         </div>
       )}
