@@ -48,7 +48,12 @@ const c = {
 }
 
 function isPersonalityUrl(s: string): boolean {
-  return /^https?:\/\//i.test(s.trim())
+  return /^https?:\/\//i.test(s.trim()) || /^(www\.)?(youtube\.com|youtu\.be|instagram\.com|tiktok\.com|vimeo\.com)/i.test(s.trim())
+}
+
+function toFullUrl(s: string): string {
+  if (/^https?:\/\//i.test(s.trim())) return s.trim()
+  return 'https://' + s.trim()
 }
 
 function shortPersonalityLabel(url: string): string {
@@ -235,9 +240,9 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                     {splitPersonalityChips(p.value!).map((tag, i) => (
                       isPersonalityUrl(tag) ? (
-                        <a key={i} href={tag} target="_blank" rel="noopener noreferrer" title={tag}
+                        <a key={i} href={toFullUrl(tag)} target="_blank" rel="noopener noreferrer" title={tag}
                           style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: '#7fb3f5', textDecoration: 'underline', padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                          {shortPersonalityLabel(tag)}
+                          {shortPersonalityLabel(toFullUrl(tag))}
                         </a>
                       ) : (
                         <span key={i} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, padding: '0.25rem 0.75rem', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '20px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block' }}>

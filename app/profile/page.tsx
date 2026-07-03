@@ -20,7 +20,12 @@ const c = {
 }
 
 function isProfileUrl(s: string): boolean {
-  return /^https?:\/\//i.test(s.trim())
+  return /^https?:\/\//i.test(s.trim()) || /^(www\.)?(youtube\.com|youtu\.be|instagram\.com|tiktok\.com|vimeo\.com)/i.test(s.trim())
+}
+
+function toFullUrl(s: string): string {
+  if (/^https?:\/\//i.test(s.trim())) return s.trim()
+  return 'https://' + s.trim()
 }
 
 function shortProfileLabel(url: string): string {
@@ -389,9 +394,9 @@ export default async function ProfilePage() {
                     {splitChips(f.value!).map((chip) => (
                       <div key={chip} style={{ display: 'flex', alignItems: 'center', padding: '0.2rem 0.55rem', background: 'rgba(201,168,76,0.08)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '20px', minWidth: 0, overflow: 'hidden' }}>
                         {isProfileUrl(chip) ? (
-                          <a href={chip} target="_blank" rel="noopener noreferrer" title={chip}
+                          <a href={toFullUrl(chip)} target="_blank" rel="noopener noreferrer" title={chip}
                             style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.goldLight, textDecoration: 'underline', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                            {shortProfileLabel(chip)}
+                            {shortProfileLabel(toFullUrl(chip))}
                           </a>
                         ) : (
                           <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.85rem', color: c.ivory, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
