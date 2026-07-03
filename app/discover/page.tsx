@@ -145,6 +145,17 @@ export default async function DiscoverPage() {
     fav_foods: p.fav_foods ?? null,
     fav_ai_tools: p.fav_ai_tools ?? null,
     zodiac_sign: (p as Record<string, unknown>).zodiac_sign as string ?? null,
+    sub_religion: (p as Record<string, unknown>).sub_religion as string ?? null,
+    hobby: (p as Record<string, unknown>).hobby as string ?? null,
+    pref_gender: (p as Record<string, unknown>).pref_gender as string ?? null,
+    pref_age_min: (p as Record<string, unknown>).pref_age_min as number ?? null,
+    pref_age_max: (p as Record<string, unknown>).pref_age_max as number ?? null,
+    pref_location: (p as Record<string, unknown>).pref_location as string ?? null,
+    pref_religion: (p as Record<string, unknown>).pref_religion as string ?? null,
+    pref_sub_religion: (p as Record<string, unknown>).pref_sub_religion as string ?? null,
+    pref_occupation: (p as Record<string, unknown>).pref_occupation as string ?? null,
+    pref_height: (p as Record<string, unknown>).pref_height as string ?? null,
+    pref_ethnicity: (p as Record<string, unknown>).pref_ethnicity as string ?? null,
   }))
 
   // Build a preview of the current user's own profile, as seen by other members
@@ -181,6 +192,17 @@ export default async function DiscoverPage() {
     fav_foods: myRow.fav_foods ?? null,
     fav_ai_tools: myRow.fav_ai_tools ?? null,
     zodiac_sign: (myRow as Record<string, unknown>).zodiac_sign as string ?? null,
+    sub_religion: (myRow as Record<string, unknown>).sub_religion as string ?? null,
+    hobby: (myRow as Record<string, unknown>).hobby as string ?? null,
+    pref_gender: (myRow as Record<string, unknown>).pref_gender as string ?? null,
+    pref_age_min: (myRow as Record<string, unknown>).pref_age_min as number ?? null,
+    pref_age_max: (myRow as Record<string, unknown>).pref_age_max as number ?? null,
+    pref_location: (myRow as Record<string, unknown>).pref_location as string ?? null,
+    pref_religion: (myRow as Record<string, unknown>).pref_religion as string ?? null,
+    pref_sub_religion: (myRow as Record<string, unknown>).pref_sub_religion as string ?? null,
+    pref_occupation: (myRow as Record<string, unknown>).pref_occupation as string ?? null,
+    pref_height: (myRow as Record<string, unknown>).pref_height as string ?? null,
+    pref_ethnicity: (myRow as Record<string, unknown>).pref_ethnicity as string ?? null,
   } : null
 
   // Fetch unread notifications for the current user
