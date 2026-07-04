@@ -1,4 +1,6 @@
 import { Resend } from 'resend'
+import { createHmac } from 'crypto'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const FROM = 'Banduraa <noreply@banduraa.com>'
 
@@ -7,19 +9,37 @@ function resend() {
   return new Resend(process.env.RESEND_API_KEY)
 }
 
+export function getUnsubscribeUrl(userId: string): string {
+  const token = createHmac('sha256', process.env.UNSUBSCRIBE_SECRET ?? 'banduraa-unsub-secret-2026')
+    .update(userId).digest('hex').slice(0, 40)
+  return `https://banduraa.com/api/unsubscribe?id=${encodeURIComponent(userId)}&token=${token}`
+}
+
 // ── Shared email wrapper ─────────────────────────────────────────────────────
-async function send(to: string, subject: string, html: string) {
+async function send(to: string, subject: string, html: string, userId?: string) {
+  if (userId) {
+    try {
+      const admin = createAdminClient()
+      const { data } = await admin.from('profiles').select('email_unsubscribed').eq('id', userId).maybeSingle()
+      if (data?.email_unsubscribed === true) return
+    } catch { /* proceed if check fails */ }
+  }
   const client = resend()
   if (!client) { console.warn('RESEND_API_KEY not set — email skipped'); return }
   try {
-    await client.emails.send({ from: FROM, to, subject, html })
+    const opts: Parameters<typeof client.emails.send>[0] = { from: FROM, to, subject, html }
+    if (userId) opts.headers = {
+      'List-Unsubscribe': `<${getUnsubscribeUrl(userId)}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    }
+    await client.emails.send(opts)
   } catch (err) {
     console.error('Email send error:', err)
   }
 }
 
 // ── Shared HTML wrapper ──────────────────────────────────────────────────────
-function wrap(body: string) {
+function wrap(body: string, unsubscribeUrl?: string) {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -43,6 +63,7 @@ function wrap(body: string) {
             © 2026 Banduraa · Privacy-first matrimony platform<br>
             <a href="https://banduraa.com/privacy" style="color:#9aabb8;">Privacy Policy</a> &nbsp;·&nbsp;
             <a href="https://banduraa.com/terms" style="color:#9aabb8;">Terms of Service</a>
+            ${unsubscribeUrl ? `<br><a href="${unsubscribeUrl}" style="color:#c0ccd6;font-size:10px;">Unsubscribe from Banduraa emails</a>` : ''}
           </p>
         </td></tr>
 
@@ -55,7 +76,7 @@ function wrap(body: string) {
 
 // ── Email templates ──────────────────────────────────────────────────────────
 
-export async function sendWelcomeSignupEmail(to: string) {
+export async function sendWelcomeSignupEmail(to: string, userId?: string) {
   const subject = `Welcome to Banduraa 🌹 — Let's build your profile`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Welcome to Banduraa 🌹</h2>
@@ -97,11 +118,11 @@ export async function sendWelcomeSignupEmail(to: string) {
         🔒 <strong style="color:#0d1f3c;">Your privacy is our priority.</strong> Your front-facing photo is hidden from other members until you choose to reveal it. Only you control who sees it.
       </p>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
-export async function sendEncouragementEmail(to: string) {
+export async function sendEncouragementEmail(to: string, userId?: string) {
   const subject = `Complete your Banduraa profile — your match is waiting 🌹`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Welcome back 🌹</h2>
@@ -139,11 +160,11 @@ export async function sendEncouragementEmail(to: string) {
         🔒 <strong style="color:#0d1f3c;">Your privacy is protected.</strong> Your face photo is hidden from everyone until you choose to reveal it. You are in full control at every step.
       </p>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
-export async function sendProfileLiveEmail(to: string, firstName: string, memberId: string) {
+export async function sendProfileLiveEmail(to: string, firstName: string, memberId: string, userId?: string) {
   const subject = `🎉 Your Banduraa profile is now live!`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 12px;">Your profile is live! 🎉</h2>
@@ -183,8 +204,8 @@ export async function sendProfileLiveEmail(to: string, firstName: string, member
         If you have any questions or need help, simply reply to this email and quote your member ID. Wishing you a beautiful journey on Banduraa. 🌹
       </p>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
 export async function sendAdminNewSubscriberEmail(memberName: string, plan: string) {
@@ -210,7 +231,7 @@ export async function sendAdminNewSubscriberEmail(memberName: string, plan: stri
   await send('london.anup@gmail.com', subject, html)
 }
 
-export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string, viewerProfileId: string) {
+export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string, viewerProfileId: string, userId?: string) {
   const subject = `💘 Profile #${viewerProfileId} has revealed your photo on Banduraa`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your photo has been revealed</h2>
@@ -232,8 +253,8 @@ export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string,
         Check Their Profile →
       </a>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
 export async function sendMeetingRequestEmail(
@@ -242,7 +263,8 @@ export async function sendMeetingRequestEmail(
   requesterName: string,
   dateStr: string,
   time: string,
-  message: string
+  message: string,
+  userId?: string
 ) {
   const subject = `📅 ${requesterName} wants to meet you on Banduraa`
   const html = wrap(`
@@ -268,8 +290,8 @@ export async function sendMeetingRequestEmail(
         Respond →
       </a>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
 export async function sendMeetingAcceptedEmail(
@@ -278,7 +300,8 @@ export async function sendMeetingAcceptedEmail(
   acceptorName: string,
   dateStr: string,
   time: string,
-  roomId: string
+  roomId: string,
+  userId?: string
 ) {
   const meetingUrl = `https://meet.jit.si/Banduraa-${roomId}`
   const subject = `✅ Your video meeting with ${acceptorName} is confirmed`
@@ -313,8 +336,8 @@ export async function sendMeetingAcceptedEmail(
         📵 Banduraa advises you <strong>not to share or ask for a mobile number</strong> during your first meeting, unless you feel completely comfortable doing so.
       </p>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
 export async function sendMeetingDeclinedEmail(
@@ -322,6 +345,7 @@ export async function sendMeetingDeclinedEmail(
   requesterFirstName: string,
   declinerName: string,
   dateStr: string,
+  userId?: string
 ) {
   const subject = `Your Banduraa meeting request for ${dateStr} was declined`
   const html = wrap(`
@@ -343,8 +367,8 @@ export async function sendMeetingDeclinedEmail(
         The right connection takes patience. Your profile remains live and other members can still discover you. Wishing you the best on your journey. 🌹
       </p>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
 export async function sendMeetingCancelledEmail(
@@ -352,6 +376,7 @@ export async function sendMeetingCancelledEmail(
   recipientFirstName: string,
   cancellerName: string,
   dateStr: string,
+  userId?: string
 ) {
   const subject = `Banduraa meeting request for ${dateStr} has been withdrawn`
   const html = wrap(`
@@ -376,8 +401,8 @@ export async function sendMeetingCancelledEmail(
         Your profile remains fully active and other members can still discover you. Wishing you the best on your journey. 🌹
       </p>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
 export async function sendMeetingConfirmedAcceptorEmail(
@@ -386,7 +411,8 @@ export async function sendMeetingConfirmedAcceptorEmail(
   requesterName: string,
   dateStr: string,
   time: string,
-  roomId: string
+  roomId: string,
+  userId?: string
 ) {
   const meetingUrl = `https://meet.jit.si/Banduraa-${roomId}`
   const subject = `✅ Your video meeting with ${requesterName} is confirmed`
@@ -421,8 +447,8 @@ export async function sendMeetingConfirmedAcceptorEmail(
         📵 Banduraa advises you <strong>not to share or ask for a mobile number</strong> during your first meeting, unless you feel completely comfortable doing so.
       </p>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }
 
 export async function sendReportNotificationEmail(reporterName: string, reporterMemberId: string, reportedMemberId: string, reason: string, message: string | null) {
@@ -447,7 +473,7 @@ export async function sendReportNotificationEmail(reporterName: string, reporter
   await send('london.anup@gmail.com', subject, html)
 }
 
-export async function sendReferralRewardEmail(to: string, referrerFirstName: string, referredName: string, creditsTotal: number) {
+export async function sendReferralRewardEmail(to: string, referrerFirstName: string, referredName: string, creditsTotal: number, userId?: string) {
   const subject = `🎁 You've earned a free month on Banduraa!`
   const html = wrap(`
     <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">You've Earned a Free Month!</h2>
@@ -470,6 +496,6 @@ export async function sendReferralRewardEmail(to: string, referrerFirstName: str
         Redeem via Support →
       </a>
     </div>
-  `)
-  await send(to, subject, html)
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
 }

@@ -91,7 +91,7 @@ export async function requestVideoMeeting(
 
   await Promise.all([
     recipientEmail
-      ? sendMeetingRequestEmail(recipientEmail, recipientFirstName, name, safeDateStr, safeTime, message)
+      ? sendMeetingRequestEmail(recipientEmail, recipientFirstName, name, safeDateStr, safeTime, message, recipientId)
       : Promise.resolve(),
     recipientProfile?.phone
       ? sendMeetingRequestSMS(recipientProfile.phone, recipientFirstName, name, safeDateStr, safeTime)
@@ -146,11 +146,11 @@ export async function acceptMeeting(meetingId: string): Promise<{ roomId: string
   await Promise.all([
     // Email requester
     requesterEmail
-      ? sendMeetingAcceptedEmail(requesterEmail, requesterFirstName, acceptorName, safeDateStr, safeTime, meeting.room_id)
+      ? sendMeetingAcceptedEmail(requesterEmail, requesterFirstName, acceptorName, safeDateStr, safeTime, meeting.room_id, meeting.requester_id)
       : Promise.resolve(),
     // Email acceptor
     acceptorEmail
-      ? sendMeetingConfirmedAcceptorEmail(acceptorEmail, acceptorFirstName, requesterProfile?.full_name ?? 'Your match', safeDateStr, safeTime, meeting.room_id)
+      ? sendMeetingConfirmedAcceptorEmail(acceptorEmail, acceptorFirstName, requesterProfile?.full_name ?? 'Your match', safeDateStr, safeTime, meeting.room_id, user.id)
       : Promise.resolve(),
     // SMS requester
     requesterProfile?.phone
@@ -204,7 +204,7 @@ export async function declineMeeting(meetingId: string): Promise<void> {
       ? sendMeetingDeclinedSMS(requesterProfile.phone, firstNameOnly(requesterProfile.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
       : Promise.resolve(),
     requesterAuth?.user?.email
-      ? sendMeetingDeclinedEmail(requesterAuth.user.email, firstNameOnly(requesterProfile?.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
+      ? sendMeetingDeclinedEmail(requesterAuth.user.email, firstNameOnly(requesterProfile?.full_name ?? ''), me?.full_name ?? 'Your match', dateStr, meeting.requester_id)
       : Promise.resolve(),
   ])
 }
@@ -248,7 +248,7 @@ export async function cancelMeeting(meetingId: string): Promise<void> {
       ? sendMeetingCancelledSMS(otherProfile.phone, firstNameOnly(otherProfile.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
       : Promise.resolve(),
     otherAuth?.user?.email
-      ? sendMeetingCancelledEmail(otherAuth.user.email, firstNameOnly(otherProfile?.full_name ?? ''), me?.full_name ?? 'Your match', dateStr)
+      ? sendMeetingCancelledEmail(otherAuth.user.email, firstNameOnly(otherProfile?.full_name ?? ''), me?.full_name ?? 'Your match', dateStr, otherId)
       : Promise.resolve(),
   ])
 }

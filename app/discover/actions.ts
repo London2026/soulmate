@@ -51,7 +51,7 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
     const ownerEmail = ownerAuth?.user?.email
     const ownerFirstName = firstNameOnly(ownerName)
     await Promise.all([
-      ownerEmail ? sendPhotoRevealedEmail(ownerEmail, ownerFirstName, viewerProfileId) : Promise.resolve(),
+      ownerEmail ? sendPhotoRevealedEmail(ownerEmail, ownerFirstName, viewerProfileId, viewedUserId) : Promise.resolve(),
       ownerProfile?.phone ? sendPhotoRevealSMS(ownerProfile.phone, ownerFirstName, viewerProfileId) : Promise.resolve(),
     ])
   }
@@ -178,10 +178,10 @@ export async function acceptMeetingInbox(meetingId: string) {
       ? sendMeetingConfirmedAcceptorSMS(meRes.data.phone, myFirstName, requesterRes.data?.full_name ?? 'Your match', dateStr, time, meeting.room_id)
       : Promise.resolve(),
     requesterAuth?.user?.email
-      ? sendMeetingAcceptedEmail(requesterAuth.user.email, requesterFirstName, myName, dateStr, time, meeting.room_id)
+      ? sendMeetingAcceptedEmail(requesterAuth.user.email, requesterFirstName, myName, dateStr, time, meeting.room_id, meeting.requester_id)
       : Promise.resolve(),
     acceptorAuth?.user?.email
-      ? sendMeetingConfirmedAcceptorEmail(acceptorAuth.user.email, myFirstName, requesterRes.data?.full_name ?? 'Your match', dateStr, time, meeting.room_id)
+      ? sendMeetingConfirmedAcceptorEmail(acceptorAuth.user.email, myFirstName, requesterRes.data?.full_name ?? 'Your match', dateStr, time, meeting.room_id, user.id)
       : Promise.resolve(),
   ])
 }
@@ -225,7 +225,7 @@ export async function declineMeetingInbox(meetingId: string) {
       ? sendMeetingDeclinedSMS(requesterRes.data.phone, requesterFirstName, myName, dateStr)
       : Promise.resolve(),
     requesterAuth?.user?.email
-      ? sendMeetingDeclinedEmail(requesterAuth.user.email, requesterFirstName, myName, dateStr)
+      ? sendMeetingDeclinedEmail(requesterAuth.user.email, requesterFirstName, myName, dateStr, meeting.requester_id)
       : Promise.resolve(),
   ])
 }

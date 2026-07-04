@@ -111,6 +111,7 @@ export async function POST() {
               referrer.full_name?.split(' ')[0] ?? 'there',
               memberName,
               newCredits,
+              referrer.id,
             )
           }
         }
@@ -121,7 +122,7 @@ export async function POST() {
   await Promise.all([
     sendAdminOnboardingEmail(memberName, city, country),
     sendAdminNewSubscriberSMS(memberName, plan),
-    user.email ? sendProfileLiveEmail(user.email, firstName, memberId) : Promise.resolve(),
+    user.email ? sendProfileLiveEmail(user.email, firstName, memberId, user.id) : Promise.resolve(),
     profile?.phone ? sendOnboardingCompleteSMS(profile.phone, firstName) : Promise.resolve(),
   ])
 
