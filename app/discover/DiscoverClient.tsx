@@ -216,6 +216,20 @@ export default function DiscoverClient({
           .find-match-btn { font-size: 0.78rem !important; padding: 0.9rem 1.5rem !important; }
         }
 
+        /* iOS zoom prevention for report modal inputs */
+        .disc-report-select, .disc-report-textarea {
+          font-size: 1rem;
+        }
+        @media (max-width: 600px) {
+          .disc-report-select, .disc-report-textarea { font-size: 16px !important; }
+          .disc-report-modal { padding: 1.25rem !important; }
+          .disc-report-actions { flex-direction: column-reverse !important; }
+          .disc-report-actions button { width: 100% !important; min-height: 44px !important; }
+          .disc-invite-copy { flex-direction: column !important; }
+          .disc-invite-copy-btn { width: 100% !important; min-height: 44px !important; justify-content: center !important; }
+          .disc-invite-url { min-width: 0 !important; }
+        }
+
         .disc-match-headline {
           display: flex; align-items: center; gap: 0.75rem;
           margin-bottom: 0.6rem; flex-wrap: wrap;
@@ -499,7 +513,7 @@ export default function DiscoverClient({
             {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
           </p>
           <button onClick={() => setShowShortlistOnly(v => !v)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: showShortlistOnly ? 'rgba(201,168,76,0.18)' : 'transparent', border: `1px solid ${showShortlistOnly ? c.gold : 'rgba(201,168,76,0.3)'}`, borderRadius: '20px', padding: '0.25rem 0.75rem', color: showShortlistOnly ? c.gold : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.2s' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: showShortlistOnly ? 'rgba(201,168,76,0.18)' : 'transparent', border: `1px solid ${showShortlistOnly ? c.gold : 'rgba(201,168,76,0.3)'}`, borderRadius: '20px', padding: '0.4rem 0.85rem', minHeight: '36px', color: showShortlistOnly ? c.gold : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.2s' }}>
             <span style={{ fontSize: '0.85rem' }}>{showShortlistOnly ? '♥' : '♡'}</span>
             Shortlisted{shortlist.size > 0 ? ` (${shortlist.size})` : ''}
           </button>
@@ -537,12 +551,12 @@ export default function DiscoverClient({
                 </div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: '200px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '6px', padding: '0.55rem 0.75rem', fontFamily: '"Courier New", monospace', fontSize: '0.82rem', color: c.gold, letterSpacing: '0.04em', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+            <div className="disc-invite-copy" style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', flexWrap: 'wrap' }}>
+              <div className="disc-invite-url" style={{ flex: 1, minWidth: '200px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '6px', padding: '0.55rem 0.75rem', fontFamily: '"Courier New", monospace', fontSize: '0.82rem', color: c.gold, letterSpacing: '0.04em', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
                 https://banduraa.com/signup?ref={myMemberId}
               </div>
-              <button onClick={() => { navigator.clipboard.writeText(`https://banduraa.com/signup?ref=${myMemberId}`); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-                style={{ padding: '0.55rem 1.1rem', background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(201,168,76,0.15)', border: `1px solid ${copied ? '#4ade80' : c.gold}`, borderRadius: '6px', color: copied ? '#4ade80' : c.gold, fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
+              <button className="disc-invite-copy-btn" onClick={() => { navigator.clipboard.writeText(`https://banduraa.com/signup?ref=${myMemberId}`); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
+                style={{ display: 'flex', alignItems: 'center', padding: '0.55rem 1.1rem', minHeight: '44px', background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(201,168,76,0.15)', border: `1px solid ${copied ? '#4ade80' : c.gold}`, borderRadius: '6px', color: copied ? '#4ade80' : c.gold, fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}>
                 {copied ? '✓ Copied!' : 'Copy Link'}
               </button>
             </div>
@@ -581,7 +595,7 @@ export default function DiscoverClient({
       {/* ── 7b. Report modal ── */}
       {reportTarget && (
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) closeReportModal() }}>
-          <div className="disc-modal-inner" style={{ width: '100%', maxWidth: '480px', borderRadius: '16px', padding: '2rem', background: c.card }}>
+          <div className="disc-modal-inner disc-report-modal" style={{ width: '100%', maxWidth: '480px', borderRadius: '16px', padding: '2rem', background: c.card }}>
             {reportDone ? (
               <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
                 {reportDone === 'sent' && <>
@@ -613,7 +627,8 @@ export default function DiscoverClient({
                   REASON *
                 </label>
                 <select value={reportReason} onChange={e => setReportReason(e.target.value)}
-                  style={{ width: '100%', padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.08)', border: `1px solid ${reportReason ? c.gold : 'rgba(201,168,76,0.3)'}`, color: reportReason ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '6px', outline: 'none', marginBottom: '1rem', cursor: 'pointer', boxSizing: 'border-box' }}>
+                  className="disc-report-select"
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.08)', border: `1px solid ${reportReason ? c.gold : 'rgba(201,168,76,0.3)'}`, color: reportReason ? c.ivory : '#a0b0c8', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '6px', outline: 'none', marginBottom: '1rem', cursor: 'pointer', boxSizing: 'border-box', minHeight: '44px' }}>
                   <option value="" disabled>Select a reason</option>
                   <option value="Fake or impersonation">Fake or impersonation</option>
                   <option value="Inappropriate content">Inappropriate content</option>
@@ -625,13 +640,14 @@ export default function DiscoverClient({
                   ADDITIONAL DETAILS (optional)
                 </label>
                 <textarea value={reportMessage} onChange={e => setReportMessage(e.target.value)} rows={3} placeholder="Provide any extra context that might help our review..."
+                  className="disc-report-textarea"
                   style={{ width: '100%', padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(201,168,76,0.3)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', borderRadius: '6px', outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: '1.5rem' }} />
-                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                  <button onClick={closeReportModal} style={{ padding: '0.6rem 1.25rem', background: 'transparent', border: `1px solid ${c.border}`, color: c.sepia, borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                <div className="disc-report-actions" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                  <button onClick={closeReportModal} style={{ padding: '0.7rem 1.25rem', minHeight: '44px', background: 'transparent', border: `1px solid ${c.border}`, color: c.sepia, borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
                     Cancel
                   </button>
                   <button onClick={handleReport} disabled={!reportReason || reportSubmitting}
-                    style={{ padding: '0.6rem 1.5rem', background: reportReason && !reportSubmitting ? '#c0392b' : 'rgba(192,57,43,0.4)', color: '#fff', border: 'none', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', cursor: reportReason && !reportSubmitting ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}>
+                    style={{ padding: '0.7rem 1.5rem', minHeight: '44px', background: reportReason && !reportSubmitting ? '#c0392b' : 'rgba(192,57,43,0.4)', color: '#fff', border: 'none', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.06em', cursor: reportReason && !reportSubmitting ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}>
                     {reportSubmitting ? 'Submitting…' : 'Submit Report'}
                   </button>
                 </div>
@@ -859,7 +875,7 @@ function CompactCard({ profile, onClick, shortlisted = false, onShortlist }: {
         )}
         {onShortlist && (
           <button onClick={onShortlist}
-            style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: '50%', width: '2rem', height: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.1rem', color: shortlisted ? '#c9a84c' : 'rgba(255,255,255,0.7)', transition: 'all 0.15s', lineHeight: 1 }}
+            style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: '50%', width: '2.5rem', height: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.1rem', color: shortlisted ? '#c9a84c' : 'rgba(255,255,255,0.7)', transition: 'all 0.15s', lineHeight: 1 }}
             title={shortlisted ? 'Remove from shortlist' : 'Add to shortlist'}>
             {shortlisted ? '♥' : '♡'}
           </button>
