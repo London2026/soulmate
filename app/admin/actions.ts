@@ -40,3 +40,21 @@ export async function updateTicket(ticketId: string, data: { status?: string; ad
   const admin = createAdminClient()
   await admin.from('support_tickets').update({ ...data, updated_at: new Date().toISOString() }).eq('id', ticketId)
 }
+
+export async function suspendMember(profileId: string): Promise<void> {
+  await assertAdmin()
+  const admin = createAdminClient()
+  await admin.from('profiles').update({ suspended: true }).eq('id', profileId)
+}
+
+export async function unsuspendMember(profileId: string): Promise<void> {
+  await assertAdmin()
+  const admin = createAdminClient()
+  await admin.from('profiles').update({ suspended: false }).eq('id', profileId)
+}
+
+export async function updateReportStatus(reportId: string, status: 'pending' | 'dismissed' | 'acted_on'): Promise<void> {
+  await assertAdmin()
+  const admin = createAdminClient()
+  await admin.from('reports').update({ status }).eq('id', reportId)
+}

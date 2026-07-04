@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket } from './actions'
+import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket, suspendMember, unsuspendMember, updateReportStatus } from './actions'
 
 const c = {
   navy: '#0d1f3c', navy2: '#122d52', navy3: '#1a3a6b',
@@ -12,7 +12,7 @@ const c = {
   green: '#2e7d52', amber: '#c97a2e', rose: '#9e2a2b',
 }
 
-type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions' | 'id_verification' | 'crm' | 'tickets'
+type Tab = 'dashboard' | 'members' | 'meetings' | 'reveals' | 'subscriptions' | 'id_verification' | 'crm' | 'tickets' | 'reports'
 
 interface IdVerification {
   id: string
@@ -22,14 +22,29 @@ interface IdVerification {
   created_at: string
 }
 
+interface Report {
+  id: string
+  reporter_id: string
+  reported_id: string
+  reporter_name: string
+  reported_name: string
+  reporter_member_id: string
+  reported_member_id: string
+  reason: string
+  message: string | null
+  status: string
+  created_at: string
+}
+
 interface Props {
-  stats: { totalMembers: number; newThisWeek: number; activeSubscribers: number; revealsToday: number; pendingMeetings: number }
+  stats: { totalMembers: number; newThisWeek: number; activeSubscribers: number; revealsToday: number; revealsThisMonth: number; pendingMeetings: number; meetingsAccepted: number; reportsPending: number }
   members: Record<string, unknown>[]
   meetings: Record<string, unknown>[]
   reveals: Record<string, unknown>[]
   planCounts: Record<string, number>
   idVerifications: IdVerification[]
   tickets: Record<string, unknown>[]
+  reports: Report[]
   defaultTab?: Tab
 }
 
@@ -40,6 +55,7 @@ const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'reveals',         icon: '💘', label: 'Reveals' },
   { id: 'subscriptions',   icon: '💳', label: 'Subscriptions' },
   { id: 'id_verification', icon: '🪪', label: 'ID Verify' },
+  { id: 'reports',         icon: '🚩', label: 'Reports' },
   { id: 'crm',             icon: '📋', label: 'CRM' },
   { id: 'tickets',         icon: '🎫', label: 'Tickets' },
 ]
@@ -117,10 +133,59 @@ const td: React.CSSProperties = {
   borderBottom: `1px solid ${c.border2}`, whiteSpace: 'nowrap',
 }
 
-export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, tickets, defaultTab }: Props) {
+const REPORT_STATUSES = [
+  { value: 'pending',   label: 'Pending',   color: '#fbbf24', bg: 'rgba(201,122,46,0.2)' },
+  { value: 'acted_on',  label: 'Acted On',  color: '#4ade80', bg: 'rgba(46,125,82,0.2)'  },
+  { value: 'dismissed', label: 'Dismissed', color: '#9aabb8', bg: 'rgba(154,171,184,0.15)' },
+]
+
+export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, tickets, reports, defaultTab }: Props) {
   const [tab, setTab] = useState<Tab>(defaultTab ?? 'dashboard')
   const [idDocs, setIdDocs] = useState<IdVerification[]>(idVerifications)
   const [idAction, setIdAction] = useState<Record<string, 'verifying' | 'rejecting' | 'done'>>({})
+
+  const [reportData, setReportData] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {}
+    for (const r of reports) init[r.id] = r.status
+    return init
+  })
+  const [reportAction, setReportAction] = useState<Record<string, boolean>>({})
+  const [suspendedIds, setSuspendedIds] = useState<Set<string>>(() => {
+    const s = new Set<string>()
+    for (const m of members as any[]) if (m.suspended) s.add(m.id as string)
+    return s
+  })
+  const [reportFilter, setReportFilter] = useState('pending')
+
+  async function handleReportStatus(reportId: string, status: 'pending' | 'dismissed' | 'acted_on') {
+    setReportAction(p => ({ ...p, [reportId]: true }))
+    try {
+      await updateReportStatus(reportId, status)
+      setReportData(p => ({ ...p, [reportId]: status }))
+    } finally {
+      setReportAction(p => { const n = { ...p }; delete n[reportId]; return n })
+    }
+  }
+
+  async function handleSuspend(profileId: string) {
+    setReportAction(p => ({ ...p, ['suspend_' + profileId]: true }))
+    try {
+      await suspendMember(profileId)
+      setSuspendedIds(s => new Set([...s, profileId]))
+    } finally {
+      setReportAction(p => { const n = { ...p }; delete n['suspend_' + profileId]; return n })
+    }
+  }
+
+  async function handleUnsuspend(profileId: string) {
+    setReportAction(p => ({ ...p, ['suspend_' + profileId]: true }))
+    try {
+      await unsuspendMember(profileId)
+      setSuspendedIds(s => { const n = new Set(s); n.delete(profileId); return n })
+    } finally {
+      setReportAction(p => { const n = { ...p }; delete n['suspend_' + profileId]; return n })
+    }
+  }
 
   const [crmFilter, setCrmFilter] = useState('all')
   const [crmData, setCrmData] = useState<Record<string, { status: string; notes: string; last_contacted: string | null }>>(() => {
@@ -262,6 +327,11 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
                   {idDocs.length}
                 </span>
               )}
+              {t.id === 'reports' && stats.reportsPending > 0 && (
+                <span className="nav-label" style={{ minWidth: 20, height: 20, borderRadius: '50%', background: '#f87171', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700, flexShrink: 0 }}>
+                  {stats.reportsPending}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -278,13 +348,31 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
         {tab === 'dashboard' && (
           <div>
             {sectionTitle('Dashboard')}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(175px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
               <StatCard icon="👤" label="Total Members"      value={stats.totalMembers}      sub="completed onboarding" />
               <StatCard icon="✨" label="New This Week"       value={stats.newThisWeek}       sub="joined last 7 days" />
               <StatCard icon="💳" label="Paid Subscribers"    value={stats.activeSubscribers} sub="starter + standard" />
-              <StatCard icon="💘" label="Reveals Today"       value={stats.revealsToday}      sub="face photos seen" />
-              <StatCard icon="⏳" label="Pending Meetings"    value={stats.pendingMeetings}   sub="awaiting response" />
+              <StatCard icon="💘" label="Reveals This Month"  value={stats.revealsThisMonth}  sub={`${stats.revealsToday} today`} />
+              <StatCard icon="🎥" label="Meetings Accepted"   value={stats.meetingsAccepted}  sub={`${stats.pendingMeetings} pending`} />
               <StatCard icon="🪪" label="ID Pending"          value={idDocs.length}           sub="awaiting verification" />
+              <StatCard icon="🚩" label="Reports Pending"     value={stats.reportsPending}    sub="need review" />
+            </div>
+
+            {/* Plan breakdown */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '2.5rem' }}>
+              {[
+                { plan: 'free',     label: 'Free',     icon: '🔓', color: c.text3 },
+                { plan: 'starter',  label: 'Starter',  icon: '⭐', color: c.gold  },
+                { plan: 'standard', label: 'Standard', icon: '💎', color: '#4ade80' },
+              ].map(({ plan, label, icon, color }) => (
+                <div key={plan} style={{ background: c.card2, border: `1px solid ${c.border}`, borderRadius: 8, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{ fontSize: '1.4rem' }}>{icon}</span>
+                  <div>
+                    <div style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: c.text3 }}>{label}</div>
+                    <div style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.8rem', fontWeight: 700, color, lineHeight: 1 }}>{planCounts[plan] ?? 0}</div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Recent members */}
@@ -321,7 +409,7 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
             <div style={{ overflowX: 'auto', border: `1px solid ${c.border2}`, borderRadius: 6 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr>{['Member ID','Name','Age','Gender','Location','Religion','Plan','WhatsApp','Joined'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
+                  <tr>{['Member ID','Name','Age','Gender','Location','Religion','Plan','Status','WhatsApp','Joined'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
                   {members.filter((m: any) => m.onboarding_complete).map((m: any) => (
@@ -333,6 +421,12 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
                       <td style={td}>{[m.city, m.country].filter(Boolean).join(', ') || '—'}</td>
                       <td style={td}>{m.religion ?? '—'}</td>
                       <td style={td}>{planBadge(m.plan ?? 'free')}</td>
+                      <td style={td}>
+                        {m.suspended
+                          ? <span style={{ padding: '0.15rem 0.5rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, background: 'rgba(158,42,43,0.2)', color: '#f87171' }}>Suspended</span>
+                          : <span style={{ color: '#4ade80', fontSize: '0.75rem' }}>Active</span>
+                        }
+                      </td>
                       <td style={td}>
                         <span style={{ color: m.phone ? '#4ade80' : c.text3, fontSize: '0.75rem' }}>
                           {m.phone ? '✓ ' + m.phone : '—'}
@@ -514,6 +608,95 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
             </div>
           </div>
         )}
+        {/* ── REPORTS ── */}
+        {tab === 'reports' && (
+          <div>
+            {sectionTitle('Member Reports', reports.length)}
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              {[{ value: 'all', label: 'All' }, ...REPORT_STATUSES].map(s => {
+                const count = s.value === 'all'
+                  ? reports.length
+                  : reports.filter(r => (reportData[r.id] ?? 'pending') === s.value).length
+                return (
+                  <button key={s.value} onClick={() => setReportFilter(s.value)}
+                    style={{ padding: '0.35rem 0.85rem', border: `1px solid ${reportFilter === s.value ? c.gold : c.border}`, borderRadius: 20, background: reportFilter === s.value ? 'rgba(201,168,76,0.12)' : 'transparent', color: reportFilter === s.value ? c.gold : c.text2, fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    {s.label}
+                    <span style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '0 0.35rem', fontSize: '0.65rem' }}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {reports.filter(r => reportFilter === 'all' || (reportData[r.id] ?? 'pending') === reportFilter).length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '4rem 2rem', background: c.card, border: `1px solid ${c.border2}`, borderRadius: 8 }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>✅</div>
+                <p style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.2rem', color: c.text, margin: '0 0 0.4rem' }}>All clear</p>
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', color: c.text3 }}>No {reportFilter === 'all' ? '' : reportFilter.replace('_', ' ') + ' '}reports.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {reports
+                  .filter(r => reportFilter === 'all' || (reportData[r.id] ?? 'pending') === reportFilter)
+                  .map(r => {
+                    const status = reportData[r.id] ?? 'pending'
+                    const statusInfo = REPORT_STATUSES.find(s => s.value === status) ?? REPORT_STATUSES[0]
+                    const isSuspended = suspendedIds.has(r.reported_id)
+                    const suspendBusy = reportAction['suspend_' + r.reported_id]
+                    return (
+                      <div key={r.id} style={{ background: c.card2, border: `1px solid ${c.border2}`, borderRadius: 8, padding: '1.25rem 1.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+                              <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', color: c.text, fontWeight: 500 }}>{r.reason}</span>
+                              <span style={{ padding: '0.15rem 0.5rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, background: statusInfo.bg, color: statusInfo.color }}>{statusInfo.label}</span>
+                              {isSuspended && <span style={{ padding: '0.15rem 0.5rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, background: 'rgba(158,42,43,0.2)', color: '#f87171' }}>Suspended</span>}
+                            </div>
+                            <div style={{ display: 'flex', gap: '1.5rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.text3, flexWrap: 'wrap' }}>
+                              <span>🚩 Reporter: <strong style={{ color: c.gold, fontFamily: 'monospace' }}>{r.reporter_member_id}</strong> {r.reporter_name}</span>
+                              <span>👤 Reported: <strong style={{ color: '#f87171', fontFamily: 'monospace' }}>{r.reported_member_id}</strong> {r.reported_name}</span>
+                              <span>🕐 {fmt(r.created_at)}</span>
+                            </div>
+                            {r.message && (
+                              <div style={{ marginTop: '0.6rem', background: 'rgba(0,0,0,0.2)', borderRadius: 4, padding: '0.6rem 0.85rem' }}>
+                                <p style={{ fontFamily: 'Georgia, serif', fontSize: '0.85rem', color: c.text2, lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>"{r.message}"</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          {status !== 'dismissed' && (
+                            <button onClick={() => handleReportStatus(r.id, 'dismissed')} disabled={!!reportAction[r.id]}
+                              style={{ padding: '0.35rem 0.85rem', background: 'rgba(154,171,184,0.15)', border: '1px solid rgba(154,171,184,0.3)', color: '#9aabb8', fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', borderRadius: 4, cursor: reportAction[r.id] ? 'default' : 'pointer', opacity: reportAction[r.id] ? 0.6 : 1 }}>
+                              Dismiss
+                            </button>
+                          )}
+                          {status !== 'acted_on' && (
+                            <button onClick={() => handleReportStatus(r.id, 'acted_on')} disabled={!!reportAction[r.id]}
+                              style={{ padding: '0.35rem 0.85rem', background: 'rgba(46,125,82,0.15)', border: '1px solid rgba(46,125,82,0.4)', color: '#4ade80', fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', borderRadius: 4, cursor: reportAction[r.id] ? 'default' : 'pointer', opacity: reportAction[r.id] ? 0.6 : 1 }}>
+                              Mark Acted On
+                            </button>
+                          )}
+                          {isSuspended ? (
+                            <button onClick={() => handleUnsuspend(r.reported_id)} disabled={!!suspendBusy}
+                              style={{ padding: '0.35rem 0.85rem', background: 'rgba(201,168,76,0.12)', border: `1px solid ${c.border}`, color: c.gold, fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', borderRadius: 4, cursor: suspendBusy ? 'default' : 'pointer', opacity: suspendBusy ? 0.6 : 1 }}>
+                              {suspendBusy ? 'Unsuspending…' : 'Unsuspend Member'}
+                            </button>
+                          ) : (
+                            <button onClick={() => handleSuspend(r.reported_id)} disabled={!!suspendBusy}
+                              style={{ padding: '0.35rem 0.85rem', background: 'rgba(158,42,43,0.15)', border: '1px solid rgba(158,42,43,0.5)', color: '#f87171', fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', borderRadius: 4, cursor: suspendBusy ? 'default' : 'pointer', opacity: suspendBusy ? 0.6 : 1 }}>
+                              {suspendBusy ? 'Suspending…' : '⛔ Suspend Member'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── TICKETS ── */}
         {tab === 'tickets' && (
           <div>

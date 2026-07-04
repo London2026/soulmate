@@ -13,9 +13,9 @@ export default async function AdminPage() {
 
   const admin = createAdminClient()
 
-  const [membersRes, meetingsRes, revealsRes, ticketsRes] = await Promise.all([
+  const [membersRes, meetingsRes, revealsRes, ticketsRes, reportsRes] = await Promise.all([
     admin.from('profiles')
-      .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at, id_verified, id_document_path, id_country, member_id, crm_status, crm_notes, crm_last_contacted')
+      .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at, id_verified, id_document_path, id_country, member_id, crm_status, crm_notes, crm_last_contacted, suspended')
       .order('created_at', { ascending: false }),
     admin.from('video_meetings')
       .select('id, room_id, requester_id, recipient_id, status, preferred_date, preferred_time, created_at')
@@ -29,28 +29,39 @@ export default async function AdminPage() {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(200),
+    admin.from('reports')
+      .select('id, reporter_id, reported_id, reason, message, created_at, status')
+      .order('created_at', { ascending: false })
+      .limit(200),
   ])
 
   const members   = membersRes.data   ?? []
   const meetings  = meetingsRes.data  ?? []
   const reveals   = revealsRes.data   ?? []
   const tickets   = ticketsRes.data   ?? []
+  const reports   = reportsRes.data   ?? []
 
-  // Build name lookup from members
+  // Build name + member_id lookup from members
   const nameById: Record<string, string> = {}
+  const memberIdById: Record<string, string> = {}
   for (const m of members) {
     if (m.id && m.full_name) nameById[m.id] = m.full_name
+    if (m.id && (m as Record<string, unknown>).member_id) memberIdById[m.id] = (m as Record<string, unknown>).member_id as string
   }
 
   const today = new Date(); today.setHours(0, 0, 0, 0)
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
 
   const stats = {
     totalMembers:       members.filter(m => m.onboarding_complete).length,
     newThisWeek:        members.filter(m => new Date(m.created_at) > weekAgo && m.onboarding_complete).length,
     activeSubscribers:  members.filter(m => m.plan && m.plan !== 'free').length,
     revealsToday:       reveals.filter(r => new Date(r.revealed_at) >= today).length,
+    revealsThisMonth:   reveals.filter(r => new Date(r.revealed_at) >= monthStart).length,
     pendingMeetings:    meetings.filter(m => m.status === 'pending').length,
+    meetingsAccepted:   meetings.filter(m => m.status === 'accepted').length,
+    reportsPending:     reports.filter(r => (r.status ?? 'pending') === 'pending').length,
   }
 
   const planCounts = members.filter(m => m.onboarding_complete).reduce((acc, m) => {
@@ -89,6 +100,16 @@ export default async function AdminPage() {
     created_at: m.created_at,
   }))
 
+  const reportsWithNames = reports.map(r => ({
+    ...r,
+    status: (r.status ?? 'pending') as string,
+    reporter_name: nameById[r.reporter_id] ?? r.reporter_id.slice(0, 8),
+    reported_name: nameById[r.reported_id] ?? r.reported_id.slice(0, 8),
+    reporter_member_id: memberIdById[r.reporter_id] ?? '#' + r.reporter_id.slice(0, 8).toUpperCase(),
+    reported_member_id: memberIdById[r.reported_id] ?? '#' + r.reported_id.slice(0, 8).toUpperCase(),
+    reported_id: r.reported_id,
+  }))
+
   return (
     <AdminClient
       stats={stats}
@@ -98,6 +119,7 @@ export default async function AdminPage() {
       planCounts={planCounts}
       idVerifications={idVerifications}
       tickets={tickets}
+      reports={reportsWithNames}
     />
   )
 }

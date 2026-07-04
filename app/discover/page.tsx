@@ -24,11 +24,12 @@ export default async function DiscoverPage() {
   // Guard: onboarding must be complete + get plan
   const { data: me } = await supabase
     .from('profiles')
-    .select('onboarding_complete, plan, member_id, referral_credits')
+    .select('onboarding_complete, plan, member_id, referral_credits, suspended')
     .eq('id', user.id)
     .maybeSingle()
 
   if (!me?.onboarding_complete) redirect('/onboarding')
+  if ((me as Record<string, unknown>)?.suspended === true) redirect('/suspended')
 
   const userPlan  = me?.plan ?? 'free'
   const canReveal = userPlan !== 'free'
