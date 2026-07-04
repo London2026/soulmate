@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendPhotoRevealedEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendReportNotificationEmail } from '@/lib/sendEmail'
+import { sendPhotoRevealedEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendReportNotificationEmail, sendMutualShortlistEmail } from '@/lib/sendEmail'
 import { sendPhotoRevealSMS, sendMeetingAcceptedSMS, sendMeetingConfirmedAcceptorSMS, sendMeetingDeclinedSMS } from '@/lib/sendSMS'
 import { firstNameOnly } from '@/lib/maskName'
 
@@ -91,6 +91,37 @@ export async function toggleShortlist(profileId: string): Promise<{ shortlisted:
     return { shortlisted: false }
   } else {
     await supabase.from('shortlist').insert({ user_id: user.id, profile_id: profileId })
+
+    // Check if the other person has also shortlisted us — mutual match
+    const { data: mutual } = await supabase
+      .from('shortlist').select('id').eq('user_id', profileId).eq('profile_id', user.id).maybeSingle()
+
+    if (mutual) {
+      const [meRes, otherRes] = await Promise.all([
+        supabase.from('profiles').select('full_name, member_id').eq('id', user.id).single(),
+        supabase.from('profiles').select('full_name, member_id').eq('id', profileId).single(),
+      ])
+      const myName = meRes.data?.full_name ?? 'Someone'
+      const otherName = otherRes.data?.full_name ?? 'Someone'
+      const myMemberId = (meRes.data as Record<string, unknown>)?.member_id as string ?? '#' + user.id.slice(0, 8).toUpperCase()
+      const otherMemberId = (otherRes.data as Record<string, unknown>)?.member_id as string ?? '#' + profileId.slice(0, 8).toUpperCase()
+
+      await Promise.all([
+        supabase.from('notifications').insert({ recipient_id: user.id, sender_id: profileId, type: 'mutual_shortlist', message: `You and ${otherName} have both shortlisted each other — why not send a meeting request?` }),
+        supabase.from('notifications').insert({ recipient_id: profileId, sender_id: user.id, type: 'mutual_shortlist', message: `You and ${myName} have both shortlisted each other — why not send a meeting request?` }),
+      ])
+
+      const admin = createAdminClient()
+      const [{ data: myAuth }, { data: otherAuth }] = await Promise.all([
+        admin.auth.admin.getUserById(user.id),
+        admin.auth.admin.getUserById(profileId),
+      ])
+      await Promise.all([
+        myAuth?.user?.email ? sendMutualShortlistEmail(myAuth.user.email, myName.split(' ')[0], otherMemberId, user.id) : Promise.resolve(),
+        otherAuth?.user?.email ? sendMutualShortlistEmail(otherAuth.user.email, otherName.split(' ')[0], myMemberId, profileId) : Promise.resolve(),
+      ])
+    }
+
     return { shortlisted: true }
   }
 }

@@ -499,3 +499,72 @@ export async function sendReferralRewardEmail(to: string, referrerFirstName: str
   `, userId ? getUnsubscribeUrl(userId) : undefined)
   await send(to, subject, html, userId)
 }
+
+export async function sendMutualShortlistEmail(to: string, firstName: string, otherMemberId: string, userId?: string) {
+  const subject = `💘 You and ${otherMemberId} have both shortlisted each other`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">A Mutual Connection 💘</h2>
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:16px;color:#5a6e82;margin:0 0 16px;">This could be something special</p>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 16px;">
+      Hi <strong>${firstName}</strong>,
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 20px;">
+      Exciting news — you and member <strong style="color:#0d1f3c;font-family:'Courier New',monospace;">${otherMemberId}</strong> have both shortlisted each other on Banduraa.
+    </p>
+    <div style="background:#0d1f3c;border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center;">
+      <p style="font-family:Georgia,serif;font-size:18px;color:#c9a84c;margin:0 0 6px;">Mutual interest detected 🌹</p>
+      <p style="font-family:Arial,sans-serif;font-size:12px;color:rgba(232,227,216,0.55);margin:0;">You've both expressed interest in each other</p>
+    </div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 24px;">
+      Why not take the next step? Log in to Discover and send them a video meeting request — it could be the beginning of something meaningful.
+    </p>
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Send a Meeting Request →
+      </a>
+    </div>
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
+}
+
+export async function sendWeeklyDigestEmail(to: string, firstName: string, views: number, newNearby: number, country: string, userId?: string) {
+  const subject = `Your Banduraa weekly update 🌹`
+  const hasActivity = views > 0 || newNearby > 0
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Your week on Banduraa 🌹</h2>
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:16px;color:#5a6e82;margin:0 0 16px;">Here's what happened while you were away</p>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 20px;">
+      Hi <strong>${firstName}</strong>, here is your weekly summary:
+    </p>
+    <div style="background:#f4f1eb;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+      ${views > 0 ? `
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid rgba(13,31,60,0.1);">
+        <div style="width:48px;height:48px;background:#0d1f3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">💘</div>
+        <div>
+          <div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#c9a84c;line-height:1;">${views}</div>
+          <div style="font-family:Arial,sans-serif;font-size:12px;color:#5a6e82;margin-top:2px;">${views === 1 ? 'member viewed' : 'members viewed'} your profile this week</div>
+        </div>
+      </div>` : ''}
+      ${newNearby > 0 ? `
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:48px;height:48px;background:#0d1f3c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">✨</div>
+        <div>
+          <div style="font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;color:#c9a84c;line-height:1;">${newNearby}</div>
+          <div style="font-family:Arial,sans-serif;font-size:12px;color:#5a6e82;margin-top:2px;">new ${newNearby === 1 ? 'member joined' : 'members joined'} in ${country} this week</div>
+        </div>
+      </div>` : ''}
+      ${!hasActivity ? `<p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;margin:0;text-align:center;">Your profile is live and being discovered. Keep checking back — connections can happen any day. 🌹</p>` : ''}
+    </div>
+    <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;line-height:1.75;margin:0 0 24px;">
+      Log in to browse Discover, reveal photos, and connect with compatible members.
+    </p>
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Go to Discover →
+      </a>
+    </div>
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
+}
