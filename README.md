@@ -47,7 +47,7 @@ Until the env vars below are set, `/pricing` and the extra-meeting purchase will
    - Starter — $6/mo recurring
    - Standard — $9/mo recurring
    - Extra Meeting — $3 one-time
-2. **Enable webhooks.** In each sub-account's admin, turn on **Webhooks (JSON)**, point them at `https://www.mysoulmate.live/api/webhooks/ccbill`, and subscribe to: `NewSaleSuccess`, `RenewalSuccess`, `RenewalFailure`, `Cancellation`, `Expiration`, `Refund`, `Chargeback`, `Void`.
+2. **Enable webhooks.** In each sub-account's admin, turn on **Webhooks (JSON)**, point them at `https://www.banduraa.com/api/webhooks/ccbill`, and subscribe to: `NewSaleSuccess`, `RenewalSuccess`, `RenewalFailure`, `Cancellation`, `Expiration`, `Refund`, `Chargeback`, `Void`.
 3. **Add env vars to Vercel** (Production), matching `.env.local.example`:
    ```
    CCBILL_CLIENT_ACCNUM=

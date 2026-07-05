@@ -1009,7 +1009,7 @@ function RevealedByPanel({ revealedBy }: { revealedBy: RevealedByEntry[] }) {
                 {r.member_id ?? 'Member'}
               </p>
               <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.82rem', color: '#5a6e82', margin: 0 }}>
-                {[r.city, r.religion].filter(Boolean).join(' · ') || 'Soulmate member'}
+                {[r.city, r.religion].filter(Boolean).join(' · ') || 'Banduraa member'}
               </p>
             </div>
             <span style={{ fontFamily: 'Raleway,sans-serif', fontSize: '0.62rem', color: '#5a6e82', flexShrink: 0 }}>
