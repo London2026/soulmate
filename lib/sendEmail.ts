@@ -568,3 +568,30 @@ export async function sendWeeklyDigestEmail(to: string, firstName: string, views
   `, userId ? getUnsubscribeUrl(userId) : undefined)
   await send(to, subject, html, userId)
 }
+
+export async function sendMeetingFeedbackEmail(to: string, firstName: string, otherFirstName: string, meetingId: string, userId?: string) {
+  const feedbackUrl = `https://banduraa.com/feedback/${meetingId}`
+  const subject = `How did your meeting with ${otherFirstName} go? 🌹`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Your meeting on Banduraa 🌹</h2>
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:16px;color:#5a6e82;margin:0 0 16px;">We'd love to hear how it went</p>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 16px;">
+      Hi <strong>${firstName}</strong>, your video meeting with <strong>${otherFirstName}</strong> has passed.
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 24px;">
+      Taking 30 seconds to share your experience helps us improve the quality of matches — and helps flag any issues so every member stays safe.
+    </p>
+    <div style="background:#f4f1eb;border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center;">
+      <p style="font-family:'Playfair Display',Georgia,serif;font-size:18px;color:#0d1f3c;margin:0 0 4px;font-weight:600;">How did it go with ${otherFirstName}?</p>
+      <p style="font-family:Arial,sans-serif;font-size:13px;color:#5a6e82;margin:0 0 16px;">Rate from 1 (poor fit) to 5 (exceptional match)</p>
+      <a href="${feedbackUrl}" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Leave Feedback ★
+      </a>
+    </div>
+    <p style="font-family:Arial,sans-serif;font-size:12px;color:#9aabb8;text-align:center;margin:0;">
+      Your feedback is completely private and never shared with other members.
+    </p>
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
+}

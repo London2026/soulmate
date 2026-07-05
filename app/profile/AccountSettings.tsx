@@ -74,6 +74,9 @@ export default function AccountSettings({ plan, memberId }: { plan: string; memb
           {memberId && <p style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: c.sepia, margin: '0.3rem 0 0' }}>{memberId}</p>}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <a href="/subscription" style={{ display: 'inline-block', padding: '0.55rem 1.25rem', background: 'transparent', border: `1px solid ${c.border}`, color: c.gold, fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, textDecoration: 'none', borderRadius: 4 }}>
+            Manage →
+          </a>
           {!isPaid && (
             <a href="/pricing" style={{ display: 'inline-block', padding: '0.55rem 1.25rem', background: 'linear-gradient(135deg,#e8c876,#c9a84c)', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, textDecoration: 'none', borderRadius: 4 }}>
               Upgrade →

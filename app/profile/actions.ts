@@ -258,8 +258,9 @@ export async function cancelSubscription(): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
-  await supabase.from('profiles').update({ plan: 'free' }).eq('id', user.id)
+  await supabase.from('profiles').update({ plan: 'free', plan_started_at: null }).eq('id', user.id)
   revalidatePath('/profile')
+  revalidatePath('/subscription')
 }
 
 export async function deleteAccount(): Promise<void> {
