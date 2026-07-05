@@ -385,6 +385,19 @@ export default async function ProfilePage() {
             </div>
           </div>
 
+          {/* Lifestyle & Habits */}
+          {[p.habit_smoking, p.habit_drinking, p.habit_drugs, p.habit_betting].some(Boolean) && (
+            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
+              <ProfileSectionHeader icon="🌿" title="Lifestyle &amp; Habits" />
+              <div>
+                <ProfileDetailRow label="🚬 Smoking"            value={p.habit_smoking as string} />
+                <ProfileDetailRow label="🍷 Drinking"           value={p.habit_drinking as string} />
+                <ProfileDetailRow label="💊 Recreational Drugs" value={p.habit_drugs as string} />
+                <ProfileDetailRow label="🎰 Gambling"           value={p.habit_betting as string} />
+              </div>
+            </div>
+          )}
+
           {/* Education & Career */}
           <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
             <ProfileSectionHeader icon="🎓" title="Education & Career" />

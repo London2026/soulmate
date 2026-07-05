@@ -54,6 +54,10 @@ export interface ProfileData {
   pref_occupation?: string | null
   pref_height?: string | null
   pref_ethnicity?: string | null
+  habit_smoking?: string | null
+  habit_drinking?: string | null
+  habit_drugs?: string | null
+  habit_betting?: string | null
 }
 
 const c = {
@@ -251,6 +255,19 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
           <DetailRow label="Zodiac Sign"    value={profile.zodiac_sign} />
         </div>
       </div>
+
+      {/* ── Lifestyle & Habits ── */}
+      {[profile.habit_smoking, profile.habit_drinking, profile.habit_drugs, profile.habit_betting].some(Boolean) && (
+        <div className="pc-section" style={{ background: c.navyLight, borderTop: '3px solid #07111f' }}>
+          <SectionHeader icon="🌿" title="Lifestyle & Habits" />
+          <div>
+            <DetailRow label="🚬 Smoking"            value={profile.habit_smoking} />
+            <DetailRow label="🍷 Drinking"           value={profile.habit_drinking} />
+            <DetailRow label="💊 Recreational Drugs" value={profile.habit_drugs} />
+            <DetailRow label="🎰 Gambling"           value={profile.habit_betting} />
+          </div>
+        </div>
+      )}
 
       {/* ── Education & Career ── */}
       <div className="pc-section" style={{ background: c.navyLight, borderTop: '3px solid #07111f' }}>

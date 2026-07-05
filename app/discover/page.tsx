@@ -14,7 +14,8 @@ const PROFILE_FIELDS = `
   fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
   zodiac_sign, hobby, university, other_qualifications, housing, voice_native_path,
   pref_gender, pref_age_min, pref_age_max, pref_location, pref_religion, pref_sub_religion,
-  pref_occupation, pref_height, pref_ethnicity
+  pref_occupation, pref_height, pref_ethnicity,
+  habit_smoking, habit_drinking, habit_drugs, habit_betting
 `
 
 export default async function DiscoverPage() {
@@ -195,6 +196,10 @@ export default async function DiscoverPage() {
     pref_occupation: (p as Record<string, unknown>).pref_occupation as string ?? null,
     pref_height: (p as Record<string, unknown>).pref_height as string ?? null,
     pref_ethnicity: (p as Record<string, unknown>).pref_ethnicity as string ?? null,
+    habit_smoking: (p as Record<string, unknown>).habit_smoking as string ?? null,
+    habit_drinking: (p as Record<string, unknown>).habit_drinking as string ?? null,
+    habit_drugs: (p as Record<string, unknown>).habit_drugs as string ?? null,
+    habit_betting: (p as Record<string, unknown>).habit_betting as string ?? null,
   }))
 
   // Build a preview of the current user's own profile, as seen by other members
@@ -249,6 +254,10 @@ export default async function DiscoverPage() {
     pref_occupation: (myRow as Record<string, unknown>).pref_occupation as string ?? null,
     pref_height: (myRow as Record<string, unknown>).pref_height as string ?? null,
     pref_ethnicity: (myRow as Record<string, unknown>).pref_ethnicity as string ?? null,
+    habit_smoking: (myRow as Record<string, unknown>).habit_smoking as string ?? null,
+    habit_drinking: (myRow as Record<string, unknown>).habit_drinking as string ?? null,
+    habit_drugs: (myRow as Record<string, unknown>).habit_drugs as string ?? null,
+    habit_betting: (myRow as Record<string, unknown>).habit_betting as string ?? null,
   } : null
 
   // Build "who revealed my photo" list
