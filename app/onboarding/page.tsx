@@ -11,9 +11,10 @@ import VoiceStep from './steps/VoiceStep'
 import PhotosStep from './steps/PhotosStep'
 import PersonalityStep from './steps/PersonalityStep'
 import IdVerificationStep from './steps/IdVerificationStep'
+import HabitsStep from './steps/HabitsStep'
 
-const STEPS = ['About You', 'Your Heritage', 'Preferences', 'Voice Intro', 'Your Photos', 'Personality', 'ID Verification']
-const STEP_TIME = ['~2 minutes', '~2 minutes', '~2 minutes', '~3 minutes', '~3 minutes', '~5 minutes', '~2 minutes']
+const STEPS = ['About You', 'Your Heritage', 'Preferences', 'Voice Intro', 'Your Photos', 'Personality', 'Lifestyle & Habits', 'ID Verification']
+const STEP_TIME = ['~2 minutes', '~2 minutes', '~2 minutes', '~3 minutes', '~3 minutes', '~5 minutes', '~2 minutes', '~2 minutes']
 
 function buildTextUpdate(d: Draft): Record<string, unknown> {
   return {
@@ -46,6 +47,10 @@ function buildTextUpdate(d: Draft): Record<string, unknown> {
     fav_web_series: d.favWebSeries || null, fav_travel: d.favTravel || null,
     fav_foods: d.favFoods || null, fav_ai_tools: d.favAiTools || null,
     hobby: d.hobby || null,
+    habit_smoking: d.habitSmoking || null,
+    habit_drinking: d.habitDrinking || null,
+    habit_drugs: d.habitDrugs || null,
+    habit_betting: d.habitBetting || null,
     id_country: d.idCountry || null,
     updated_at: new Date().toISOString(),
   }
@@ -64,6 +69,7 @@ interface Draft {
   maritalStatus: string; hasKids: string
   prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string; prefSubReligion: string; prefOccupation: string; prefHeight: string; prefEthnicity: string; otherPreferences: string
   favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string; hobby: string
+  habitSmoking: string; habitDrinking: string; habitDrugs: string; habitBetting: string
   idCountry: string
 }
 
@@ -75,6 +81,7 @@ const EMPTY: Draft = {
   maritalStatus: '', hasKids: '',
   prefGender: '', prefAgeMin: '18', prefAgeMax: '50', prefLocation: '', prefReligion: '', prefSubReligion: '', prefOccupation: '', prefHeight: '', prefEthnicity: '', otherPreferences: '',
   favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '', hobby: '',
+  habitSmoking: '', habitDrinking: '', habitDrugs: '', habitBetting: '',
   idCountry: '',
 }
 
@@ -183,6 +190,10 @@ function OnboardingPage() {
           favFoods: profile.fav_foods ?? '',
           favAiTools: profile.fav_ai_tools ?? '',
           hobby: profile.hobby ?? '',
+          habitSmoking: (profile as Record<string, unknown>).habit_smoking as string ?? '',
+          habitDrinking: (profile as Record<string, unknown>).habit_drinking as string ?? '',
+          habitDrugs: (profile as Record<string, unknown>).habit_drugs as string ?? '',
+          habitBetting: (profile as Record<string, unknown>).habit_betting as string ?? '',
           idCountry: profile.id_country ?? '',
         })
       } else {
@@ -269,7 +280,7 @@ function OnboardingPage() {
     const msg = validate()
     if (msg) { setError(msg); return }
     setError('')
-    if (step < 6) { setStep(s => s + 1); return }
+    if (step < 7) { setStep(s => s + 1); return }
 
     setSaving(true)
     try {
@@ -338,6 +349,10 @@ function OnboardingPage() {
         fav_web_series: draft.favWebSeries || null, fav_travel: draft.favTravel || null,
         fav_foods: draft.favFoods || null, fav_ai_tools: draft.favAiTools || null,
         hobby: draft.hobby || null,
+        habit_smoking: draft.habitSmoking || null,
+        habit_drinking: draft.habitDrinking || null,
+        habit_drugs: draft.habitDrugs || null,
+        habit_betting: draft.habitBetting || null,
         id_country: draft.idCountry || null,
         onboarding_complete: true, updated_at: new Date().toISOString(),
       }
@@ -523,7 +538,8 @@ function OnboardingPage() {
           />}
           {step === 4 && <PhotosStep back1={back1} back2={back2} front={front} onPhotosChange={(b1, b2, f) => { setBack1(b1); setBack2(b2); setFront(f) }} existingBack1Url={existingBack1Url} existingBack2Url={existingBack2Url} existingFrontUrl={existingFrontUrl} />}
           {step === 5 && <PersonalityStep data={{ favReels: draft.favReels, favYoutube: draft.favYoutube, favWebSeries: draft.favWebSeries, favTravel: draft.favTravel, favFoods: draft.favFoods, favAiTools: draft.favAiTools, hobby: draft.hobby }} onChange={change} />}
-          {step === 6 && <IdVerificationStep idCountry={draft.idCountry} idFile={idFile} onIdChange={(country, file) => { change('idCountry', country); setIdFile(file) }} />}
+          {step === 6 && <HabitsStep data={{ habitSmoking: draft.habitSmoking, habitDrinking: draft.habitDrinking, habitDrugs: draft.habitDrugs, habitBetting: draft.habitBetting }} onChange={change} />}
+          {step === 7 && <IdVerificationStep idCountry={draft.idCountry} idFile={idFile} onIdChange={(country, file) => { change('idCountry', country); setIdFile(file) }} />}
 
           {error && (
             <div style={{ marginTop: '1rem', background: 'rgba(158,42,43,0.07)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '4px', padding: '0.65rem 0.9rem', color: c.rose, fontSize: '0.9rem', fontFamily: '"Cormorant Garamond", serif', textAlign: 'center' }}>
