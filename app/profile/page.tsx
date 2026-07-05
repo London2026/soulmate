@@ -535,7 +535,7 @@ function ProfileDetailRow({ label, value }: { label: string; value: string | num
   if (!value) return null
   return (
     <div className="prof-detail-row">
-      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', fontWeight: 500, color: '#a08840', lineHeight: 1.3 }}>{label}</span>
+      <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', fontWeight: 700, color: '#f5f0e6', lineHeight: 1.3 }}>{label}</span>
       <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.15rem', fontWeight: 500, color: '#f5f0e6', lineHeight: 1.4 }}>{value}</span>
     </div>
   )
