@@ -29,7 +29,7 @@ export default function TermsPage() {
         <div style={{ marginBottom: '2rem' }}>
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.5rem' }}>Legal</p>
           <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2.4rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.5rem' }}>Terms of Service</h1>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', color: c.sepia, margin: 0 }}>Last updated: May 2026</p>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', color: c.sepia, margin: 0 }}>Last updated: July 2026</p>
           <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginTop: '1.25rem' }} />
         </div>
 
@@ -64,9 +64,12 @@ export default function TermsPage() {
           All payments are processed securely through our payment provider. Banduraa does not store your card details. Prices are displayed in USD and may be subject to currency conversion by your bank.
         </p>
 
-        <h2 style={h2}>4. Cancellation Policy</h2>
+        <h2 style={h2}>4. Cancellation & Account Deletion</h2>
         <p style={p}>
-          You may cancel your subscription at any time through the Billing section in your account settings. Upon cancellation, you will retain access to paid features until the end of your current billing period. No refunds are provided for partial months. Your account will revert to the Free plan at the end of the billing period.
+          You may cancel your subscription at any time through the Subscription page in your account settings. Upon cancellation, you will retain access to paid features until the end of your current billing period. No refunds are provided for partial months. Your account will revert to the Free plan at the end of the billing period.
+        </p>
+        <p style={p}>
+          You may permanently delete your account at any time from your Profile settings. Deleting your account will immediately and irreversibly remove your profile, photos, voice recordings, meeting history, and all associated data from our systems. This action cannot be undone. Any active subscription will be cancelled at the point of deletion with no refund for any remaining period.
         </p>
 
         <h2 style={h2}>5. User Content</h2>
@@ -76,7 +79,13 @@ export default function TermsPage() {
 
         <h2 style={h2}>6. Privacy</h2>
         <p style={p}>
-          Your privacy is important to us. Your face photo is never shown to other members unless you explicitly choose to reveal it. Voice recordings and back-side photos are visible to other members as part of the discovery experience. Please review our <Link href="/privacy" style={{ color: c.gold, textDecoration: 'underline' }}>Privacy Policy</Link> for full details on how we collect and use your data.
+          Your privacy is important to us. Your face photo is never shown to other members unless you explicitly choose to reveal it. Voice recordings and back-side photos are visible to other members as part of the discovery experience.
+        </p>
+        <p style={p}>
+          When another member reveals your face photo, you will be notified by email and can view a list of who has revealed your photo within the platform. The identity of members you have revealed remains private to you alone.
+        </p>
+        <p style={p}>
+          Please review our <Link href="/privacy" style={{ color: c.gold, textDecoration: 'underline' }}>Privacy Policy</Link> for full details on how we collect and use your data.
         </p>
 
         <h2 style={h2}>7. Prohibited Conduct</h2>
@@ -95,22 +104,47 @@ export default function TermsPage() {
           Banduraa reserves the right to suspend or permanently ban any account found to be in violation of these terms.
         </p>
 
-        <h2 style={h2}>8. Limitation of Liability</h2>
+        <h2 style={h2}>8. Member Safety Tools</h2>
+        <p style={p}>
+          Banduraa provides built-in tools to help members manage their safety and comfort on the platform.
+        </p>
+        <p style={p}>
+          <strong style={{ color: c.ivory }}>Blocking.</strong> You may block any member at any time from their profile page. When you block a member, they will no longer appear in your Discover feed, and your profile will no longer be visible to them. Blocking is immediate and bidirectional. Blocked members are not notified that they have been blocked. Blocking does not delete any existing meeting records or notifications.
+        </p>
+        <p style={p}>
+          <strong style={{ color: c.ivory }}>Reporting.</strong> You may report any member whose behaviour or profile content you believe violates these Terms. Reports are reviewed by our moderation team. Where a report is substantiated, we may issue a warning, temporarily suspend, or permanently remove the reported member. Submitting a false or malicious report is itself a violation of these Terms.
+        </p>
+        <p style={p}>
+          <strong style={{ color: c.ivory }}>Account suspension.</strong> Banduraa may suspend an account pending investigation of a report. Suspended members will be unable to access the Discover feed or contact other members until the investigation is resolved.
+        </p>
+
+        <h2 style={h2}>9. Meeting Feedback</h2>
+        <p style={p}>
+          Following a completed video meeting, both participating members may be invited to provide feedback on the experience through a star rating (1–5) and an optional written note. Submitting feedback is voluntary.
+        </p>
+        <p style={p}>
+          Feedback responses are strictly private. They are never shared with the other member and are used solely by Banduraa to improve the quality of matches, identify patterns of inappropriate conduct, and enhance the overall platform experience. By submitting feedback, you grant Banduraa the right to use it for these internal purposes.
+        </p>
+        <p style={p}>
+          If your feedback indicates a serious concern about another member's conduct, our moderation team may review it and take appropriate action under section 8 above.
+        </p>
+
+        <h2 style={h2}>10. Limitation of Liability</h2>
         <p style={p}>
           Banduraa is a platform that facilitates connections between individuals. We do not conduct background checks on members and are not responsible for the conduct of any member on or off the platform. You use the service at your own risk. Banduraa's total liability to you shall not exceed the amount you paid us in the three months prior to the claim.
         </p>
 
-        <h2 style={h2}>9. Changes to These Terms</h2>
+        <h2 style={h2}>11. Changes to These Terms</h2>
         <p style={p}>
           We may update these Terms of Service from time to time. We will notify you of significant changes by email or through a notice on the platform. Continued use of Banduraa after changes take effect constitutes your acceptance of the revised terms.
         </p>
 
-        <h2 style={h2}>10. Governing Law</h2>
+        <h2 style={h2}>12. Governing Law</h2>
         <p style={p}>
           These Terms are governed by and construed in accordance with the laws of England and Wales. Any disputes shall be subject to the exclusive jurisdiction of the courts of England and Wales.
         </p>
 
-        <h2 style={h2}>11. Contact</h2>
+        <h2 style={h2}>13. Contact</h2>
         <p style={p}>
           If you have any questions about these Terms, please contact us at{' '}
           <a href="mailto:support@banduraa.com" style={{ color: c.gold }}>support@banduraa.com</a>.
