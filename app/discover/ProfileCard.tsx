@@ -61,7 +61,7 @@ export interface ProfileData {
 }
 
 const c = {
-  navy: '#0d1f3c', navyMid: '#1a2d4e', navyLight: '#1e3a5f',
+  navy: '#0d1f3c', navyMid: '#1e3d6e', navyLight: '#1e3d6e',
   ivory: '#f5f0e6', ivoryDim: '#bdb5a6',
   gold: '#8b6914', goldLight: '#c9a84c',
   border: 'rgba(201,168,76,0.2)',
