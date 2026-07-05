@@ -29,7 +29,7 @@ export default function PrivacyPage() {
         <div style={{ marginBottom: '2rem' }}>
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.5rem' }}>Legal</p>
           <h1 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '2.4rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.5rem' }}>Privacy Policy</h1>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', color: c.sepia, margin: 0 }}>Last updated: May 2026</p>
+          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', color: c.sepia, margin: 0 }}>Last updated: July 2026</p>
           <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginTop: '1.25rem' }} />
         </div>
 
@@ -51,12 +51,16 @@ export default function PrivacyPage() {
             'First name and last name',
             'Age, gender, city, country',
             'Religion, mother tongue, education, occupation',
-            'Partner preferences',
+            'Partner preferences (used to personalise the order of profiles shown to you)',
             'Back-side photos (visible to other members)',
             'Face/reveal photo (hidden until you choose to reveal)',
             'Voice introduction recording',
             'Personality and interest information',
             'Subscription and billing information (processed by our payment provider)',
+            'Photo reveal history (records of which members have revealed your photo)',
+            'Meeting feedback (voluntary star rating and optional note submitted after a video meeting)',
+            'Block records (when you block another member)',
+            'Email communication preferences (whether you have opted out of non-essential emails)',
           ].map(item => <li key={item} style={li}>{item}</li>)}
         </ul>
 
@@ -67,8 +71,13 @@ export default function PrivacyPage() {
             'Provide the Banduraa matchmaking service',
             'Display your profile to other members',
             'Facilitate photo reveals and video meeting requests',
-            'Process subscription payments',
-            'Send you verification codes and service notifications',
+            'Order your Discover feed based on compatibility with your stated partner preferences',
+            'Show you a list of members who have revealed your photo (visible only to you)',
+            'Process subscription payments and manage your subscription plan',
+            'Send you service notifications including meeting requests, mutual shortlists, and account alerts',
+            'Send you optional engagement emails such as weekly activity digests and post-meeting feedback requests (you may opt out at any time)',
+            'Use anonymised meeting feedback to improve matchmaking quality and identify patterns of inappropriate conduct',
+            'Enforce block relationships to prevent unwanted contact between members',
             'Improve and personalise your experience using AI matching',
             'Comply with our legal obligations',
           ].map(item => <li key={item} style={li}>{item}</li>)}
@@ -77,9 +86,12 @@ export default function PrivacyPage() {
           We do not sell your personal data to third parties. We do not use your data for advertising purposes.
         </p>
 
-        <h2 style={h2}>4. Your Face Photo</h2>
+        <h2 style={h2}>4. Your Face Photo & Reveal History</h2>
         <p style={p}>
           Your face (reveal) photo is stored securely and is <strong style={{ color: c.ivory }}>never visible</strong> to other members by default. It is only revealed when you actively choose to reveal it on another member's profile. This is central to how Banduraa works — personality and voice come before appearance.
+        </p>
+        <p style={p}>
+          When a member reveals your photo, this event is recorded and you are notified by email. You can also view the full list of members who have revealed your photo in the "Reveals" panel within Discover. This information is visible only to you — the photo owner. The list of members whose photos you have revealed is private to you alone and is not shared with anyone else.
         </p>
 
         <h2 style={h2}>5. Third-Party Services</h2>
@@ -96,7 +108,7 @@ export default function PrivacyPage() {
 
         <h2 style={h2}>6. Data Retention</h2>
         <p style={p}>
-          We retain your account data for as long as your account is active. If you delete your account, we will delete your personal data within 30 days, except where we are required to retain it for legal or financial compliance purposes (e.g. payment records for up to 7 years).
+          We retain your account data for as long as your account is active. You may delete your account at any time from your Profile settings. Upon deletion, your profile, photos, voice recordings, reveal history, meeting feedback, block records, shortlists, and notifications are removed immediately and permanently. Payment records may be retained for up to 7 years as required by financial regulations.
         </p>
 
         <h2 style={h2}>7. Your Rights (UK GDPR)</h2>
@@ -117,22 +129,47 @@ export default function PrivacyPage() {
           We will respond within 30 days.
         </p>
 
-        <h2 style={h2}>8. Cookies</h2>
+        <h2 style={h2}>8. Email Communications</h2>
+        <p style={p}>
+          We send two categories of email:
+        </p>
+        <ul style={{ paddingLeft: '1.5rem', margin: '0 0 0.9rem' }}>
+          {[
+            'Transactional emails — account verification, meeting requests, mutual shortlist alerts, photo reveal notifications, and other service-critical messages. These cannot be opted out of as they are necessary to operate the service.',
+            'Engagement emails — weekly activity digests and post-meeting feedback requests. These are optional. You may unsubscribe at any time by clicking the unsubscribe link in any such email. Your opt-out preference is stored and respected immediately.',
+          ].map(item => <li key={item} style={li}>{item}</li>)}
+        </ul>
+        <p style={p}>
+          We use Resend to deliver emails. Your email address is shared with Resend solely for the purpose of message delivery. Resend does not use it for any other purpose.
+        </p>
+
+        <h2 style={h2}>9. Blocking & Safety Data</h2>
+        <p style={p}>
+          When you block a member, a record is created that prevents your profile from appearing in their Discover feed and theirs from appearing in yours. Blocked members are not informed that they have been blocked. Block records are stored for as long as your account is active and are permanently deleted when you delete your account.
+        </p>
+        <p style={p}>
+          When you report a member, the report — including your identity as the reporter, the reason, and any message — is shared with Banduraa's moderation team for review. Reports are not shared with the reported member. We retain report records to identify repeated patterns of conduct, even if a reported account is later deleted.
+        </p>
+        <p style={p}>
+          Meeting feedback (star rating and optional note) is stored privately against your account. It is never disclosed to the member you are rating and is accessible only by Banduraa's internal team for the purposes described in section 3.
+        </p>
+
+        <h2 style={h2}>10. Cookies</h2>
         <p style={p}>
           Banduraa uses only essential cookies required for authentication and security. We do not use advertising or tracking cookies.
         </p>
 
-        <h2 style={h2}>9. Security</h2>
+        <h2 style={h2}>11. Security</h2>
         <p style={p}>
           All data is transmitted over HTTPS. Photos and voice recordings are stored in a private, access-controlled storage system. Signed URLs are generated on demand and expire within 1 hour. We take reasonable technical and organisational measures to protect your data against unauthorised access.
         </p>
 
-        <h2 style={h2}>10. Changes to This Policy</h2>
+        <h2 style={h2}>12. Changes to This Policy</h2>
         <p style={p}>
           We may update this Privacy Policy from time to time. We will notify you of significant changes by email. The date at the top of this page reflects when the policy was last updated.
         </p>
 
-        <h2 style={h2}>11. Complaints</h2>
+        <h2 style={h2}>13. Complaints</h2>
         <p style={p}>
           If you are not satisfied with how we handle your data, you have the right to lodge a complaint with the UK Information Commissioner's Office (ICO) at{' '}
           <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer" style={{ color: c.gold }}>ico.org.uk</a>.
