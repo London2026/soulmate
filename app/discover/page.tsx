@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Navigation from '@/components/Navigation'
 import BottomNav from '@/components/BottomNav'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import DiscoverClient from './DiscoverClient'
 
@@ -65,11 +66,20 @@ export default async function DiscoverPage() {
     .single()
 
   // Which profiles has the current user already revealed?
-  const [{ data: myReveals }, { data: myShortlist }, { count: referralCount }, { data: revealedByRows }] = await Promise.all([
+  // Use admin client for blocks so we can see both directions (who I blocked + who blocked me)
+  const adminClient = createAdminClient()
+  const [{ data: myReveals }, { data: myShortlist }, { count: referralCount }, { data: revealedByRows }, { data: myBlockRows }, { data: blockedMeRows }] = await Promise.all([
     supabase.from('photo_reveals').select('viewed_id').eq('viewer_id', user.id),
     supabase.from('shortlist').select('profile_id').eq('user_id', user.id),
     supabase.from('referrals').select('*', { count: 'exact', head: true }).eq('referrer_id', user.id),
     supabase.from('photo_reveals').select('viewer_id, revealed_at').eq('viewed_id', user.id).order('revealed_at', { ascending: false }).limit(50),
+    adminClient.from('blocks').select('blocked_id').eq('blocker_id', user.id),
+    adminClient.from('blocks').select('blocker_id').eq('blocked_id', user.id),
+  ])
+
+  const blockedIds = new Set([
+    ...(myBlockRows ?? []).map(r => r.blocked_id as string),
+    ...(blockedMeRows ?? []).map(r => r.blocker_id as string),
   ])
 
   // Fetch profiles of members who revealed my photo
@@ -79,6 +89,9 @@ export default async function DiscoverPage() {
     const { data } = await supabase.from('profiles').select('id, full_name, member_id, back_photo_1_path, city, religion').in('id', revealViewerIds)
     revealViewerData = (data ?? []) as typeof revealViewerData
   }
+
+  // Strip blocked profiles in both directions before any further processing
+  const safeRows = (rows ?? []).filter(p => !blockedIds.has(p.id))
 
   const revealedSet   = new Set((myReveals ?? []).map((r) => r.viewed_id as string))
   const shortlistedIds = (myShortlist ?? []).map((r) => r.profile_id as string)
@@ -97,7 +110,7 @@ export default async function DiscoverPage() {
 
   // Collect all storage paths we need signed URLs for
   const allPaths: string[] = []
-  for (const p of rows ?? []) {
+  for (const p of safeRows) {
     if (p.back_photo_1_path) allPaths.push(p.back_photo_1_path)
     if (p.back_photo_2_path) allPaths.push(p.back_photo_2_path)
     if (p.voice_path) allPaths.push(p.voice_path)
@@ -128,7 +141,7 @@ export default async function DiscoverPage() {
     }
   }
 
-  const profiles: ProfileData[] = (rows ?? []).map((p) => ({
+  const profiles: ProfileData[] = safeRows.map((p) => ({
     id: p.id,
     member_id: (p as Record<string, unknown>).member_id as string ?? null,
     full_name: p.full_name,
@@ -337,6 +350,7 @@ export default async function DiscoverPage() {
           referralCredits={(me as Record<string, unknown>)?.referral_credits as number ?? 0}
           referralCount={referralCount ?? 0}
           revealedBy={revealedBy}
+          blockedIds={[...blockedIds]}
         />
       </main>
     </div>

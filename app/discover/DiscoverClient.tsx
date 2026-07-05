@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import { maskName } from '@/lib/maskName'
-import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox, toggleShortlist, reportProfile } from './actions'
+import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox, toggleShortlist, reportProfile, blockProfile } from './actions'
 
 interface InboxNotification {
   id: string; message: string; type: string; read: boolean; created_at: string; sender_name: string | null
@@ -90,13 +90,13 @@ function computeMatchScore(profile: ProfileData, myProfile: ProfileData): number
 export default function DiscoverClient({
   profiles, canReveal, canMeet, meetingsLeft, myProfile,
   inboxNotifications, inboxMeetings, unreadCount, shortlistedIds,
-  myMemberId, referralCredits, referralCount, revealedBy,
+  myMemberId, referralCredits, referralCount, revealedBy, blockedIds,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
   inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
   shortlistedIds: string[]
   myMemberId: string | null; referralCredits: number; referralCount: number
-  revealedBy: RevealedByEntry[]
+  revealedBy: RevealedByEntry[]; blockedIds: string[]
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -116,6 +116,8 @@ export default function DiscoverClient({
   const [fEducation, setFEducation] = useState('')
   const [fOccupation, setFOccupation] = useState('')
   const [selected, setSelected] = useState<ProfileData | null>(null)
+  const [blocked, setBlocked] = useState<Set<string>>(() => new Set(blockedIds))
+  const [blockTarget, setBlockTarget] = useState<ProfileData | null>(null)
   const [showInbox, setShowInbox] = useState(false)
   const [showReveals, setShowReveals] = useState(false)
   const [sortMode, setSortMode] = useState<'recent' | 'match'>('recent')
@@ -178,11 +180,19 @@ export default function DiscoverClient({
     setReportTarget(null); setReportReason(''); setReportMessage(''); setReportDone(null); setReportSubmitting(false)
   }
 
+  async function handleBlock(profileId: string) {
+    setBlocked(prev => new Set([...prev, profileId]))
+    setBlockTarget(null)
+    setSelected(null)
+    try { await blockProfile(profileId) }
+    catch { setBlocked(prev => { const next = new Set(prev); next.delete(profileId); return next }) }
+  }
+
   const religions  = useMemo(() => [...new Set(profiles.map(p => p.religion).filter(Boolean))].sort(), [profiles])
   const educations = useMemo(() => [...new Set(profiles.map(p => p.education).filter(Boolean))].sort(), [profiles])
 
   const filtered = useMemo(() => {
-    let list = profiles
+    let list = profiles.filter(p => !blocked.has(p.id))
     if (showShortlistOnly) list = list.filter(p => shortlist.has(p.id))
     const q = search.trim().toLowerCase().replace(/^#/, '')
     if (q) list = list.filter(p =>
@@ -206,7 +216,7 @@ export default function DiscoverClient({
       list = [...list].sort((a, b) => computeMatchScore(b, myProfile) - computeMatchScore(a, myProfile))
     }
     return list
-  }, [profiles, shortlist, showShortlistOnly, search, fGender, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation, sortMode, myProfile])
+  }, [profiles, shortlist, blocked, showShortlistOnly, search, fGender, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation, sortMode, myProfile])
 
   async function handleAiMatch() {
     setAiLoading(true); setAiError(''); setAiMatches(null)
@@ -643,6 +653,11 @@ export default function DiscoverClient({
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setSelected(null) }}>
           <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px' }}>
             <div style={{ position: 'sticky', top: '0.75rem', float: 'right', marginRight: '0.75rem', zIndex: 10, display: 'flex', gap: '0.4rem' }}>
+              <button onClick={() => { setBlockTarget(selected); setSelected(null) }}
+                title="Block this profile"
+                style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#f87171', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                🚫
+              </button>
               <button onClick={() => { setReportTarget(selected); setSelected(null) }}
                 title="Report this profile"
                 style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#e57373', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -739,6 +754,31 @@ export default function DiscoverClient({
             </div>
             <div style={{ overflowY: 'auto', maxHeight: 'calc(92vh - 48px)' }}>
               <ProfileCard profile={myProfile} previewMode canReveal={false} canMeet={false} meetingsLeft={0} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Block confirmation modal ── */}
+      {blockTarget && (
+        <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setBlockTarget(null) }}>
+          <div style={{ background: '#0d1f3c', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 12, padding: '2rem', maxWidth: 420, width: '90%', margin: 'auto' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🚫</div>
+            <h3 style={{ fontFamily: '"Playfair Display", Georgia, serif', fontSize: '1.2rem', color: '#f5f0e6', margin: '0 0 0.75rem' }}>
+              Block {maskName(blockTarget.full_name)}?
+            </h3>
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: '0.95rem', color: '#5a6e82', lineHeight: 1.7, margin: '0 0 1.5rem' }}>
+              They will no longer appear in your Discover, and you will no longer appear in theirs. Existing conversations are unaffected.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button onClick={() => setBlockTarget(null)}
+                style={{ padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: '#5a6e82', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, borderRadius: 4, cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button onClick={() => handleBlock(blockTarget.id)}
+                style={{ padding: '0.6rem 1.25rem', background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, borderRadius: 4, cursor: 'pointer' }}>
+                Block Member
+              </button>
             </div>
           </div>
         </div>

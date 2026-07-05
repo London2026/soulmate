@@ -151,6 +151,16 @@ export async function reportProfile(reportedId: string, reason: string, message:
   return { alreadyReported: false }
 }
 
+export async function blockProfile(blockedId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  await supabase.from('blocks').upsert(
+    { blocker_id: user.id, blocked_id: blockedId },
+    { onConflict: 'blocker_id,blocked_id' }
+  )
+}
+
 export async function markNotificationRead(notificationId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
