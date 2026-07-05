@@ -5,6 +5,7 @@ import BottomNav from '@/components/BottomNav'
 import { createClient } from '@/lib/supabase/server'
 import RevealedByCard, { type Viewer } from './RevealedByCard'
 import MeetingCard from './MeetingCard'
+import AccountSettings from './AccountSettings'
 
 const c = {
   bg: '#07111f',
@@ -503,6 +504,12 @@ export default async function ProfilePage() {
             </div>
           )}
         </div>
+
+        {/* Account settings */}
+        <AccountSettings
+          plan={(profile as Record<string, unknown>).plan as string ?? 'free'}
+          memberId={(profile as Record<string, unknown>).member_id as string | null ?? null}
+        />
 
       </main>
 
