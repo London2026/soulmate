@@ -333,30 +333,40 @@ export default function DiscoverClient({
 
         .disc-h1 { font-size: 2rem; }
         @media (max-width: 600px) { .disc-h1 { font-size: 1.5rem; } }
+
+        /* Header nav buttons (Reveals / Inbox) — smaller than the h1 on mobile */
+        .disc-nav-btn { font-size: 1.3rem; font-family: var(--font-playfair,"Playfair Display",serif); font-weight: 600; }
+        @media (max-width: 600px) { .disc-nav-btn { font-size: 1rem; } }
+        @media (max-width: 380px)  { .disc-nav-btn { font-size: 0.9rem; } }
+
+        /* Header row wraps gracefully on very narrow screens */
+        .disc-header-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+        .disc-header-nav { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+        @media (max-width: 380px) { .disc-header-nav { gap: 0.65rem; } }
       `}</style>
 
       {/* ── 0. Heading row + Reveals + Inbox ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.5rem' }}>
+      <div className="disc-header-row">
         <h1 className="disc-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: '#f5f0e6', margin: 0 }}>
           Discover
         </h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div className="disc-header-nav">
           {revealedBy.length > 0 && (
             <button onClick={() => { setShowReveals(v => !v); if (showInbox) setShowInbox(false) }}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: showReveals ? '#c9a84c' : '#f5f0e6', fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-              className="disc-h1">
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', color: showReveals ? '#c9a84c' : '#f5f0e6', cursor: 'pointer', padding: 0, lineHeight: 1 }}
+              className="disc-nav-btn">
               Reveals
-              <span style={{ background: showReveals ? 'rgba(201,168,76,0.3)' : 'rgba(201,168,76,0.15)', color: '#c9a84c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center', verticalAlign: 'middle' }}>
+              <span style={{ background: showReveals ? 'rgba(201,168,76,0.3)' : 'rgba(201,168,76,0.15)', color: '#c9a84c', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.45rem', minWidth: '16px', textAlign: 'center' }}>
                 {revealedBy.length}
               </span>
             </button>
           )}
           <button onClick={() => { setShowInbox(v => !v); if (showReveals) setShowReveals(false) }}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#f5f0e6', fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-            className="disc-h1">
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', color: '#f5f0e6', cursor: 'pointer', padding: 0, lineHeight: 1 }}
+            className="disc-nav-btn">
             Inbox
             {liveUnread > 0 && (
-              <span style={{ background: '#c9a84c', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center', verticalAlign: 'middle' }}>
+              <span style={{ background: '#c9a84c', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.45rem', minWidth: '16px', textAlign: 'center' }}>
                 {liveUnread}
               </span>
             )}

@@ -92,11 +92,17 @@ export default function SubscriptionClient({
 
   return (
     <>
+      <style>{`
+        .sub-plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+        @media (max-width: 520px) { .sub-plan-grid { grid-template-columns: 1fr; } }
+        .sub-h1 { font-size: 2rem; }
+        @media (max-width: 600px) { .sub-h1 { font-size: 1.5rem; } }
+      `}</style>
       {/* Heading */}
       <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.4rem' }}>
         ✦ Subscription
       </p>
-      <h1 style={{ fontFamily: '"Playfair Display", Georgia, serif', fontSize: '2rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.35rem' }}>
+      <h1 className="sub-h1" style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: c.ivory, margin: '0 0 0.35rem' }}>
         Manage Your Plan
       </h1>
       <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)', marginBottom: '2rem' }} />
@@ -140,7 +146,7 @@ export default function SubscriptionClient({
       <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.sepia, margin: '0 0 1rem' }}>
         {isPaid ? 'All Plans' : 'Choose a Plan'}
       </p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '2rem' }}>
+      <div className="sub-plan-grid">
         {PLANS.map(p => {
           const isCurrent = p.id === plan
           const isHigher = (p.id === 'standard' && plan !== 'standard') || (p.id === 'starter' && plan === 'free')

@@ -45,7 +45,7 @@ export default function FeedbackClient({
   }
 
   return (
-    <div style={{ background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: 14, padding: '2.5rem 2rem', maxWidth: 480, width: '100%', position: 'relative', zIndex: 1 }}>
+    <div style={{ background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: 14, padding: 'clamp(1.25rem, 5vw, 2.5rem) clamp(1rem, 5vw, 2rem)', maxWidth: 480, width: '100%', position: 'relative', zIndex: 1 }}>
       {/* Header */}
       <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.4rem' }}>
         ✦ Banduraa
@@ -82,13 +82,13 @@ export default function FeedbackClient({
           </p>
 
           {/* Star rating */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
             {[1, 2, 3, 4, 5].map(star => (
               <button key={star}
                 onClick={() => setRating(star)}
                 onMouseEnter={() => setHovered(star)}
                 onMouseLeave={() => setHovered(0)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', fontSize: '2.2rem', lineHeight: 1, transition: 'transform 0.1s', transform: (hovered || rating) >= star ? 'scale(1.15)' : 'scale(1)', filter: (hovered || rating) >= star ? 'none' : 'grayscale(100%) opacity(0.3)' }}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem 0.35rem', minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', lineHeight: 1, transition: 'transform 0.1s', transform: (hovered || rating) >= star ? 'scale(1.15)' : 'scale(1)', filter: (hovered || rating) >= star ? 'none' : 'grayscale(100%) opacity(0.3)' }}>
                 ★
               </button>
             ))}
