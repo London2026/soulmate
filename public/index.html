@@ -1178,6 +1178,69 @@
   /* HEALTH SECTION */
   .health-section { background: var(--parchment); }
 
+  /* GLOBAL COVERAGE */
+  .global-section { background: var(--cream); }
+  .global-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: center;
+    margin-top: 2.5rem;
+  }
+  .global-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.1rem;
+    background: #fff;
+    border: 1px solid rgba(13,31,60,0.14);
+    border-radius: 50px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--deep-brown);
+    letter-spacing: 0.01em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    white-space: nowrap;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .global-chip:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
+  .global-chip-more {
+    background: var(--deep-brown);
+    color: var(--cream);
+    border-color: var(--deep-brown);
+  }
+  .global-chip-more:hover { background: var(--burgundy); border-color: var(--burgundy); }
+  .global-stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 3.5rem;
+    margin-top: 3.5rem;
+    flex-wrap: wrap;
+  }
+  .global-stat { text-align: center; }
+  .global-stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--burgundy);
+    display: block;
+    line-height: 1;
+  }
+  .global-stat-label {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-top: 0.4rem;
+    display: block;
+  }
+  @media (max-width: 600px) {
+    .global-stat-row { gap: 2rem; }
+    .global-stat-number { font-size: 1.8rem; }
+  }
+
   .health-card {
     display: flex;
     gap: 2.5rem;
@@ -2893,6 +2956,56 @@
         <div class="health-badge">🛡️ Recommended Before Marriage</div>
         <h3>HIV Testing Before Marriage</h3>
         <p>HIV testing before marriage protects both partners and future children. Many people are unaware of their status as the virus can remain asymptomatic for years. Early detection enables timely treatment and prevents transmission.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOBAL COVERAGE -->
+<section class="section global-section" id="global">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <span class="section-label">Global Reach</span>
+      <h2 class="section-title">Love Knows <em>No Borders</em></h2>
+      <div class="ornament-divider"><span class="ornament-heart">♥</span></div>
+      <p class="section-sub">Banduraa connects South Asian and diaspora communities across the globe. Whether you are in London, Lagos, or Los Angeles, your match could be just around the world.</p>
+    </div>
+
+    <div class="global-chips reveal">
+      <span class="global-chip">🇬🇧 United Kingdom</span>
+      <span class="global-chip">🇮🇳 India</span>
+      <span class="global-chip">🇺🇸 United States</span>
+      <span class="global-chip">🇨🇦 Canada</span>
+      <span class="global-chip">🇦🇺 Australia</span>
+      <span class="global-chip">🇦🇪 UAE</span>
+      <span class="global-chip">🇳🇬 Nigeria</span>
+      <span class="global-chip">🇿🇦 South Africa</span>
+      <span class="global-chip">🇰🇪 Kenya</span>
+      <span class="global-chip">🇬🇭 Ghana</span>
+      <span class="global-chip">🇸🇬 Singapore</span>
+      <span class="global-chip">🇲🇾 Malaysia</span>
+      <span class="global-chip">🇳🇿 New Zealand</span>
+      <span class="global-chip">🇮🇪 Ireland</span>
+      <span class="global-chip">🇯🇲 Jamaica</span>
+      <span class="global-chip">🇹🇹 Trinidad &amp; Tobago</span>
+      <span class="global-chip">🇵🇭 Philippines</span>
+      <span class="global-chip">🇵🇰 Pakistan</span>
+      <span class="global-chip">🇧🇩 Bangladesh</span>
+      <span class="global-chip global-chip-more">+ many more →</span>
+    </div>
+
+    <div class="global-stat-row reveal">
+      <div class="global-stat">
+        <span class="global-stat-number">20+</span>
+        <span class="global-stat-label">Countries</span>
+      </div>
+      <div class="global-stat">
+        <span class="global-stat-number">5</span>
+        <span class="global-stat-label">Continents</span>
+      </div>
+      <div class="global-stat">
+        <span class="global-stat-number">1</span>
+        <span class="global-stat-label">Community</span>
       </div>
     </div>
   </div>
