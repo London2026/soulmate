@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { CountUp } from '@/components/motion'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import { maskName } from '@/lib/maskName'
 import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox, toggleShortlist, reportProfile, blockProfile } from './actions'
@@ -416,8 +418,14 @@ export default function DiscoverClient({
           </button>
         </div>
 
+        <AnimatePresence>
         {showFilters && (
-          <div style={{ marginTop: '0.6rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '10px', padding: '1.1rem 1.25rem' }}>
+          <motion.div
+            initial={{ opacity: 0, x: -32 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -32 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            style={{ marginTop: '0.6rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '10px', padding: '1.1rem 1.25rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
               <div>
                 <label style={{ display: 'block', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.gold, marginBottom: '0.35rem' }}>⚧ Gender</label>
@@ -492,8 +500,9 @@ export default function DiscoverClient({
                 </button>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
 
       {/* ── 2. FIND MY MATCH button ── */}
@@ -512,7 +521,8 @@ export default function DiscoverClient({
         </div>
       )}
       {aiMatches && (
-        <div style={{ marginBottom: '2rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          style={{ marginBottom: '2rem', background: c.card, border: `1px solid ${c.border}`, borderRadius: '14px', overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
           <div style={{ padding: '1.25rem 1.5rem', borderBottom: `1px solid rgba(201,168,76,0.12)`, background: 'linear-gradient(to right, rgba(201,168,76,0.08), transparent)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
             <div>
               <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem' }}>✨ Your Banduraa Matches</p>
@@ -537,10 +547,16 @@ export default function DiscoverClient({
                 <span className="disc-ai-match-score" style={{ marginLeft: 'auto', fontFamily: 'Raleway, sans-serif', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: scoreColor(m.score), background: `${scoreColor(m.score)}18`, border: `1px solid ${scoreColor(m.score)}40`, padding: '0.3rem 0.8rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>{scoreLabel(m.score)}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.9rem' }}>
-                <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px' }}>
-                  <div style={{ height: '100%', width: `${m.score}%`, background: scoreGradient(m.score), borderRadius: '4px', transition: 'width 0.6s ease' }} />
+                <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${m.score}%` }}
+                    transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+                    style={{ height: '100%', background: scoreGradient(m.score), borderRadius: '4px' }} />
                 </div>
-                <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.35rem', fontWeight: 700, color: scoreColor(m.score), minWidth: '64px', textAlign: 'right' }}>{m.score}/100</span>
+                <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.35rem', fontWeight: 700, color: scoreColor(m.score), minWidth: '64px', textAlign: 'right' }}>
+                  <CountUp value={m.score} duration={1.1} />/100
+                </span>
               </div>
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.15rem', color: c.ivoryDim, margin: '0 0 0.8rem', lineHeight: 1.65 }}>
                 Profile {profileId(m.profile)} matches your profile with a compatibility score of <strong style={{ color: scoreColor(m.score), fontStyle: 'normal' }}>{m.score} out of 100</strong> — a {scoreLabel(m.score).toLowerCase()}.
@@ -559,7 +575,7 @@ export default function DiscoverClient({
               <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', color: c.gold, textTransform: 'uppercase', margin: '0.9rem 0 0', textAlign: 'right' }}>Tap to view full profile →</p>
             </div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* ── 4. Your profile preview ── */}
@@ -612,10 +628,16 @@ export default function DiscoverClient({
           </div>
         ) : (
           <div className="disc-grid">
-            {filtered.map(p => (
-              <CompactCard key={p.id} profile={p} onClick={() => setSelected(p)}
-                shortlisted={shortlist.has(p.id)}
-                onShortlist={(e: React.MouseEvent) => handleShortlist(p.id, e)} />
+            {filtered.map((p, i) => (
+              <motion.div key={p.id}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-30px' }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: (i % 6) * 0.08 }}>
+                <CompactCard profile={p} onClick={() => setSelected(p)}
+                  shortlisted={shortlist.has(p.id)}
+                  onShortlist={(e: React.MouseEvent) => handleShortlist(p.id, e)} />
+              </motion.div>
             ))}
           </div>
         )}
@@ -1007,10 +1029,10 @@ function CompactCard({ profile, onClick, shortlisted = false, onShortlist }: {
   const initials = profile.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
   const pid = profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()
   return (
-    <div onClick={onClick}
-      style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.5)' }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}>
+    <motion.div onClick={onClick}
+      whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.5)', borderColor: 'rgba(201,168,76,0.45)' }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
 
       {/* Photo area — single square crop */}
       <div style={{ position: 'relative' }}>
@@ -1024,11 +1046,19 @@ function CompactCard({ profile, onClick, shortlisted = false, onShortlist }: {
           </div>
         )}
         {onShortlist && (
-          <button onClick={onShortlist}
-            style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: '50%', width: '2.5rem', height: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.1rem', color: shortlisted ? '#c9a84c' : 'rgba(255,255,255,0.7)', transition: 'all 0.15s', lineHeight: 1 }}
+          <motion.button onClick={onShortlist}
+            whileTap={{ scale: 0.8 }}
+            style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: '50%', width: '2.5rem', height: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.1rem', color: shortlisted ? '#c9a84c' : 'rgba(255,255,255,0.7)', lineHeight: 1 }}
             title={shortlisted ? 'Remove from shortlist' : 'Add to shortlist'}>
-            {shortlisted ? '♥' : '♡'}
-          </button>
+            <motion.span
+              key={shortlisted ? 'on' : 'off'}
+              initial={shortlisted ? { scale: 0.4 } : false}
+              animate={{ scale: shortlisted ? [0.4, 1.4, 1] : 1 }}
+              transition={{ duration: 0.45, ease: 'easeOut' }}
+              style={{ display: 'inline-block' }}>
+              {shortlisted ? '♥' : '♡'}
+            </motion.span>
+          </motion.button>
         )}
       </div>
 
@@ -1053,6 +1083,6 @@ function CompactCard({ profile, onClick, shortlisted = false, onShortlist }: {
           <span className="compact-card-pid" style={{ fontFamily: '"Courier New", monospace', fontWeight: 700, color: c.gold, letterSpacing: '0.06em' }}>{pid}</span>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

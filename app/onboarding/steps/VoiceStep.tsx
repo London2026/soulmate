@@ -135,7 +135,17 @@ function RecorderBlock({ label, required, tip, existingUrl, onBlobChange }: {
         <div style={{ textAlign: 'center' }}>
           <button onClick={recording ? stopRecording : startRecording}
             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.65rem', margin: '0 auto' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: recording ? 'rgba(158,42,43,0.08)' : 'rgba(139,105,20,0.08)', border: `2px solid ${recording ? c.rose : c.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', transition: 'all 0.3s' }}>
+            <style>{`
+              @keyframes recPulse {
+                0%   { box-shadow: 0 0 0 0 rgba(158,42,43,0.45); }
+                70%  { box-shadow: 0 0 0 18px rgba(158,42,43,0); }
+                100% { box-shadow: 0 0 0 0 rgba(158,42,43,0); }
+              }
+              .rec-pulse { animation: recPulse 1.6s ease-out infinite; }
+              @media (prefers-reduced-motion: reduce) { .rec-pulse { animation: none; } }
+            `}</style>
+            <div className={recording ? 'rec-pulse' : undefined}
+              style={{ width: '80px', height: '80px', borderRadius: '50%', background: recording ? 'rgba(158,42,43,0.08)' : 'rgba(139,105,20,0.08)', border: `2px solid ${recording ? c.rose : c.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', transition: 'all 0.3s' }}>
               {recording ? '⏹' : '🎙️'}
             </div>
             <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: recording ? c.rose : c.gold }}>

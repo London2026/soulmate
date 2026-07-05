@@ -23,21 +23,21 @@ export default function PhotosStep({ back1, back2, front, onPhotosChange, existi
 
   useEffect(() => () => { if (p1) URL.revokeObjectURL(p1); if (p2) URL.revokeObjectURL(p2); if (pf) URL.revokeObjectURL(pf) }, [])
 
-  function pick1(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0] ?? null
+  function apply1(f: File | null) {
     if (p1) URL.revokeObjectURL(p1); setP1(f ? URL.createObjectURL(f) : null)
     onPhotosChange(f, back2, front)
   }
-  function pick2(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0] ?? null
+  function apply2(f: File | null) {
     if (p2) URL.revokeObjectURL(p2); setP2(f ? URL.createObjectURL(f) : null)
     onPhotosChange(back1, f, front)
   }
-  function pickF(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0] ?? null
+  function applyF(f: File | null) {
     if (pf) URL.revokeObjectURL(pf); setPf(f ? URL.createObjectURL(f) : null)
     onPhotosChange(back1, back2, f)
   }
+  function pick1(e: React.ChangeEvent<HTMLInputElement>) { apply1(e.target.files?.[0] ?? null) }
+  function pick2(e: React.ChangeEvent<HTMLInputElement>) { apply2(e.target.files?.[0] ?? null) }
+  function pickF(e: React.ChangeEvent<HTMLInputElement>) { applyF(e.target.files?.[0] ?? null) }
 
   return (
     <div>
@@ -87,8 +87,8 @@ export default function PhotosStep({ back1, back2, front, onPhotosChange, existi
         </div>
 
         <div className="ob-photo-2col">
-          <PhotoBox label="Photo 1" preview={p1} existingUrl={existingBack1Url ?? null} inputRef={r1} onChange={pick1} blurred={false} required />
-          <PhotoBox label="Photo 2" preview={p2} existingUrl={existingBack2Url ?? null} inputRef={r2} onChange={pick2} blurred={false} required />
+          <PhotoBox label="Photo 1" preview={p1} existingUrl={existingBack1Url ?? null} inputRef={r1} onChange={pick1} onFile={apply1} blurred={false} required />
+          <PhotoBox label="Photo 2" preview={p2} existingUrl={existingBack2Url ?? null} inputRef={r2} onChange={pick2} onFile={apply2} blurred={false} required />
         </div>
       </div>
 
@@ -108,23 +108,33 @@ export default function PhotosStep({ back1, back2, front, onPhotosChange, existi
         <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.1rem', color: c.textMid, margin: '0 0 1rem', lineHeight: 1.6 }}>
           Your front face photo will only be revealed when another member clicks &ldquo;Reveal Photo&rdquo; on your profile. The moment this happens, you will receive a notification letting you know which profile has viewed your photo — so you are always in control.
         </p>
-        <PhotoBox label="Face photo" preview={pf} existingUrl={existingFrontUrl ?? null} inputRef={rf} onChange={pickF} blurred={true} fullWidth required />
+        <PhotoBox label="Face photo" preview={pf} existingUrl={existingFrontUrl ?? null} inputRef={rf} onChange={pickF} onFile={applyF} blurred={true} fullWidth required />
       </div>
     </div>
   )
 }
 
-function PhotoBox({ label, preview, existingUrl, inputRef, onChange, blurred, fullWidth, required }: {
+function PhotoBox({ label, preview, existingUrl, inputRef, onChange, onFile, blurred, fullWidth, required }: {
   label: string; preview: string | null; existingUrl: string | null
   inputRef: React.RefObject<HTMLInputElement | null>
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; blurred: boolean; fullWidth?: boolean; required?: boolean
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onFile?: (f: File) => void
+  blurred: boolean; fullWidth?: boolean; required?: boolean
 }) {
   const displayUrl = preview ?? existingUrl
   const isExisting = !preview && !!existingUrl
+  const [dragOver, setDragOver] = useState(false)
 
   return (
     <button type="button" onClick={() => inputRef.current?.click()}
-      style={{ position: 'relative', width: '100%', aspectRatio: '4/3', borderRadius: '6px', overflow: 'hidden', border: displayUrl ? '1px solid rgba(27,58,107,0.4)' : '1px dashed rgba(13,31,60,0.25)', background: 'rgba(244,241,235,0.4)', cursor: 'pointer', display: 'block', ...(fullWidth ? { aspectRatio: '16/7' } : {}) }}>
+      onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={e => {
+        e.preventDefault(); setDragOver(false)
+        const f = e.dataTransfer.files?.[0]
+        if (f && f.type.startsWith('image/')) onFile?.(f)
+      }}
+      style={{ position: 'relative', width: '100%', aspectRatio: '4/3', borderRadius: '6px', overflow: 'hidden', border: dragOver ? '2px solid #c9a84c' : displayUrl ? '1px solid rgba(27,58,107,0.4)' : '1px dashed rgba(13,31,60,0.25)', background: dragOver ? 'rgba(201,168,76,0.12)' : 'rgba(244,241,235,0.4)', boxShadow: dragOver ? '0 0 24px rgba(201,168,76,0.35)' : 'none', transform: dragOver ? 'scale(1.015)' : 'none', transition: 'border 0.25s, background 0.25s, box-shadow 0.25s, transform 0.25s', cursor: 'pointer', display: 'block', ...(fullWidth ? { aspectRatio: '16/7' } : {}) }}>
       {displayUrl ? (
         <>
           <img src={displayUrl} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: blurred ? 'blur(10px)' : 'none', transform: blurred ? 'scale(1.1)' : 'none' }} />

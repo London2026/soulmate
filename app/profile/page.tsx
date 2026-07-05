@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Navigation from '@/components/Navigation'
 import BottomNav from '@/components/BottomNav'
 import { createClient } from '@/lib/supabase/server'
+import { CountUp, FadeDown, HoverZoom, Reveal, VoicePlayer } from '@/components/motion'
 import RevealedByCard, { type Viewer } from './RevealedByCard'
 import MeetingCard from './MeetingCard'
 import AccountSettings from './AccountSettings'
@@ -237,6 +238,12 @@ export default async function ProfilePage() {
           .prof-revealed-grid { grid-template-columns: 1fr; }
           .prof-main { padding: 4.5rem 0.5rem 7rem; }
         }
+        .prof-edit-btn { transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+        .prof-edit-btn:hover { background: rgba(201,168,76,0.12); box-shadow: 0 0 20px rgba(201,168,76,0.3); transform: translateY(-1px); }
+        @media (prefers-reduced-motion: reduce) {
+          .rose { animation: none; display: none; }
+          .prof-edit-btn, .prof-edit-btn:hover { transition: none; transform: none; }
+        }
       `}</style>
 
       {/* Falling roses */}
@@ -280,7 +287,7 @@ export default async function ProfilePage() {
       <main className="prof-main">
 
         {/* Header */}
-        <div className="prof-header">
+        <FadeDown className="prof-header">
           <div>
             <h1 className="prof-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, margin: '0 0 0.5rem' }}>
               My Profile
@@ -293,18 +300,18 @@ export default async function ProfilePage() {
               </span>
             </div>
           </div>
-          <Link href="/onboarding?edit=true"
+          <Link href="/onboarding?edit=true" className="prof-edit-btn"
             style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', padding: '0.5rem 1rem', border: `1px solid rgba(201,168,76,0.35)`, borderRadius: '6px', whiteSpace: 'nowrap' }}>
             ✏ Edit Profile
           </Link>
-        </div>
+        </FadeDown>
         <div style={{ height: '1px', background: `linear-gradient(to right, ${c.goldLight}, transparent)`, marginBottom: '1.5rem' }} />
 
         {/* Profile card */}
         <div style={{ background: 'rgba(30,65,115,0.55)', border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '2rem', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
 
           {/* Info section */}
-          <div className="prof-card-info" style={{ borderBottom: `1px solid ${c.borderSub}` }}>
+          <Reveal className="prof-card-info" style={{ borderBottom: `1px solid ${c.borderSub}` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
               <h2 style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.8rem', fontWeight: 600, color: c.ivory, margin: 0 }}>
                 {profile.full_name}
@@ -322,7 +329,7 @@ export default async function ProfilePage() {
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.2rem', color: c.ivoryDim, margin: 0 }}>
               {profile.age} yrs · {profile.gender} · {profile.city}, {profile.country}
             </p>
-          </div>
+          </Reveal>
 
           {/* Photos — back (non-face) + front (face/reveal) */}
           {(back1Url || back2Url || frontUrl) && (
@@ -330,9 +337,9 @@ export default async function ProfilePage() {
               {(back1Url || back2Url) && (
                 <div style={{ display: 'grid', gridTemplateColumns: back1Url && back2Url ? '1fr 1fr' : '1fr', gap: '2px' }}>
                   {[back1Url, back2Url].filter(Boolean).map((url, i) => (
-                    <div key={i} style={{ aspectRatio: '4/3', backgroundColor: c.navy, overflow: 'hidden' }}>
+                    <HoverZoom key={i} style={{ aspectRatio: '4/3', backgroundColor: c.navy }}>
                       <img src={url!} alt={`Photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </div>
+                    </HoverZoom>
                   ))}
                 </div>
               )}
@@ -341,9 +348,9 @@ export default async function ProfilePage() {
                   <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem' }}>
                     🤳 Reveal Photo (face)
                   </p>
-                  <div style={{ maxWidth: '320px', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${c.border}` }}>
+                  <HoverZoom style={{ maxWidth: '320px', borderRadius: '8px', border: `1px solid ${c.border}` }}>
                     <img src={frontUrl} alt="Face photo" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
-                  </div>
+                  </HoverZoom>
                   <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.82rem', color: c.sepia, margin: '0.5rem 0 0' }}>
                     Only shared with members you approve.
                   </p>
@@ -359,20 +366,20 @@ export default async function ProfilePage() {
               {nativeVoiceUrl && (
                 <div>
                   <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇮🇳 Mother Tongue</p>
-                  <audio controls src={nativeVoiceUrl} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
+                  <VoicePlayer src={nativeVoiceUrl} accent={c.goldLight} />
                 </div>
               )}
               {voiceUrl && (
                 <div>
                   <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇬🇧 English</p>
-                  <audio controls src={voiceUrl} preload="none" style={{ width: '100%', accentColor: c.goldLight }} />
+                  <VoicePlayer src={voiceUrl} accent={c.goldLight} />
                 </div>
               )}
             </div>
           )}
 
           {/* Personal Details */}
-          <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
+          <Reveal className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
             <ProfileSectionHeader icon="🧑" title="Personal Details" />
             <div>
               <ProfileDetailRow label="Mother Tongue"  value={profile.mother_tongue} />
@@ -383,11 +390,11 @@ export default async function ProfilePage() {
               <ProfileDetailRow label="Ethnicity"      value={p.ethnicity as string} />
               <ProfileDetailRow label="Zodiac Sign"    value={p.zodiac_sign as string} />
             </div>
-          </div>
+          </Reveal>
 
           {/* Lifestyle & Habits */}
           {[p.habit_smoking, p.habit_drinking, p.habit_drugs, p.habit_betting].some(Boolean) && (
-            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
+            <Reveal className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
               <ProfileSectionHeader icon="🌿" title="Lifestyle &amp; Habits" />
               <div>
                 <ProfileDetailRow label="🚬 Smoking"            value={p.habit_smoking as string} />
@@ -395,11 +402,11 @@ export default async function ProfilePage() {
                 <ProfileDetailRow label="💊 Recreational Drugs" value={p.habit_drugs as string} />
                 <ProfileDetailRow label="🎰 Gambling"           value={p.habit_betting as string} />
               </div>
-            </div>
+            </Reveal>
           )}
 
           {/* Education & Career */}
-          <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
+          <Reveal className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
             <ProfileSectionHeader icon="🎓" title="Education & Career" />
             <div>
               <ProfileDetailRow label="Education Level"          value={profile.education} />
@@ -410,11 +417,11 @@ export default async function ProfilePage() {
               <ProfileDetailRow label="Occupation"               value={profile.occupation} />
               <ProfileDetailRow label="Housing"                  value={p.housing as string} />
             </div>
-          </div>
+          </Reveal>
 
           {/* Looking For */}
           {prefFields.length > 0 && (
-            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
+            <Reveal className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
               <ProfileSectionHeader icon="💑" title="Looking For" />
               <div>
                 <ProfileDetailRow label="Gender"               value={p.pref_gender as string} />
@@ -432,12 +439,12 @@ export default async function ProfilePage() {
                   <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', color: c.ivory, margin: 0, lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>{otherPreferences}</p>
                 </div>
               )}
-            </div>
+            </Reveal>
           )}
 
           {/* Personality & Interests */}
           {personalityFields.length > 0 && (
-            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
+            <Reveal className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}` }}>
               <ProfileSectionHeader icon="✨" title="Personality & Interests" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
                 {personalityFields.map((f) => (
@@ -460,13 +467,13 @@ export default async function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Reveal>
           )}
         </div>
 
         {/* ID Document */}
         {(idCountry || idDocumentUrl) && (
-          <div style={{ marginBottom: '2rem' }}>
+          <Reveal style={{ marginBottom: '2rem' }}>
             <SectionHeader title="ID Document" count={0} />
             <div style={{ background: 'rgba(26,58,92,0.2)', border: `1px solid ${c.borderSub}`, borderRadius: '8px', padding: '1rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
               {idDocumentUrl && (
@@ -483,11 +490,11 @@ export default async function ProfilePage() {
                 </p>
               </div>
             </div>
-          </div>
+          </Reveal>
         )}
 
         {/* Who revealed your photo */}
-        <div style={{ marginBottom: '2rem' }}>
+        <Reveal style={{ marginBottom: '2rem' }}>
           <SectionHeader title="Who Revealed Your Photo" count={viewers.length} />
           {viewers.length === 0 ? (
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.sepia }}>
@@ -500,10 +507,10 @@ export default async function ProfilePage() {
               ))}
             </div>
           )}
-        </div>
+        </Reveal>
 
         {/* Video meetings */}
-        <div style={{ marginBottom: '2rem' }}>
+        <Reveal style={{ marginBottom: '2rem' }}>
           <SectionHeader title="Video Meetings" count={meetings.length} />
           {meetings.length === 0 ? (
             <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.sepia }}>
@@ -516,13 +523,15 @@ export default async function ProfilePage() {
               ))}
             </div>
           )}
-        </div>
+        </Reveal>
 
         {/* Account settings */}
-        <AccountSettings
-          plan={(profile as Record<string, unknown>).plan as string ?? 'free'}
-          memberId={(profile as Record<string, unknown>).member_id as string | null ?? null}
-        />
+        <Reveal>
+          <AccountSettings
+            plan={(profile as Record<string, unknown>).plan as string ?? 'free'}
+            memberId={(profile as Record<string, unknown>).member_id as string | null ?? null}
+          />
+        </Reveal>
 
       </main>
 
@@ -558,7 +567,7 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
       </p>
       {count > 0 && (
         <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#c9a84c', color: '#0d1f3c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700 }}>
-          {count}
+          <CountUp value={count} duration={1} />
         </span>
       )}
     </div>

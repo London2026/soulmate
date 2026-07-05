@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 
 const c = { navy: '#0d1f3c', gold: '#8b6914', sepia: '#5a6e82', textMid: '#2c4a6e', ivory: '#f5f0e6', border: 'rgba(13,31,60,0.18)' }
 
@@ -55,15 +56,21 @@ export default function PersonalityStep({ data, onChange }: Props) {
       <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-        {CATEGORIES.map(cat => (
-          <ChipField
+        {CATEGORIES.map((cat, i) => (
+          <motion.div
             key={cat.key}
-            icon={cat.icon}
-            label={cat.label}
-            placeholder={cat.placeholder}
-            value={data[cat.key as keyof PersonalityData] || ''}
-            onChange={v => onChange(cat.key, v)}
-          />
+            initial={{ opacity: 0, scale: 0.94, y: 14 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.15 + i * 0.08 }}
+          >
+            <ChipField
+              icon={cat.icon}
+              label={cat.label}
+              placeholder={cat.placeholder}
+              value={data[cat.key as keyof PersonalityData] || ''}
+              onChange={v => onChange(cat.key, v)}
+            />
+          </motion.div>
         ))}
       </div>
     </div>

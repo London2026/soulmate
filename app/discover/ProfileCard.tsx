@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { VoicePlayer } from '@/components/motion'
 import { revealPhoto } from './actions'
 import { requestVideoMeeting } from '@/app/profile/actions'
 import { maskName, firstNameOnly } from '@/lib/maskName'
@@ -229,13 +231,13 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
             {profile.voice_native_url && (
               <div>
                 <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇮🇳 Mother Tongue</p>
-                <audio controls src={profile.voice_native_url} preload="none" style={{ width: '100%', borderRadius: '8px' }} />
+                <VoicePlayer src={profile.voice_native_url} accent={c.goldLight} />
               </div>
             )}
             {profile.voice_url && (
               <div>
                 <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.5rem', opacity: 0.85 }}>🇬🇧 English</p>
-                <audio controls src={profile.voice_url} preload="none" style={{ width: '100%', borderRadius: '8px' }} />
+                <VoicePlayer src={profile.voice_url} accent={c.goldLight} />
               </div>
             )}
           </div>
@@ -353,7 +355,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
             <div style={{ marginBottom: '1rem' }}>
               <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: c.goldLight, margin: '0 0 0.75rem', textAlign: 'center' }}>✦ Reveal Photo</p>
               <div style={{ borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4' }}>
-                <img src={frontUrl} alt={profile.full_name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <motion.img
+                  src={frontUrl} alt={profile.full_name}
+                  initial={{ filter: 'blur(26px)', scale: 1.08, opacity: 0.75 }}
+                  animate={{ filter: 'blur(0px)', scale: 1, opacity: 1 }}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
               {revealMsg && <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, textAlign: 'center', margin: '0.75rem 0 0', padding: '0.65rem', background: 'rgba(201,168,76,0.06)', borderRadius: '4px' }}>✓ {revealMsg}</p>}
             </div>
@@ -364,10 +371,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
                 Face photo is hidden. Revealing notifies {firstNameOnly(profile.full_name)} instantly.
               </p>
               {revealError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{revealError}</p>}
-              <button onClick={handleReveal} disabled={revealing}
-                style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: revealing ? 'default' : 'pointer', borderRadius: '6px', transition: 'all 0.2s', opacity: revealing ? 0.6 : 1 }}>
+              <motion.button onClick={handleReveal} disabled={revealing}
+                whileHover={revealing ? undefined : { backgroundColor: 'rgba(201,168,76,0.1)', boxShadow: '0 0 22px rgba(201,168,76,0.35)' }}
+                whileTap={revealing ? undefined : { scale: 0.98 }}
+                style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: revealing ? 'default' : 'pointer', borderRadius: '6px', opacity: revealing ? 0.6 : 1 }}>
                 {revealing ? 'Revealing…' : '🔓 Reveal Photo'}
-              </button>
+              </motion.button>
             </div>
           )}
 
@@ -403,10 +412,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
                 <textarea value={meetMsg} onChange={e => setMeetMsg(e.target.value)} rows={2} placeholder="Add a personal message (optional)…"
                   style={{ padding: '0.6rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: c.ivory, fontFamily: '"Cormorant Garamond", serif', fontSize: '0.9rem', borderRadius: '6px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
                 {meetError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: 0 }}>{meetError}</p>}
-                <button onClick={handleMeetRequest} disabled={requesting}
-                  style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: requesting ? 'default' : 'pointer', borderRadius: '6px', transition: 'all 0.2s', opacity: requesting ? 0.6 : 1 }}>
+                <motion.button onClick={handleMeetRequest} disabled={requesting}
+                  whileHover={requesting ? undefined : { backgroundColor: 'rgba(201,168,76,0.1)', boxShadow: '0 0 22px rgba(201,168,76,0.35)' }}
+                  whileTap={requesting ? undefined : { scale: 0.98 }}
+                  style={{ width: '100%', padding: '0.75rem', background: 'transparent', border: `1px solid ${c.goldLight}`, color: c.goldLight, fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: requesting ? 'default' : 'pointer', borderRadius: '6px', opacity: requesting ? 0.6 : 1 }}>
                   {requesting ? 'Sending…' : '📅 Send Meeting Request'}
-                </button>
+                </motion.button>
                 <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.78rem', color: c.ivoryDim, margin: 0, textAlign: 'center' }}>
                   {meetingsLeft} meeting request{meetingsLeft !== 1 ? 's' : ''} remaining
                 </p>

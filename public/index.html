@@ -158,7 +158,7 @@
     font-weight: 500;
   }
 
-  .nav-cta:hover { background: var(--warm-brown); }
+  .nav-cta:hover { background: var(--warm-brown); box-shadow: 0 0 20px rgba(201,168,76,0.5); }
 
   .nav-signin-btn {
     font-family: 'Raleway', sans-serif;
@@ -332,6 +332,8 @@
   .btn-primary:hover {
     background: transparent;
     color: var(--burgundy);
+    box-shadow: 0 0 28px rgba(201,168,76,0.45);
+    transform: translateY(-2px);
   }
 
   .btn-outline {
@@ -353,6 +355,8 @@
   .btn-outline:hover {
     background: var(--burgundy);
     color: var(--cream);
+    box-shadow: 0 0 28px rgba(201,168,76,0.45);
+    transform: translateY(-2px);
   }
 
   .scroll-hint {
@@ -1847,6 +1851,7 @@
   .photo-reveal-btn:hover {
     background: rgba(139,111,71,0.1);
     color: var(--deep-brown);
+    box-shadow: 0 0 18px rgba(201,168,76,0.35);
   }
 
   /* HOW IT WORKS VISUAL */
@@ -2140,6 +2145,17 @@
     100% { transform: scale(1)    translate(0%,   0%); }
   }
   /* Mobile: scale-only Ken Burns — translate causes scroll bleed on iOS */
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .reveal { opacity: 1; transform: none; }
+  }
+
   @keyframes kenBurnsMobile {
     0%   { transform: scale(1); }
     50%  { transform: scale(1.07); }
@@ -2524,38 +2540,38 @@
       </div>
     </div>
 
-    <div class="steps-flow reveal" style="margin-top: 3rem;">
-      <div class="step-item">
+    <div class="steps-flow" style="margin-top: 3rem;">
+      <div class="step-item reveal">
         <div class="step-number">01</div>
         <div class="step-icon">📝</div>
         <div class="step-title">Basic Information</div>
         <p class="step-desc">Name, age, religion, sub-religion, location, education, and what you're looking for in a partner.</p>
       </div>
-      <div class="step-item">
+      <div class="step-item reveal">
         <div class="step-number">02</div>
         <div class="step-icon">🎙️</div>
         <div class="step-title">Voice Introduction</div>
         <p class="step-desc">Record a 60–120 second audio introduction. This is what others hear first — before any photos.</p>
       </div>
-      <div class="step-item">
+      <div class="step-item reveal">
         <div class="step-number">03</div>
         <div class="step-icon">📷</div>
         <div class="step-title">Back-Side Photos</div>
         <p class="step-desc">Upload two back-side photos so others can get a sense of your presence. Your face remains entirely private until you choose to reveal it.</p>
       </div>
-      <div class="step-item">
+      <div class="step-item reveal">
         <div class="step-number">04</div>
         <div class="step-icon">🌟</div>
         <div class="step-title">Personality Section</div>
         <p class="step-desc">Share your favourite reels, YouTube channels, web series, travel destinations, foods, and AI tools.</p>
       </div>
-      <div class="step-item">
+      <div class="step-item reveal">
         <div class="step-number">05</div>
         <div class="step-icon">💞</div>
         <div class="step-title">Mutual Interest</div>
         <p class="step-desc">Browse profiles, listen to voices, explore personalities. When ready, request a photo reveal or meeting.</p>
       </div>
-      <div class="step-item">
+      <div class="step-item reveal">
         <div class="step-number">06</div>
         <div class="step-icon">🎥</div>
         <div class="step-title">Request a Video Meeting</div>
@@ -2776,10 +2792,10 @@
       <p class="section-sub" style="color: rgba(245,239,224,0.6);">Pay for meaningful meetings, not idle swiping.</p>
     </div>
 
-    <div class="pricing-grid reveal">
+    <div class="pricing-grid">
 
       <!-- FREE -->
-      <div class="pricing-card">
+      <div class="pricing-card reveal">
         <div class="pricing-name">Free</div>
         <div class="pricing-price"><sup>$</sup>0</div>
         <div class="pricing-period">forever free</div>
@@ -2795,7 +2811,7 @@
       </div>
 
       <!-- STARTER -->
-      <div class="pricing-card" style="border-color: rgba(212,168,67,0.55);">
+      <div class="pricing-card reveal" style="border-color: rgba(212,168,67,0.55);">
         <div class="pricing-name">Starter</div>
         <div class="pricing-price"><sup>$</sup>6</div>
         <div class="pricing-period">per month</div>
@@ -2811,7 +2827,7 @@
       </div>
 
       <!-- STANDARD -->
-      <div class="pricing-card featured">
+      <div class="pricing-card featured reveal">
         <div class="pricing-badge">Most Popular</div>
         <div class="pricing-name">Standard</div>
         <div class="pricing-price"><sup>$</sup>9</div>

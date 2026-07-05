@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { AnimatePresence, motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import AboutStep from './steps/AboutStep'
 import BackgroundStep from './steps/BackgroundStep'
@@ -93,8 +94,15 @@ export default function OnboardingPageWrapper() {
   )
 }
 
+const stepVariants = {
+  enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
+  center: { x: 0, opacity: 1, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } },
+  exit: (dir: number) => ({ x: dir > 0 ? -48 : 48, opacity: 0, transition: { duration: 0.3, ease: 'easeIn' as const } }),
+}
+
 function OnboardingPage() {
   const [step, setStep] = useState(0)
+  const [direction, setDirection] = useState(1)
   const [ready, setReady] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -280,7 +288,7 @@ function OnboardingPage() {
     const msg = validate()
     if (msg) { setError(msg); return }
     setError('')
-    if (step < 7) { setStep(s => s + 1); return }
+    if (step < 7) { setDirection(1); setStep(s => s + 1); return }
 
     setSaving(true)
     try {
@@ -473,6 +481,20 @@ function OnboardingPage() {
         .ob-btn-back { padding: 0.9rem 2rem; background: transparent; border: 1px solid rgba(13,31,60,0.2); color: #5a6e82; font-family: Raleway, sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-radius: 4px; white-space: nowrap; }
         .ob-btn-next { padding: 0.9rem 2.25rem; border: none; font-family: Raleway, sans-serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 4px; transition: background 0.2s; white-space: nowrap; }
         .ob-step-h2 { font-family: var(--font-playfair, "Playfair Display", serif); font-size: 1.9rem; font-weight: 600; }
+        @keyframes obFieldIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .ob-step-anim > div > * { opacity: 0; animation: obFieldIn 0.55s ease forwards; }
+        .ob-step-anim > div > *:nth-child(1)  { animation-delay: 0.05s; }
+        .ob-step-anim > div > *:nth-child(2)  { animation-delay: 0.12s; }
+        .ob-step-anim > div > *:nth-child(3)  { animation-delay: 0.19s; }
+        .ob-step-anim > div > *:nth-child(4)  { animation-delay: 0.26s; }
+        .ob-step-anim > div > *:nth-child(5)  { animation-delay: 0.33s; }
+        .ob-step-anim > div > *:nth-child(6)  { animation-delay: 0.40s; }
+        .ob-step-anim > div > *:nth-child(7)  { animation-delay: 0.47s; }
+        .ob-step-anim > div > *:nth-child(8)  { animation-delay: 0.54s; }
+        .ob-step-anim > div > *:nth-child(n+9){ animation-delay: 0.6s; }
+        @media (prefers-reduced-motion: reduce) {
+          .ob-step-anim > div > * { animation: none; opacity: 1; }
+        }
         @media (max-width: 640px) {
           .ob-page { justify-content: flex-start !important; padding-top: 1.25rem !important; padding-bottom: 1.5rem !important; }
           .ob-logo { width: 80px !important; height: 80px !important; }
@@ -514,11 +536,21 @@ function OnboardingPage() {
           </div>
         </div>
         <div style={{ height: '3px', background: 'rgba(13,31,60,0.08)', borderRadius: '2px' }}>
-          <div style={{ height: '100%', background: c.gold, borderRadius: '2px', width: `${progress}%`, transition: 'width 0.5s ease' }} />
+          <motion.div
+            style={{ height: '100%', background: c.gold, borderRadius: '2px' }}
+            initial={false}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: 'spring', stiffness: 90, damping: 20 }}
+          />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.4rem' }}>
           {STEPS.map((_, i) => (
-            <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: i <= step ? c.gold : 'rgba(13,31,60,0.12)', transition: 'background 0.3s' }} />
+            <motion.div key={i}
+              style={{ width: '6px', height: '6px', borderRadius: '50%' }}
+              initial={false}
+              animate={{ background: i <= step ? c.gold : 'rgba(13,31,60,0.12)', scale: i === step ? 1.5 : 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+            />
           ))}
         </div>
       </div>
@@ -526,7 +558,10 @@ function OnboardingPage() {
       {/* Card */}
       <div className="ob-card">
 
-        <div className="ob-card-inner">
+        <div className="ob-card-inner" style={{ overflow: 'hidden' }}>
+          <AnimatePresence mode="wait" custom={direction} initial={false}>
+          <motion.div key={step} className="ob-step-anim" custom={direction}
+            variants={stepVariants} initial="enter" animate="center" exit="exit">
           {step === 0 && <AboutStep data={{ ...draft }} onChange={change} />}
           {step === 1 && <BackgroundStep data={{ religion: draft.religion, subReligion: draft.subReligion, motherTongue: draft.motherTongue, education: draft.education, university: draft.university, educationSubject: draft.educationSubject, otherQualifications: draft.otherQualifications, employmentStatus: draft.employmentStatus, occupation: draft.occupation, housing: draft.housing, maritalStatus: draft.maritalStatus, hasKids: draft.hasKids }} onChange={change} />}
           {step === 2 && <PreferencesStep data={draft} onChange={change} />}
@@ -540,11 +575,14 @@ function OnboardingPage() {
           {step === 5 && <PersonalityStep data={{ favReels: draft.favReels, favYoutube: draft.favYoutube, favWebSeries: draft.favWebSeries, favTravel: draft.favTravel, favFoods: draft.favFoods, favAiTools: draft.favAiTools, hobby: draft.hobby }} onChange={change} />}
           {step === 6 && <HabitsStep data={{ habitSmoking: draft.habitSmoking, habitDrinking: draft.habitDrinking, habitDrugs: draft.habitDrugs, habitBetting: draft.habitBetting }} onChange={change} />}
           {step === 7 && <IdVerificationStep idCountry={draft.idCountry} idFile={idFile} onIdChange={(country, file) => { change('idCountry', country); setIdFile(file) }} />}
+          </motion.div>
+          </AnimatePresence>
 
           {error && (
-            <div style={{ marginTop: '1rem', background: 'rgba(158,42,43,0.07)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '4px', padding: '0.65rem 0.9rem', color: c.rose, fontSize: '0.9rem', fontFamily: '"Cormorant Garamond", serif', textAlign: 'center' }}>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+              style={{ marginTop: '1rem', background: 'rgba(158,42,43,0.07)', border: '1px solid rgba(158,42,43,0.2)', borderRadius: '4px', padding: '0.65rem 0.9rem', color: c.rose, fontSize: '0.9rem', fontFamily: '"Cormorant Garamond", serif', textAlign: 'center' }}>
               {error}
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -554,14 +592,17 @@ function OnboardingPage() {
           {/* Row 1 — Back (left) | Continue (right) */}
           <div style={{ display: 'flex', justifyContent: step > 0 ? 'space-between' : 'flex-end', width: '100%' }}>
             {step > 0 && (
-              <button onClick={() => { setStep(s => s - 1); setError('') }} disabled={saving} className="ob-btn-back">
+              <motion.button onClick={() => { setDirection(-1); setStep(s => s - 1); setError('') }} disabled={saving} className="ob-btn-back"
+                whileHover={{ y: -1, borderColor: 'rgba(13,31,60,0.45)' }} whileTap={{ scale: 0.97 }}>
                 ← Back
-              </button>
+              </motion.button>
             )}
-            <button onClick={handleNext} disabled={saving} className="ob-btn-next"
+            <motion.button onClick={handleNext} disabled={saving} className="ob-btn-next"
+              whileHover={saving ? undefined : { y: -1, boxShadow: '0 0 22px rgba(201,168,76,0.45)' }}
+              whileTap={saving ? undefined : { scale: 0.97 }}
               style={{ background: saving ? c.navyMid : c.navy, color: c.goldLight, cursor: saving ? 'default' : 'pointer' }}>
               {saving ? 'Saving…' : step === 6 ? (isEdit ? 'Save Changes ✓' : 'Complete Profile ✓') : 'Continue →'}
-            </button>
+            </motion.button>
           </div>
 
           {/* Row 2 — Save | Save & Exit centred */}
@@ -583,12 +624,18 @@ function OnboardingPage() {
 
           {/* Row 3 — auto-save status + note */}
           <div style={{ textAlign: 'center' }}>
+            <AnimatePresence mode="wait">
             {autoSaveStatus === 'saving' && (
-              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', color: c.sepia, margin: '0 0 0.3rem', letterSpacing: '0.06em' }}>↻ Auto-saving…</p>
+              <motion.p key="saving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', color: c.sepia, margin: '0 0 0.3rem', letterSpacing: '0.06em' }}>↻ Auto-saving…</motion.p>
             )}
             {autoSaveStatus === 'saved' && (
-              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', color: '#16a34a', margin: '0 0 0.3rem', letterSpacing: '0.06em' }}>✓ Progress saved</p>
+              <motion.p key="saved"
+                initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 16 }}
+                style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', color: '#16a34a', margin: '0 0 0.3rem', letterSpacing: '0.06em' }}>✓ Progress saved</motion.p>
             )}
+            </AnimatePresence>
             <p style={{ margin: 0, fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', color: '#7a8a9a', lineHeight: 1.55 }}>
               Your progress is saved automatically as you type. Use <strong>Save Progress</strong> to save manually, or <strong>Save &amp; Exit</strong> to continue later — simply log back in to pick up exactly where you left off.
             </p>
