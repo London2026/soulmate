@@ -301,7 +301,7 @@ export default async function ProfilePage() {
         <div style={{ height: '1px', background: `linear-gradient(to right, ${c.goldLight}, transparent)`, marginBottom: '1.5rem' }} />
 
         {/* Profile card */}
-        <div style={{ background: 'rgba(26,58,92,0.25)', border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '2rem', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
+        <div style={{ background: 'rgba(30,65,115,0.55)', border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden', marginBottom: '2rem', boxShadow: '0 8px 40px rgba(0,0,0,0.4)' }}>
 
           {/* Info section */}
           <div className="prof-card-info" style={{ borderBottom: `1px solid ${c.borderSub}` }}>
@@ -372,7 +372,7 @@ export default async function ProfilePage() {
           )}
 
           {/* Personal Details */}
-          <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
+          <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
             <ProfileSectionHeader icon="🧑" title="Personal Details" />
             <div>
               <ProfileDetailRow label="Mother Tongue"  value={profile.mother_tongue} />
@@ -414,7 +414,7 @@ export default async function ProfilePage() {
 
           {/* Looking For */}
           {prefFields.length > 0 && (
-            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'rgba(26,45,78,0.4)' }}>
+            <div className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
               <ProfileSectionHeader icon="💑" title="Looking For" />
               <div>
                 <ProfileDetailRow label="Gender"               value={p.pref_gender as string} />
