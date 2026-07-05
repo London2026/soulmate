@@ -2154,6 +2154,77 @@
     100% { transform: scale(1)    translate(0%,   0%); }
   }
   /* Mobile: scale-only Ken Burns — translate causes scroll bleed on iOS */
+  /* ── MOTION GRAPHICS ── */
+
+  /* Floating gold sparkles in the hero */
+  .hero-sparkles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .hero-sparkles span {
+    position: absolute;
+    bottom: -30px;
+    color: var(--light-gold);
+    opacity: 0;
+    text-shadow: 0 0 14px rgba(212,168,67,0.8);
+    animation: sparkleFloat var(--dur) linear var(--delay) infinite;
+    will-change: transform;
+    user-select: none;
+  }
+
+  @keyframes sparkleFloat {
+    0%   { transform: translateY(0) scale(0.7) rotate(0deg); opacity: 0; }
+    12%  { opacity: var(--op); }
+    75%  { opacity: var(--op); }
+    100% { transform: translateY(-88vh) scale(1.15) rotate(30deg); opacity: 0; }
+  }
+
+  /* Gently beating ornament hearts */
+  .ornament-heart {
+    display: inline-block;
+    animation: heartbeat 2.8s ease-in-out infinite;
+  }
+
+  /* Periodic gold sheen sweeping across primary CTAs */
+  .btn-primary, .nav-cta, .mobile-menu-cta {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before, .nav-cta::before, .mobile-menu-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(232,200,118,0.45), transparent);
+    transform: skewX(-20deg);
+    animation: ctaSheen 5.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .nav-cta::before { animation-delay: 1.5s; }
+
+  @keyframes ctaSheen {
+    0%, 62% { transform: translateX(0) skewX(-20deg); }
+    82%, 100% { transform: translateX(450%) skewX(-20deg); }
+  }
+
+  /* Soft glow pulse on the Most Popular pricing badge */
+  .pricing-badge {
+    animation: badgeGlow 3.2s ease-in-out infinite;
+  }
+
+  @keyframes badgeGlow {
+    0%, 100% { box-shadow: 0 0 0 rgba(212,168,67,0); }
+    50% { box-shadow: 0 0 20px rgba(212,168,67,0.75); }
+  }
+
   /* Respect users who prefer reduced motion */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -2300,6 +2371,20 @@
 <header class="hero">
   <div class="hero-bg-wrap"><img class="hero-bg-img-el" src="/banduraa-hero-bg.png" alt=""></div>
   <div class="hero-bg-overlay"></div>
+  <div class="hero-sparkles" aria-hidden="true">
+    <span style="left:6%;  font-size:0.8rem; --dur:14s; --delay:0s;    --op:0.45;">✦</span>
+    <span style="left:14%; font-size:0.55rem;--dur:18s; --delay:4s;    --op:0.35;">✦</span>
+    <span style="left:23%; font-size:1rem;   --dur:12s; --delay:7s;    --op:0.5;">✦</span>
+    <span style="left:34%; font-size:0.6rem; --dur:20s; --delay:2s;    --op:0.3;">✦</span>
+    <span style="left:45%; font-size:0.75rem;--dur:15s; --delay:9s;    --op:0.4;">✦</span>
+    <span style="left:55%; font-size:0.5rem; --dur:19s; --delay:5.5s;  --op:0.35;">✦</span>
+    <span style="left:64%; font-size:0.9rem; --dur:13s; --delay:1s;    --op:0.5;">✦</span>
+    <span style="left:73%; font-size:0.6rem; --dur:17s; --delay:8s;    --op:0.3;">✦</span>
+    <span style="left:82%; font-size:0.8rem; --dur:14s; --delay:3.5s;  --op:0.45;">✦</span>
+    <span style="left:91%; font-size:0.55rem;--dur:21s; --delay:6.5s;  --op:0.35;">✦</span>
+    <span style="left:38%; font-size:0.45rem;--dur:16s; --delay:11s;   --op:0.3;">✦</span>
+    <span style="left:68%; font-size:0.5rem; --dur:18s; --delay:12.5s; --op:0.3;">✦</span>
+  </div>
   <h1>Bound by Destiny, <em>United in Love</em></h1>
 
   <p class="hero-tagline">✦ Voice Before Face · Personality Before Photos · Privacy First ✦</p>
