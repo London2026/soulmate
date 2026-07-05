@@ -96,8 +96,8 @@ function splitChips(value: string): string[] {
 function SectionHeader({ icon, title }: { icon: string; title: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
-      <span style={{ fontSize: '0.95rem', opacity: 0.8 }}>{icon}</span>
-      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.goldLight }}>{title}</span>
+      <span style={{ fontSize: '1.2rem' }}>{icon}</span>
+      <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '1.1rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#f5f0e6' }}>{title}</span>
     </div>
   )
 }
