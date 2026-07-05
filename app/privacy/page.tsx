@@ -56,7 +56,8 @@ export default function PrivacyPage() {
             'Face/reveal photo (hidden until you choose to reveal)',
             'Voice introduction recording',
             'Personality and interest information',
-            'Subscription and billing information (processed by our payment provider)',
+            'Subscription information (current plan, plan start date — displayed to you on your Subscription page)',
+            'Referral data (your unique referral code and records of members who joined via your referral link, used to calculate referral credits)',
             'Photo reveal history (records of which members have revealed your photo)',
             'Meeting feedback (voluntary star rating and optional note submitted after a video meeting)',
             'Block records (when you block another member)',
@@ -73,7 +74,8 @@ export default function PrivacyPage() {
             'Facilitate photo reveals and video meeting requests',
             'Order your Discover feed based on compatibility with your stated partner preferences',
             'Show you a list of members who have revealed your photo (visible only to you)',
-            'Process subscription payments and manage your subscription plan',
+            'Process subscription payments and display your current plan, billing cycle, and next renewal date on your personal Subscription page',
+            'Track referrals and award referral credits (free plan extensions) when a member you referred completes their profile and joins the platform',
             'Send you service notifications including meeting requests, mutual shortlists, and account alerts',
             'Send you optional engagement emails such as weekly activity digests and post-meeting feedback requests (you may opt out at any time)',
             'Use anonymised meeting feedback to improve matchmaking quality and identify patterns of inappropriate conduct',
@@ -84,6 +86,12 @@ export default function PrivacyPage() {
         </ul>
         <p style={p}>
           We do not sell your personal data to third parties. We do not use your data for advertising purposes.
+        </p>
+        <p style={p}>
+          <strong style={{ color: c.ivory }}>Subscription visibility.</strong> Your current plan, plan start date, and calculated next renewal date are shown on your personal Subscription page. This information is visible only to you and is never shared with other members.
+        </p>
+        <p style={p}>
+          <strong style={{ color: c.ivory }}>Referral programme.</strong> Each member receives a unique referral code. When someone joins Banduraa using your referral link, we record the relationship and award you referral credits (free plan extensions). Referral credit balances are visible to you in your Discover feed. The identity of referred members is not disclosed to the referrer beyond an aggregated count.
         </p>
 
         <h2 style={h2}>4. Your Face Photo & Reveal History</h2>
