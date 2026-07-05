@@ -868,8 +868,14 @@
 
   .oliver-card-top .profile-avatar { display: none; }
 
+  .oliver-bg-img img {
+    filter: brightness(1.25) saturate(1.35) contrast(1.05);
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+
   .james-card-top {
     background: url('/members/james-t.jpg') center/cover no-repeat !important;
+    filter: brightness(1.2) saturate(1.3);
   }
 
   .james-card-top::after {
@@ -890,6 +896,7 @@
 
   .sophie-card-top {
     background: url('/members/sophie-b.jpg') center/cover no-repeat !important;
+    filter: brightness(1.2) saturate(1.3);
   }
 
   .sophie-card-top::after {
