@@ -65,11 +65,20 @@ export default async function DiscoverPage() {
     .single()
 
   // Which profiles has the current user already revealed?
-  const [{ data: myReveals }, { data: myShortlist }, { count: referralCount }] = await Promise.all([
+  const [{ data: myReveals }, { data: myShortlist }, { count: referralCount }, { data: revealedByRows }] = await Promise.all([
     supabase.from('photo_reveals').select('viewed_id').eq('viewer_id', user.id),
     supabase.from('shortlist').select('profile_id').eq('user_id', user.id),
     supabase.from('referrals').select('*', { count: 'exact', head: true }).eq('referrer_id', user.id),
+    supabase.from('photo_reveals').select('viewer_id, revealed_at').eq('viewed_id', user.id).order('revealed_at', { ascending: false }).limit(50),
   ])
+
+  // Fetch profiles of members who revealed my photo
+  const revealViewerIds = [...new Set((revealedByRows ?? []).map(r => r.viewer_id as string))]
+  let revealViewerData: { id: string; full_name: string | null; member_id: string | null; back_photo_1_path: string | null; city: string | null; religion: string | null }[] = []
+  if (revealViewerIds.length > 0) {
+    const { data } = await supabase.from('profiles').select('id, full_name, member_id, back_photo_1_path, city, religion').in('id', revealViewerIds)
+    revealViewerData = (data ?? []) as typeof revealViewerData
+  }
 
   const revealedSet   = new Set((myReveals ?? []).map((r) => r.viewed_id as string))
   const shortlistedIds = (myShortlist ?? []).map((r) => r.profile_id as string)
@@ -103,6 +112,9 @@ export default async function DiscoverPage() {
   if (myRow?.front_photo_path) allPaths.push(myRow.front_photo_path)
   const myNativePath = (myRow as Record<string, unknown>)?.voice_native_path as string | null
   if (myNativePath) allPaths.push(myNativePath)
+  for (const v of revealViewerData) {
+    if (v.back_photo_1_path) allPaths.push(v.back_photo_1_path)
+  }
 
   // Batch sign all URLs in one call
   const urlMap: Record<string, string> = {}
@@ -226,6 +238,22 @@ export default async function DiscoverPage() {
     pref_ethnicity: (myRow as Record<string, unknown>).pref_ethnicity as string ?? null,
   } : null
 
+  // Build "who revealed my photo" list
+  const revealViewerMap = Object.fromEntries(revealViewerData.map(v => [v.id, v]))
+  const revealedBy = (revealedByRows ?? []).map(r => {
+    const vid = r.viewer_id as string
+    const viewer = revealViewerMap[vid]
+    return {
+      viewer_id: vid,
+      revealed_at: r.revealed_at as string,
+      full_name: viewer?.full_name ?? null,
+      member_id: (viewer as Record<string, unknown>)?.member_id as string ?? null,
+      city: viewer?.city ?? null,
+      religion: viewer?.religion ?? null,
+      thumbnail_url: viewer?.back_photo_1_path ? (urlMap[viewer.back_photo_1_path] ?? null) : null,
+    }
+  })
+
   // Inbox: notifications + pending meeting requests received
   const [notifRes, pendingMeetingsRes] = await Promise.all([
     supabase
@@ -308,6 +336,7 @@ export default async function DiscoverPage() {
           myMemberId={(me as Record<string, unknown>)?.member_id as string ?? null}
           referralCredits={(me as Record<string, unknown>)?.referral_credits as number ?? 0}
           referralCount={referralCount ?? 0}
+          revealedBy={revealedBy}
         />
       </main>
     </div>

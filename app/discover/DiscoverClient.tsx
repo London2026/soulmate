@@ -53,15 +53,50 @@ function isPositiveReason(reason: string) {
   return !NEGATIVE_SIGNALS.some(s => lower.includes(s))
 }
 
+interface RevealedByEntry {
+  viewer_id: string; revealed_at: string
+  full_name: string | null; member_id: string | null
+  city: string | null; religion: string | null; thumbnail_url: string | null
+}
+
+function computeMatchScore(profile: ProfileData, myProfile: ProfileData): number {
+  let score = 0
+  const mp = myProfile as unknown as Record<string, unknown>
+  const p = profile as unknown as Record<string, unknown>
+
+  if (mp.pref_gender) {
+    if (p.gender === mp.pref_gender) score += 50
+    else score -= 20
+  }
+  if (mp.pref_age_min || mp.pref_age_max) {
+    const age = profile.age
+    const min = (mp.pref_age_min as number) ?? 0
+    const max = (mp.pref_age_max as number) ?? 999
+    if (age >= min && age <= max) score += 20
+    else if (age >= min - 3 && age <= max + 3) score += 8
+    else score -= 10
+  }
+  if (mp.pref_religion && p.religion === mp.pref_religion) score += 15
+  if (mp.pref_sub_religion && p.sub_religion === mp.pref_sub_religion) score += 8
+  if (mp.pref_location) {
+    const loc = (mp.pref_location as string).toLowerCase()
+    if ((profile.city ?? '').toLowerCase().includes(loc) || (profile.country ?? '').toLowerCase().includes(loc)) score += 10
+  }
+  if (mp.pref_ethnicity && p.ethnicity === mp.pref_ethnicity) score += 7
+
+  return score
+}
+
 export default function DiscoverClient({
   profiles, canReveal, canMeet, meetingsLeft, myProfile,
   inboxNotifications, inboxMeetings, unreadCount, shortlistedIds,
-  myMemberId, referralCredits, referralCount,
+  myMemberId, referralCredits, referralCount, revealedBy,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
   inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
   shortlistedIds: string[]
   myMemberId: string | null; referralCredits: number; referralCount: number
+  revealedBy: RevealedByEntry[]
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -82,6 +117,8 @@ export default function DiscoverClient({
   const [fOccupation, setFOccupation] = useState('')
   const [selected, setSelected] = useState<ProfileData | null>(null)
   const [showInbox, setShowInbox] = useState(false)
+  const [showReveals, setShowReveals] = useState(false)
+  const [sortMode, setSortMode] = useState<'recent' | 'match'>('recent')
   const [showMyProfile, setShowMyProfile] = useState(false)
   const [notifications, setNotifications] = useState(inboxNotifications)
   const [meetings, setMeetings] = useState(inboxMeetings)
@@ -165,8 +202,11 @@ export default function DiscoverClient({
     if (fOccupation) list = list.filter(p =>
       p.occupation?.toLowerCase().includes(fOccupation.toLowerCase())
     )
+    if (sortMode === 'match' && myProfile) {
+      list = [...list].sort((a, b) => computeMatchScore(b, myProfile) - computeMatchScore(a, myProfile))
+    }
     return list
-  }, [profiles, shortlist, showShortlistOnly, search, fGender, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation])
+  }, [profiles, shortlist, showShortlistOnly, search, fGender, fLocation, fAgeMin, fAgeMax, fReligion, fEducation, fOccupation, sortMode, myProfile])
 
   async function handleAiMatch() {
     setAiLoading(true); setAiError(''); setAiMatches(null)
@@ -285,23 +325,37 @@ export default function DiscoverClient({
         @media (max-width: 600px) { .disc-h1 { font-size: 1.5rem; } }
       `}</style>
 
-      {/* ── 0. Heading row + Inbox ── */}
+      {/* ── 0. Heading row + Reveals + Inbox ── */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.5rem' }}>
         <h1 className="disc-h1" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: '#f5f0e6', margin: 0 }}>
           Discover
         </h1>
-        <button onClick={() => setShowInbox(v => !v)}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#f5f0e6', fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-          className="disc-h1">
-          Inbox
-          {liveUnread > 0 && (
-            <span style={{ background: '#c9a84c', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center', verticalAlign: 'middle' }}>
-              {liveUnread}
-            </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          {revealedBy.length > 0 && (
+            <button onClick={() => { setShowReveals(v => !v); if (showInbox) setShowInbox(false) }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: showReveals ? '#c9a84c' : '#f5f0e6', fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+              className="disc-h1">
+              Reveals
+              <span style={{ background: showReveals ? 'rgba(201,168,76,0.3)' : 'rgba(201,168,76,0.15)', color: '#c9a84c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center', verticalAlign: 'middle' }}>
+                {revealedBy.length}
+              </span>
+            </button>
           )}
-        </button>
+          <button onClick={() => { setShowInbox(v => !v); if (showReveals) setShowReveals(false) }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#f5f0e6', fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+            className="disc-h1">
+            Inbox
+            {liveUnread > 0 && (
+              <span style={{ background: '#c9a84c', color: '#0d1f3c', fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 800, borderRadius: '20px', padding: '0.1rem 0.5rem', minWidth: '18px', textAlign: 'center', verticalAlign: 'middle' }}>
+                {liveUnread}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
       <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)', marginBottom: '1.5rem' }} />
+
+      {showReveals && <RevealedByPanel revealedBy={revealedBy} />}
 
       {showInbox && (
         <InboxPanel
@@ -506,12 +560,24 @@ export default function DiscoverClient({
         <EmptyState />
       ) : (
       <>
-        {/* ── 5. Profile count + shortlist toggle ── */}
+        {/* ── 5. Profile count + sort + shortlist toggle ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: c.sepia, letterSpacing: '0.08em', margin: 0 }}>
-            {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{(search || activeFilterCount > 0 || showShortlistOnly) ? ' found' : ''}
-            {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: c.sepia, letterSpacing: '0.08em', margin: 0 }}>
+              {filtered.length} {filtered.length === 1 ? 'profile' : 'profiles'}{(search || activeFilterCount > 0 || showShortlistOnly) ? ' found' : ''}
+              {activeFilterCount > 0 && <span style={{ color: c.gold }}> · {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>}
+            </p>
+            {myProfile && (
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '2px', border: '1px solid rgba(201,168,76,0.18)' }}>
+                {(['recent', 'match'] as const).map(mode => (
+                  <button key={mode} onClick={() => setSortMode(mode)}
+                    style={{ padding: '0.22rem 0.65rem', borderRadius: '16px', border: 'none', background: sortMode === mode ? 'rgba(201,168,76,0.2)' : 'transparent', color: sortMode === mode ? c.gold : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                    {mode === 'recent' ? '🕐 Recent' : '🎯 Best Match'}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button onClick={() => setShowShortlistOnly(v => !v)}
             style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: showShortlistOnly ? 'rgba(201,168,76,0.18)' : 'transparent', border: `1px solid ${showShortlistOnly ? c.gold : 'rgba(201,168,76,0.3)'}`, borderRadius: '20px', padding: '0.4rem 0.85rem', minHeight: '36px', color: showShortlistOnly ? c.gold : c.sepia, fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.2s' }}>
             <span style={{ fontSize: '0.85rem' }}>{showShortlistOnly ? '♥' : '♡'}</span>
@@ -846,6 +912,40 @@ function InboxPanel({ notifications, meetings, onDismissNotification, onAcceptMe
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+function RevealedByPanel({ revealedBy }: { revealedBy: RevealedByEntry[] }) {
+  return (
+    <div style={{ marginBottom: '1.5rem', background: '#1a2d4e', border: '1px solid rgba(201,168,76,0.25)', borderRadius: '12px', overflow: 'hidden' }}>
+      <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(201,168,76,0.1)', background: 'linear-gradient(to right, rgba(201,168,76,0.08), transparent)' }}>
+        <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: '#c9a84c' }}>👁 Who Revealed Your Photo</span>
+      </div>
+      <div>
+        {revealedBy.map((r, i) => (
+          <div key={`${r.viewer_id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+            {r.thumbnail_url ? (
+              <img src={r.thumbnail_url} alt="profile" style={{ width: 48, height: 48, borderRadius: 6, objectFit: 'cover' as const, flexShrink: 0, border: '1px solid rgba(201,168,76,0.2)' }} />
+            ) : (
+              <div style={{ width: 48, height: 48, borderRadius: 6, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.15)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                🌸
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontFamily: 'var(--font-playfair,"Playfair Display",serif)', fontSize: '0.95rem', fontWeight: 600, color: '#f5f0e6', margin: '0 0 0.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+                {r.member_id ?? 'Member'}
+              </p>
+              <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.82rem', color: '#5a6e82', margin: 0 }}>
+                {[r.city, r.religion].filter(Boolean).join(' · ') || 'Soulmate member'}
+              </p>
+            </div>
+            <span style={{ fontFamily: 'Raleway,sans-serif', fontSize: '0.62rem', color: '#5a6e82', flexShrink: 0 }}>
+              {new Date(r.revealed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
