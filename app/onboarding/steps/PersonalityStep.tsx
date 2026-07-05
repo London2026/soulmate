@@ -153,7 +153,7 @@ function ChipField({ icon, label, placeholder, value, onChange }: {
             onBlur={e => (e.target.style.borderColor = c.border)}
           />
           <button type="button" onClick={addChip} disabled={!input.trim()}
-            style={{ padding: '0.4rem 0.7rem', background: input.trim() ? c.navy : 'rgba(13,31,60,0.2)', color: '#f5f0e6', border: 'none', borderRadius: '4px', cursor: input.trim() ? 'pointer' : 'default', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}>
+            style={{ padding: '0.4rem 0.7rem', minWidth: 44, minHeight: 44, background: input.trim() ? c.navy : 'rgba(13,31,60,0.2)', color: '#f5f0e6', border: 'none', borderRadius: '4px', cursor: input.trim() ? 'pointer' : 'default', fontSize: '0.85rem', fontWeight: 600, flexShrink: 0 }}>
             +
           </button>
         </div>

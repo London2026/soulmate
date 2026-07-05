@@ -46,6 +46,25 @@ export default function HabitsStep({
 }) {
   return (
     <div>
+      <style>{`
+        .habits-select {
+          width: 100%;
+          padding: 0.65rem 0.85rem;
+          border: 1px solid rgba(13,31,60,0.2);
+          border-radius: 4px;
+          font-family: Raleway, sans-serif;
+          font-size: 1rem;
+          background: #fff;
+          outline: none;
+          cursor: pointer;
+          min-height: 48px;
+          color: #0d1f3c;
+          box-sizing: border-box;
+        }
+        @media (max-width: 640px) {
+          .habits-select { font-size: 16px; min-height: 52px; }
+        }
+      `}</style>
       <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.4rem' }}>
         Step 7 of 8
       </p>
@@ -68,7 +87,8 @@ export default function HabitsStep({
             <select
               value={data[key]}
               onChange={e => onChange(key, e.target.value)}
-              style={{ width: '100%', padding: '0.65rem 0.85rem', border: `1px solid rgba(13,31,60,0.2)`, borderRadius: 4, fontFamily: 'Raleway, sans-serif', fontSize: '0.88rem', color: data[key] ? c.navy : c.sepia, background: '#fff', appearance: 'none', WebkitAppearance: 'none', outline: 'none', cursor: 'pointer' }}
+              className="habits-select"
+              style={{ color: data[key] ? c.navy : c.sepia }}
             >
               {OPTIONS.map(opt => (
                 <option key={opt} value={opt} disabled={opt === ''} hidden={opt === ''}>

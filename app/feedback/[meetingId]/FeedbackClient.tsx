@@ -45,7 +45,8 @@ export default function FeedbackClient({
   }
 
   return (
-    <div style={{ background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: 14, padding: 'clamp(1.25rem, 5vw, 2.5rem) clamp(1rem, 5vw, 2rem)', maxWidth: 480, width: '100%', position: 'relative', zIndex: 1 }}>
+    <div style={{ background: '#0d1f3c', border: `1px solid ${c.border}`, borderRadius: 14, padding: 'clamp(1.25rem, 5vw, 2.5rem) clamp(1rem, 5vw, 2rem)', maxWidth: 480, width: '100%', position: 'relative', zIndex: 1, boxSizing: 'border-box' }}>
+      <style>{`@media (max-width: 500px) { .fb-textarea { font-size: 16px !important; } }`}</style>
       {/* Header */}
       <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.4rem' }}>
         ✦ Banduraa
@@ -110,7 +111,8 @@ export default function FeedbackClient({
             placeholder="Anything else you'd like to share about the meeting…"
             maxLength={500}
             rows={3}
-            style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: `1px solid ${c.border}`, borderRadius: 6, color: c.ivory, fontFamily: 'Georgia, serif', fontSize: '0.95rem', lineHeight: 1.6, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: '0.4rem' }}
+            className="fb-textarea"
+            style={{ width: '100%', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', border: `1px solid ${c.border}`, borderRadius: 6, color: c.ivory, fontFamily: 'Georgia, serif', fontSize: '1rem', lineHeight: 1.6, outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: '0.4rem' }}
             onFocus={e => (e.target.style.borderColor = c.gold)}
             onBlur={e => (e.target.style.borderColor = c.border)}
           />
