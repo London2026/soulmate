@@ -2225,6 +2225,25 @@
     50% { box-shadow: 0 0 20px rgba(212,168,67,0.75); }
   }
 
+  /* Touch devices: no sticky hover lift/glow after tapping */
+  @media (hover: none) {
+    .btn-primary:hover, .btn-outline:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .nav-cta:hover, .photo-reveal-btn:hover {
+      box-shadow: none;
+    }
+    .pricing-card:hover {
+      transform: none;
+    }
+  }
+
+  /* Fewer hero sparkles on small screens — lighter on battery, less clutter */
+  @media (max-width: 640px) {
+    .hero-sparkles span:nth-child(n+7) { display: none; }
+  }
+
   /* Respect users who prefer reduced motion */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
