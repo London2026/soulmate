@@ -716,9 +716,9 @@
 
   .meeting-layout {
     display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 3rem;
-    align-items: start;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2.5rem;
+    align-items: stretch;
     margin-top: 1.5rem;
   }
 
@@ -726,18 +726,31 @@
   .meeting-laptop-wrap {
     width: 100%;
     margin: 0 auto;
+    display: flex;
+    animation: meetingFloat 7s ease-in-out infinite;
   }
 
-  /* Photo card — 4:3 matches the landscape video call images */
+  @keyframes meetingFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
+  }
+
+  /* Photo card — stretches to match the feature column height on desktop */
   .meeting-photo-card {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    min-height: 520px;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(13,31,60,0.22), 0 4px 16px rgba(13,31,60,0.12);
     border: 1px solid rgba(27,58,107,0.18);
     background: #0a0a0a;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .meeting-photo-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 32px 80px rgba(13,31,60,0.3), 0 8px 24px rgba(13,31,60,0.16);
   }
 
   /* Slider sits inside the square card — fills it completely */
@@ -761,7 +774,7 @@
     width: 100%;
     height: 100%;
     display: block;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center center;
   }
 
@@ -836,7 +849,8 @@
       grid-template-columns: 1fr;
       gap: 2.5rem;
     }
-    .meeting-laptop-wrap { max-width: 480px; }
+    .meeting-laptop-wrap { max-width: 480px; animation: none; }
+    .meeting-photo-card { min-height: 0; aspect-ratio: 4 / 3; }
   }
 
   @media (max-width: 600px) {
@@ -2236,6 +2250,10 @@
     }
     .pricing-card:hover {
       transform: none;
+    }
+    .meeting-photo-card:hover {
+      transform: none;
+      box-shadow: 0 20px 60px rgba(13,31,60,0.22), 0 4px 16px rgba(13,31,60,0.12);
     }
   }
 
