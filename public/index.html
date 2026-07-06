@@ -741,8 +741,8 @@
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: 520px;
-    max-height: 640px;
+    /* Scales with viewport so the card keeps ~4:3 at every width — no side cropping on tablets */
+    max-height: min(640px, 47vw);
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(13,31,60,0.22), 0 4px 16px rgba(13,31,60,0.12);
@@ -853,7 +853,7 @@
       gap: 2.5rem;
     }
     .meeting-laptop-wrap { max-width: 480px; animation: none; }
-    .meeting-photo-card { min-height: 0; max-height: none; height: auto; aspect-ratio: 4 / 3; }
+    .meeting-photo-card { max-height: none; height: auto; aspect-ratio: 4 / 3; }
   }
 
   @media (max-width: 600px) {
