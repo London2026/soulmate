@@ -368,7 +368,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
                   ? "You've used all 5 photo reveals for this month."
                   : 'Face reveal requires a paid plan.'}
               </p>
-              <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0.5rem 1.25rem', borderRadius: '4px' }}>
+              <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0 1.25rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', minHeight: '44px' }}>
                 {revealsLeft === 0 ? 'Upgrade for Unlimited Reveals →' : 'Upgrade Plan →'}
               </a>
             </div>
