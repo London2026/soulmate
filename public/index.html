@@ -1186,7 +1186,7 @@
     padding: 0.6rem 0;
     border-bottom: 1px solid rgba(212,168,67,0.15);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.6rem;
   }
 
@@ -1195,6 +1195,7 @@
     color: var(--light-gold);
     font-size: 0.6rem;
     flex-shrink: 0;
+    margin-top: 0.22rem;
   }
 
   .pricing-features li.unavailable {
@@ -2118,7 +2119,6 @@
     .hamburger { display: flex; }
 
     .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
-    .pricing-card.featured { order: -1; }
     .usp-cards { grid-template-columns: 1fr 1fr; }
     .safety-grid { grid-template-columns: 1fr 1fr; }
     .personality-grid { grid-template-columns: 1fr 1fr; }
@@ -2160,7 +2160,6 @@
     /* PRICING */
     .pricing-grid { grid-template-columns: 1fr; max-width: 100%; }
     .pricing-card { padding: 2rem 1.25rem; }
-    .pricing-card.featured { order: -1; }
     .pricing-price { font-size: 2.8rem; }
     .pricing-addon { padding: 1.25rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
     .pricing-addon-price { text-align: left; }
