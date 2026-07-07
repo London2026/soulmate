@@ -51,7 +51,14 @@ export async function sendAdminNewSubscriberSMS(memberName: string, plan: string
 export async function sendPhotoRevealSMS(toPhone: string, ownerFirstName: string, viewerProfileId: string) {
   await vonageSend(
     toPhone,
-    `Banduraa: Hi ${ownerFirstName}, member ${viewerProfileId} has revealed your photo. You may receive a video meeting request from them, or you can visit their profile and send one yourself. Log in to Banduraa: https://banduraa.com/discover\n\nReply STOP to opt out.`
+    `Banduraa: Hi ${ownerFirstName}, member ${viewerProfileId} has revealed your face photo. If you both like each other's profiles, you will be able to request an online video meeting. Log in: https://banduraa.com/discover\n\nReply STOP to opt out.`
+  )
+}
+
+export async function sendLikeSMS(toPhone: string, firstName: string, likerMemberId: string) {
+  await vonageSend(
+    toPhone,
+    `Banduraa: Hi ${firstName}, member ${likerMemberId} has liked your profile. If you like them back, you will both be able to request an online video meeting. Log in to check their profile: https://banduraa.com/discover\n\nReply STOP to opt out.`
   )
 }
 

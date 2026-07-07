@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { CountUp } from '@/components/motion'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import { maskName } from '@/lib/maskName'
-import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox, toggleShortlist, reportProfile, blockProfile } from './actions'
+import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox, toggleShortlist, reportProfile, blockProfile, likeProfile, unlikeProfile } from './actions'
 
 interface InboxNotification {
   id: string; message: string; type: string; read: boolean; created_at: string; sender_name: string | null
@@ -93,17 +93,23 @@ export default function DiscoverClient({
   profiles, canReveal, canMeet, meetingsLeft, myProfile,
   inboxNotifications, inboxMeetings, unreadCount, shortlistedIds,
   myMemberId, referralCredits, referralCount, revealedBy, blockedIds,
+  likedIds = [], mutualIds = [], likesLeft = 0,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
   inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
   shortlistedIds: string[]
   myMemberId: string | null; referralCredits: number; referralCount: number
   revealedBy: RevealedByEntry[]; blockedIds: string[]
+  likedIds?: string[]; mutualIds?: string[]; likesLeft?: number
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [shortlist, setShortlist] = useState<Set<string>>(() => new Set(shortlistedIds))
   const [showShortlistOnly, setShowShortlistOnly] = useState(false)
+  const [liked, setLiked] = useState<Set<string>>(() => new Set(likedIds))
+  const [mutual, setMutual] = useState<Set<string>>(() => new Set(mutualIds))
+  const [likesRemaining, setLikesRemaining] = useState(likesLeft)
+  const [likeToast, setLikeToast] = useState('')
   const [copied, setCopied] = useState(false)
   const [reportTarget, setReportTarget] = useState<ProfileData | null>(null)
   const [reportReason, setReportReason] = useState('')
@@ -166,6 +172,40 @@ export default function DiscoverClient({
     })
     try { await toggleShortlist(profileId) }
     catch { setShortlist(prev => { const next = new Set(prev); if (next.has(profileId)) next.delete(profileId); else next.add(profileId); return next }) }
+  }
+
+  async function handleLike(profileId: string) {
+    if (liked.has(profileId)) {
+      setLiked(prev => { const n = new Set(prev); n.delete(profileId); return n })
+      setMutual(prev => { const n = new Set(prev); n.delete(profileId); return n })
+      setLikesRemaining(r => Math.min(r + 1, likesLeft + 1))
+      try { await unlikeProfile(profileId) }
+      catch { setLiked(prev => new Set([...prev, profileId])) }
+    } else {
+      if (likesRemaining <= 0) {
+        setLikeToast('No likes remaining this month. Upgrade your plan for more likes.')
+        setTimeout(() => setLikeToast(''), 4000)
+        return
+      }
+      setLiked(prev => new Set([...prev, profileId]))
+      setLikesRemaining(r => Math.max(0, r - 1))
+      try {
+        const result = await likeProfile(profileId)
+        if (result.limitReached) {
+          setLiked(prev => { const n = new Set(prev); n.delete(profileId); return n })
+          setLikesRemaining(0)
+          setLikeToast('No likes remaining this month. Upgrade your plan for more likes.')
+          setTimeout(() => setLikeToast(''), 4000)
+        } else if (result.nowMutual) {
+          setMutual(prev => new Set([...prev, profileId]))
+          setLikeToast('Mutual like! 🎉 You can now request a video meeting.')
+          setTimeout(() => setLikeToast(''), 4000)
+        }
+      } catch {
+        setLiked(prev => { const n = new Set(prev); n.delete(profileId); return n })
+        setLikesRemaining(r => r + 1)
+      }
+    }
   }
 
   async function handleReport() {
@@ -346,6 +386,13 @@ export default function DiscoverClient({
         .disc-header-nav { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
         @media (max-width: 380px) { .disc-header-nav { gap: 0.65rem; } }
       `}</style>
+
+      {/* Like toast notification */}
+      {likeToast && (
+        <div style={{ position: 'fixed', bottom: '5.5rem', left: '50%', transform: 'translateX(-50%)', background: likeToast.startsWith('Mutual') ? 'linear-gradient(135deg,#1a3a2a,#1e4a30)' : '#1e3358', border: `1px solid ${likeToast.startsWith('Mutual') ? 'rgba(74,222,128,0.4)' : 'rgba(201,168,76,0.4)'}`, color: likeToast.startsWith('Mutual') ? '#4ade80' : '#f5f0e6', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', padding: '0.75rem 1.5rem', borderRadius: '8px', zIndex: 9999, boxShadow: '0 4px 24px rgba(0,0,0,0.5)', whiteSpace: 'nowrap', maxWidth: '90vw', textAlign: 'center' }}>
+          {likeToast}
+        </div>
+      )}
 
       {/* ── 0. Heading row + Reveals + Inbox ── */}
       <div className="disc-header-row">
@@ -700,7 +747,11 @@ export default function DiscoverClient({
                 ✕
               </button>
             </div>
-            <ProfileCard profile={selected} canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft} />
+            <ProfileCard
+              profile={{ ...selected, is_liked: liked.has(selected.id), is_mutual: mutual.has(selected.id) }}
+              canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft}
+              onLike={() => handleLike(selected.id)} likesLeft={likesRemaining}
+            />
           </div>
         </div>
       )}

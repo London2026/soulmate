@@ -2,9 +2,102 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendPhotoRevealedEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendReportNotificationEmail, sendMutualShortlistEmail } from '@/lib/sendEmail'
-import { sendPhotoRevealSMS, sendMeetingAcceptedSMS, sendMeetingConfirmedAcceptorSMS, sendMeetingDeclinedSMS } from '@/lib/sendSMS'
+import { sendPhotoRevealedEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendReportNotificationEmail, sendMutualShortlistEmail, sendLikeNotificationEmail } from '@/lib/sendEmail'
+import { sendPhotoRevealSMS, sendMeetingAcceptedSMS, sendMeetingConfirmedAcceptorSMS, sendMeetingDeclinedSMS, sendLikeSMS } from '@/lib/sendSMS'
 import { firstNameOnly } from '@/lib/maskName'
+
+const LIKE_LIMITS: Record<string, number> = { free: 2, starter: 10, standard: 15 }
+
+export async function likeProfile(likedId: string): Promise<{ success: boolean; limitReached: boolean; nowMutual: boolean }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data: me } = await supabase.from('profiles').select('plan, full_name, member_id').eq('id', user.id).single()
+  const plan = me?.plan ?? 'free'
+
+  const monthStart = new Date()
+  monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
+
+  const { count: likesSent } = await supabase
+    .from('profile_likes')
+    .select('*', { count: 'exact', head: true })
+    .eq('liker_id', user.id)
+    .gte('created_at', monthStart.toISOString())
+
+  const limit = LIKE_LIMITS[plan] ?? 2
+  if ((likesSent ?? 0) >= limit) {
+    return { success: false, limitReached: true, nowMutual: false }
+  }
+
+  await supabase.from('profile_likes').upsert(
+    { liker_id: user.id, liked_id: likedId },
+    { onConflict: 'liker_id,liked_id' }
+  )
+
+  // Check if the other person already liked me — establishes mutual like
+  const { data: mutualCheck } = await supabase
+    .from('profile_likes')
+    .select('id')
+    .eq('liker_id', likedId)
+    .eq('liked_id', user.id)
+    .maybeSingle()
+
+  const nowMutual = !!mutualCheck
+
+  const likerMemberId = (me as Record<string, unknown>)?.member_id as string ?? '#' + user.id.slice(0, 8).toUpperCase()
+
+  const { data: likedProfile } = await supabase
+    .from('profiles')
+    .select('full_name, phone, member_id')
+    .eq('id', likedId)
+    .single()
+
+  const likedFirstName = firstNameOnly(likedProfile?.full_name ?? '')
+
+  await supabase.from('notifications').insert({
+    recipient_id: likedId,
+    sender_id: user.id,
+    type: 'profile_liked',
+    message: `Your profile was liked by member ${likerMemberId}. Visit their profile — if you both like each other, you will be able to request an online video meeting!`,
+  })
+
+  if (nowMutual) {
+    const otherMemberId = (likedProfile as Record<string, unknown>)?.member_id as string ?? '#' + likedId.slice(0, 8).toUpperCase()
+    await Promise.all([
+      supabase.from('notifications').insert({
+        recipient_id: user.id,
+        sender_id: likedId,
+        type: 'mutual_like',
+        message: `Mutual like! You and member ${otherMemberId} have liked each other. You can now request a video meeting!`,
+      }),
+      supabase.from('notifications').insert({
+        recipient_id: likedId,
+        sender_id: user.id,
+        type: 'mutual_like',
+        message: `Mutual like! You and member ${likerMemberId} have liked each other. You can now request a video meeting!`,
+      }),
+    ])
+  }
+
+  const admin = createAdminClient()
+  const { data: likedAuth } = await admin.auth.admin.getUserById(likedId)
+  const likedEmail = likedAuth?.user?.email
+
+  await Promise.all([
+    likedEmail ? sendLikeNotificationEmail(likedEmail, likedFirstName, likerMemberId, likedId) : Promise.resolve(),
+    likedProfile?.phone ? sendLikeSMS(likedProfile.phone, likedFirstName, likerMemberId) : Promise.resolve(),
+  ])
+
+  return { success: true, limitReached: false, nowMutual }
+}
+
+export async function unlikeProfile(likedId: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  await supabase.from('profile_likes').delete().eq('liker_id', user.id).eq('liked_id', likedId)
+}
 
 
 export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: string }> {

@@ -60,6 +60,8 @@ export interface ProfileData {
   habit_drinking?: string | null
   habit_drugs?: string | null
   habit_betting?: string | null
+  is_liked?: boolean
+  is_mutual?: boolean
 }
 
 const c = {
@@ -114,8 +116,9 @@ function DetailRow({ label, value }: { label: string; value: string | number | n
   )
 }
 
-export default function ProfileCard({ profile, canReveal = true, canMeet = true, meetingsLeft = 0, previewMode = false }: {
+export default function ProfileCard({ profile, canReveal = true, canMeet = true, meetingsLeft = 0, previewMode = false, onLike, likesLeft = 0 }: {
   profile: ProfileData; canReveal?: boolean; canMeet?: boolean; meetingsLeft?: number; previewMode?: boolean
+  onLike?: () => void; likesLeft?: number
 }) {
   const [revealed, setRevealed] = useState(profile.already_revealed)
   const [frontUrl, setFrontUrl] = useState<string | null>(profile.front_photo_url)
@@ -191,10 +194,31 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
               {profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()}
             </span>
           </div>
-          {/* Religion badge — top right */}
-          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, border: `1.5px solid ${c.goldLight}`, padding: '0.35rem 0.9rem', borderRadius: '20px', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            {profile.religion}{profile.sub_religion ? ` · ${profile.sub_religion}` : ''}
-          </span>
+          {/* Right side: religion badge + like button */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem', flexShrink: 0 }}>
+            <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.goldLight, border: `1.5px solid ${c.goldLight}`, padding: '0.35rem 0.9rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>
+              {profile.religion}{profile.sub_religion ? ` · ${profile.sub_religion}` : ''}
+            </span>
+            {!previewMode && onLike && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {profile.is_mutual && (
+                  <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4ade80', background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)', padding: '0.2rem 0.55rem', borderRadius: '20px', whiteSpace: 'nowrap' }}>
+                    Mutual ✓
+                  </span>
+                )}
+                <button
+                  onClick={onLike}
+                  disabled={!profile.is_liked && likesLeft === 0}
+                  title={profile.is_liked ? 'Unlike' : likesLeft === 0 ? 'No likes remaining this month' : 'Like this profile'}
+                  style={{ background: 'none', border: `1px solid ${profile.is_liked ? '#e84393' : 'rgba(201,168,76,0.35)'}`, borderRadius: '20px', padding: '0.3rem 0.75rem', cursor: profile.is_liked || likesLeft > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: !profile.is_liked && likesLeft === 0 ? 0.45 : 1, transition: 'all 0.2s' }}>
+                  <span style={{ fontSize: '1rem' }}>{profile.is_liked ? '❤️' : '🤍'}</span>
+                  <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em', color: profile.is_liked ? '#e84393' : c.ivoryDim }}>
+                    {profile.is_liked ? 'Liked' : 'Like'}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '1.1rem', color: c.ivoryDim, margin: 0 }}>
           {profile.age} yrs · {profile.gender} · {profile.city}, {profile.country}
@@ -386,6 +410,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
               <a href="/pricing" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.ivoryDim, border: '1px solid rgba(90,110,130,0.2)', textDecoration: 'none', background: 'rgba(90,110,130,0.05)', boxSizing: 'border-box' }}>
                 🔒 Upgrade to request meetings
               </a>
+            ) : canMeet && !profile.is_mutual && !roomId && !meetPending && !meetSent ? (
+              <div style={{ textAlign: 'center', padding: '0.75rem 1rem', background: 'rgba(201,168,76,0.04)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '8px' }}>
+                <p style={{ fontSize: '1.4rem', margin: '0 0 0.3rem' }}>🤍</p>
+                <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.3rem' }}>Mutual like required</p>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivoryDim, margin: 0 }}>Like this profile — if they like you back, you will both be able to request a video meeting.</p>
+              </div>
             ) : canMeet && meetingsLeft === 0 && !roomId && !meetPending && !meetSent ? (
               <div style={{ textAlign: 'center', padding: '0.75rem 1rem', background: 'rgba(201,168,76,0.04)', border: `1px solid rgba(201,168,76,0.15)`, borderRadius: '8px' }}>
                 <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.3rem' }}>No meeting requests left</p>

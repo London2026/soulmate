@@ -240,10 +240,10 @@ export async function sendPhotoRevealedEmail(to: string, ownerFirstName: string,
       Hi <strong>${ownerFirstName}</strong>,
     </p>
     <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
-      Profile <strong style="color:#0d1f3c;font-family:'Courier New',monospace;">#${viewerProfileId}</strong> has revealed your photo on Banduraa.
+      Profile <strong style="color:#0d1f3c;font-family:'Courier New',monospace;">#${viewerProfileId}</strong> has revealed your face photo on Banduraa.
     </p>
     <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
-      You may receive an online video meeting request from this profile. If you would like to view their profile and connect with them, please log in to Banduraa.
+      If you both like each other's profiles on Banduraa, you will both be able to request an online video meeting. Visit their profile in Discover to find out more.
     </p>
     <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;font-style:italic;line-height:1.7;margin:0 0 28px;">
       You can search for Profile <span style="font-family:'Courier New',monospace;font-style:normal;">#${viewerProfileId}</span> directly in the Discover page to view their full profile.
@@ -592,6 +592,34 @@ export async function sendMeetingFeedbackEmail(to: string, firstName: string, ot
     <p style="font-family:Arial,sans-serif;font-size:12px;color:#9aabb8;text-align:center;margin:0;">
       Your feedback is completely private and never shared with other members.
     </p>
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
+}
+
+export async function sendLikeNotificationEmail(to: string, firstName: string, likerMemberId: string, userId?: string) {
+  const subject = `💘 Your profile was liked by member ${likerMemberId} on Banduraa`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 4px;">Someone liked your profile 💘</h2>
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:16px;color:#5a6e82;margin:0 0 16px;">Could this be a meaningful connection?</p>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 16px;">
+      Hi <strong>${firstName}</strong>,
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.75;margin:0 0 20px;">
+      Member <strong style="color:#0d1f3c;font-family:'Courier New',monospace;">${likerMemberId}</strong> has liked your profile on Banduraa.
+    </p>
+    <div style="background:#0d1f3c;border-radius:8px;padding:20px 24px;margin-bottom:24px;text-align:center;">
+      <p style="font-family:Georgia,serif;font-size:18px;color:#c9a84c;margin:0 0 8px;">They liked you — will you like them back? 🌹</p>
+      <p style="font-family:Arial,sans-serif;font-size:12px;color:rgba(232,227,216,0.55);margin:0;">If you both like each other, a mutual like is established and you will both be able to request an online video meeting.</p>
+    </div>
+    <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;line-height:1.75;margin:0 0 24px;">
+      Visit Discover to view member <span style="font-family:'Courier New',monospace;">${likerMemberId}</span>'s full profile, listen to their voice introduction, and see if you'd like to connect.
+    </p>
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        View Their Profile →
+      </a>
+    </div>
   `, userId ? getUnsubscribeUrl(userId) : undefined)
   await send(to, subject, html, userId)
 }

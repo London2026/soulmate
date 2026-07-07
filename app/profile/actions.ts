@@ -36,6 +36,13 @@ export async function requestVideoMeeting(
 
   if (existing) return { meetingId: existing.id }
 
+  // Verify mutual like exists before allowing meeting request
+  const [{ data: iLikedThem }, { data: theyLikedMe }] = await Promise.all([
+    supabase.from('profile_likes').select('id').eq('liker_id', user.id).eq('liked_id', recipientId).maybeSingle(),
+    supabase.from('profile_likes').select('id').eq('liker_id', recipientId).eq('liked_id', user.id).maybeSingle(),
+  ])
+  if (!iLikedThem || !theyLikedMe) throw new Error('A mutual like is required before requesting a video meeting.')
+
   const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
   const name = me?.full_name ?? 'Someone'
 

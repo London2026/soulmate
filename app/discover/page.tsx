@@ -37,18 +37,23 @@ export default async function DiscoverPage() {
   const canReveal = userPlan !== 'free'
   const canMeet   = userPlan !== 'free'
 
-  const PLAN_LIMITS: Record<string, number> = { free: 0, starter: 2, standard: 4 }
+  const PLAN_LIMITS: Record<string, number> = { free: 1, starter: 4, standard: 8 }
+  const LIKE_LIMITS: Record<string, number>  = { free: 2, starter: 10, standard: 15 }
   const monthStart = new Date()
   monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
 
-  const [{ count: meetingsSent }, { count: extraPurchased }] = await Promise.all([
+  const [{ count: meetingsSent }, { count: extraPurchased }, { count: likesThisMonth }] = await Promise.all([
     supabase.from('video_meetings').select('*', { count: 'exact', head: true })
       .eq('requester_id', user.id).gte('created_at', monthStart.toISOString()),
     supabase.from('extra_meeting_purchases').select('*', { count: 'exact', head: true })
       .eq('user_id', user.id).gte('created_at', monthStart.toISOString()),
+    supabase.from('profile_likes').select('*', { count: 'exact', head: true })
+      .eq('liker_id', user.id).gte('created_at', monthStart.toISOString()),
   ])
-  const planLimit    = PLAN_LIMITS[userPlan] ?? 0
+  const planLimit    = PLAN_LIMITS[userPlan] ?? 1
   const meetingsLeft = Math.max(0, planLimit + (extraPurchased ?? 0) - (meetingsSent ?? 0))
+  const likeLimit    = LIKE_LIMITS[userPlan] ?? 2
+  const likesLeft    = Math.max(0, likeLimit - (likesThisMonth ?? 0))
 
   // Fetch all complete profiles except the current user
   const { data: rows } = await supabase
@@ -69,19 +74,27 @@ export default async function DiscoverPage() {
   // Which profiles has the current user already revealed?
   // Use admin client for blocks so we can see both directions (who I blocked + who blocked me)
   const adminClient = createAdminClient()
-  const [{ data: myReveals }, { data: myShortlist }, { count: referralCount }, { data: revealedByRows }, { data: myBlockRows }, { data: blockedMeRows }] = await Promise.all([
+  const [{ data: myReveals }, { data: myShortlist }, { count: referralCount }, { data: revealedByRows }, { data: myBlockRows }, { data: blockedMeRows }, { data: myLikesRows }, { data: likedMeRows }] = await Promise.all([
     supabase.from('photo_reveals').select('viewed_id').eq('viewer_id', user.id),
     supabase.from('shortlist').select('profile_id').eq('user_id', user.id),
     supabase.from('referrals').select('*', { count: 'exact', head: true }).eq('referrer_id', user.id),
     supabase.from('photo_reveals').select('viewer_id, revealed_at').eq('viewed_id', user.id).order('revealed_at', { ascending: false }).limit(50),
     adminClient.from('blocks').select('blocked_id').eq('blocker_id', user.id),
     adminClient.from('blocks').select('blocker_id').eq('blocked_id', user.id),
+    supabase.from('profile_likes').select('liked_id').eq('liker_id', user.id),
+    supabase.from('profile_likes').select('liker_id').eq('liked_id', user.id),
   ])
 
   const blockedIds = new Set([
     ...(myBlockRows ?? []).map(r => r.blocked_id as string),
     ...(blockedMeRows ?? []).map(r => r.blocker_id as string),
   ])
+
+  const likedByMeSet = new Set((myLikesRows ?? []).map(r => r.liked_id as string))
+  const likedMeSet   = new Set((likedMeRows ?? []).map(r => r.liker_id as string))
+  const mutualSet    = new Set([...likedByMeSet].filter(id => likedMeSet.has(id)))
+  const likedIds     = [...likedByMeSet]
+  const mutualIds    = [...mutualSet]
 
   // Fetch profiles of members who revealed my photo
   const revealViewerIds = [...new Set((revealedByRows ?? []).map(r => r.viewer_id as string))]
@@ -360,6 +373,9 @@ export default async function DiscoverPage() {
           referralCount={referralCount ?? 0}
           revealedBy={revealedBy}
           blockedIds={[...blockedIds]}
+          likedIds={likedIds}
+          mutualIds={mutualIds}
+          likesLeft={likesLeft}
         />
       </main>
     </div>
