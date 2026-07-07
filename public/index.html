@@ -745,20 +745,15 @@
   /* Mobile — single column with line on left */
   @media (max-width: 680px) {
     .timeline-steps::before { left: 26px; transform: none; }
-    .ts-row {
-      grid-template-columns: 52px 1fr;
-      min-height: auto;
-    }
+    /* Both left and right rows become [dot][card] on mobile */
+    .ts-row { display: flex; align-items: flex-start; gap: 0; min-height: auto; }
     .ts-row .ts-spacer { display: none; }
-    .ts-left  .ts-card { text-align: left;  margin-right: 0; margin-left: 0.5rem; }
-    .ts-right .ts-card { text-align: left;  margin-left: 0.5rem; margin-right: 0; }
-    .ts-right .ts-spacer { display: none; }
-    /* Right rows: reorder so dot comes before card */
-    .ts-right { display: flex; align-items: center; gap: 0; }
-    .ts-right .ts-dot-col { order: 0; flex-shrink: 0; width: 52px; }
-    .ts-right .ts-card    { order: 1; flex: 1; }
+    .ts-left  .ts-dot-col { order: 0; flex-shrink: 0; width: 52px; align-self: flex-start; padding-top: 0.4rem; }
+    .ts-left  .ts-card    { order: 1; flex: 1; text-align: left; margin-right: 0; margin-left: 0.5rem; }
+    .ts-right .ts-dot-col { order: 0; flex-shrink: 0; width: 52px; align-self: flex-start; padding-top: 0.4rem; }
+    .ts-right .ts-card    { order: 1; flex: 1; text-align: left; margin-left: 0.5rem; margin-right: 0; }
     .ts-dot { width: 44px; height: 44px; font-size: 0.76rem; }
-    .ts-card { padding: 1.25rem; }
+    .ts-card { padding: 1.1rem; }
   }
 
   /* ONLINE MEETING SHOWCASE */

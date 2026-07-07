@@ -389,7 +389,7 @@ export default function DiscoverClient({
 
       {/* Like toast notification */}
       {likeToast && (
-        <div style={{ position: 'fixed', bottom: '5.5rem', left: '50%', transform: 'translateX(-50%)', background: likeToast.startsWith('Mutual') ? 'linear-gradient(135deg,#1a3a2a,#1e4a30)' : '#1e3358', border: `1px solid ${likeToast.startsWith('Mutual') ? 'rgba(74,222,128,0.4)' : 'rgba(201,168,76,0.4)'}`, color: likeToast.startsWith('Mutual') ? '#4ade80' : '#f5f0e6', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', padding: '0.75rem 1.5rem', borderRadius: '8px', zIndex: 9999, boxShadow: '0 4px 24px rgba(0,0,0,0.5)', whiteSpace: 'nowrap', maxWidth: '90vw', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', bottom: '5.5rem', left: '50%', transform: 'translateX(-50%)', background: likeToast.startsWith('Mutual') ? 'linear-gradient(135deg,#1a3a2a,#1e4a30)' : '#1e3358', border: `1px solid ${likeToast.startsWith('Mutual') ? 'rgba(74,222,128,0.4)' : 'rgba(201,168,76,0.4)'}`, color: likeToast.startsWith('Mutual') ? '#4ade80' : '#f5f0e6', fontFamily: '"Cormorant Garamond", serif', fontSize: '1rem', padding: '0.75rem 1.25rem', borderRadius: '8px', zIndex: 9999, boxShadow: '0 4px 24px rgba(0,0,0,0.5)', width: 'max-content', maxWidth: 'min(90vw, 380px)', textAlign: 'center', lineHeight: 1.4 }}>
           {likeToast}
         </div>
       )}

@@ -210,7 +210,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
                   onClick={onLike}
                   disabled={!profile.is_liked && likesLeft === 0}
                   title={profile.is_liked ? 'Unlike' : likesLeft === 0 ? 'No likes remaining this month' : 'Like this profile'}
-                  style={{ background: 'none', border: `1px solid ${profile.is_liked ? '#e84393' : 'rgba(201,168,76,0.35)'}`, borderRadius: '20px', padding: '0.3rem 0.75rem', cursor: profile.is_liked || likesLeft > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: !profile.is_liked && likesLeft === 0 ? 0.45 : 1, transition: 'all 0.2s' }}>
+                  style={{ background: 'none', border: `1px solid ${profile.is_liked ? '#e84393' : 'rgba(201,168,76,0.35)'}`, borderRadius: '20px', padding: '0 0.75rem', minHeight: '44px', cursor: profile.is_liked || likesLeft > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '0.3rem', opacity: !profile.is_liked && likesLeft === 0 ? 0.45 : 1, transition: 'all 0.2s' }}>
                   <span style={{ fontSize: '1rem' }}>{profile.is_liked ? '❤️' : '🤍'}</span>
                   <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em', color: profile.is_liked ? '#e84393' : c.ivoryDim }}>
                     {profile.is_liked ? 'Liked' : 'Like'}
