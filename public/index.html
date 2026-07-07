@@ -694,9 +694,9 @@
 
   .ts-card {
     background: rgba(255,255,255,0.52);
-    border: 1px solid rgba(139,111,71,0.18);
+    border: 1.5px solid rgba(139,111,71,0.38);
     border-radius: 14px;
-    padding: 1.75rem 1.75rem;
+    padding: 1.5rem 1.75rem;
     transition: background 0.3s, transform 0.35s, box-shadow 0.35s;
     box-sizing: border-box;
     height: 100%;
@@ -709,14 +709,6 @@
   .ts-left .ts-card  { text-align: right;  margin-right: 0.5rem; }
   .ts-right .ts-card { text-align: left;   margin-left: 0.5rem; }
 
-  .ts-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.4rem;
-    font-weight: 700;
-    color: rgba(124,31,31,0.08);
-    line-height: 1;
-    margin-bottom: 0.3rem;
-  }
   .ts-icon  { font-size: 1.8rem; margin-bottom: 0.55rem; display: block; }
   .ts-title {
     font-family: 'Playfair Display', serif;
@@ -728,21 +720,6 @@
   }
   .ts-desc  { font-size: 0.88rem; line-height: 1.72; color: var(--text-mid, #5a4a3a); }
 
-  /* Step 07 — centered finale */
-  .ts-center-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.25rem 0 0.5rem;
-    position: relative;
-    z-index: 2;
-  }
-  .ts-center-row .ts-card {
-    text-align: center;
-    max-width: 420px;
-    width: 100%;
-  }
 
   /* Directional slide-in animations */
   .reveal-left {
@@ -782,9 +759,6 @@
     .ts-right .ts-card    { order: 1; flex: 1; }
     .ts-dot { width: 44px; height: 44px; font-size: 0.76rem; }
     .ts-card { padding: 1.25rem; }
-    .ts-center-row { flex-direction: row; align-items: flex-start; gap: 0; }
-    .ts-center-row .ts-dot-col { flex-shrink: 0; width: 52px; }
-    .ts-center-row .ts-card { text-align: left; max-width: none; flex: 1; margin-left: 0.5rem; }
   }
 
   /* ONLINE MEETING SHOWCASE */
@@ -2776,7 +2750,6 @@
       <!-- Step 01 — left -->
       <div class="ts-row ts-left">
         <div class="ts-card reveal-left">
-          <div class="ts-num">01</div>
           <span class="ts-icon">📝</span>
           <div class="ts-title">Basic Information</div>
           <p class="ts-desc">Name, age, religion, sub-religion, location, education, and what you&rsquo;re looking for in a partner.</p>
@@ -2790,7 +2763,6 @@
         <div class="ts-spacer"></div>
         <div class="ts-dot-col"><div class="ts-dot">02</div></div>
         <div class="ts-card reveal-right">
-          <div class="ts-num">02</div>
           <span class="ts-icon">🎙️</span>
           <div class="ts-title">Voice Introduction</div>
           <p class="ts-desc">Record a 60&ndash;120 second audio introduction. This is what others hear first &mdash; before any photos.</p>
@@ -2800,7 +2772,6 @@
       <!-- Step 03 — left -->
       <div class="ts-row ts-left">
         <div class="ts-card reveal-left">
-          <div class="ts-num">03</div>
           <span class="ts-icon">📷</span>
           <div class="ts-title">Back-Side Photos</div>
           <p class="ts-desc">Upload two back-side photos so others can get a sense of your presence. Your face remains entirely private until you choose to reveal it.</p>
@@ -2814,7 +2785,6 @@
         <div class="ts-spacer"></div>
         <div class="ts-dot-col"><div class="ts-dot">04</div></div>
         <div class="ts-card reveal-right">
-          <div class="ts-num">04</div>
           <span class="ts-icon">🌟</span>
           <div class="ts-title">Personality Section</div>
           <p class="ts-desc">Share your favourite reels, YouTube channels, web series, travel destinations, foods, and AI tools.</p>
@@ -2824,7 +2794,6 @@
       <!-- Step 05 — left -->
       <div class="ts-row ts-left">
         <div class="ts-card reveal-left">
-          <div class="ts-num">05</div>
           <span class="ts-icon">💞</span>
           <div class="ts-title">Browse &amp; Like Profiles</div>
           <p class="ts-desc">Explore profiles, listen to voice introductions, and like the ones that interest you. Each member receives a notification when their profile is liked.</p>
@@ -2838,22 +2807,21 @@
         <div class="ts-spacer"></div>
         <div class="ts-dot-col"><div class="ts-dot">06</div></div>
         <div class="ts-card reveal-right">
-          <div class="ts-num">06</div>
           <span class="ts-icon">❤️</span>
           <div class="ts-title">Mutual Like Unlocks Meetings</div>
           <p class="ts-desc">When two members like each other, a mutual like is established. Only then does the video meeting request become available &mdash; ensuring genuine two-way interest before any meeting.</p>
         </div>
       </div>
 
-      <!-- Step 07 — centred finale -->
-      <div class="ts-center-row">
-        <div class="ts-dot-col"><div class="ts-dot">07</div></div>
-        <div class="ts-card reveal-up-sm">
-          <div class="ts-num">07</div>
+      <!-- Step 07 — left (continues alternating pattern) -->
+      <div class="ts-row ts-left">
+        <div class="ts-card reveal-left">
           <span class="ts-icon">🎥</span>
           <div class="ts-title">Request a Video Meeting</div>
           <p class="ts-desc">Once a mutual like is in place, send a meeting request with your preferred date and time. Both of you join a secure in-app video call &mdash; no phone numbers shared, no external apps needed.</p>
         </div>
+        <div class="ts-dot-col"><div class="ts-dot">07</div></div>
+        <div class="ts-spacer"></div>
       </div>
 
     </div>
