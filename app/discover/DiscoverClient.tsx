@@ -93,14 +93,14 @@ export default function DiscoverClient({
   profiles, canReveal, canMeet, meetingsLeft, myProfile,
   inboxNotifications, inboxMeetings, unreadCount, shortlistedIds,
   myMemberId, referralCredits, referralCount, revealedBy, blockedIds,
-  likedIds = [], mutualIds = [], likesLeft = 0,
+  likedIds = [], mutualIds = [], likesLeft = 0, revealsLeft = null,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
   inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
   shortlistedIds: string[]
   myMemberId: string | null; referralCredits: number; referralCount: number
   revealedBy: RevealedByEntry[]; blockedIds: string[]
-  likedIds?: string[]; mutualIds?: string[]; likesLeft?: number
+  likedIds?: string[]; mutualIds?: string[]; likesLeft?: number; revealsLeft?: number | null
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -751,6 +751,7 @@ export default function DiscoverClient({
               profile={{ ...selected, is_liked: liked.has(selected.id), is_mutual: mutual.has(selected.id) }}
               canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft}
               onLike={() => handleLike(selected.id)} likesLeft={likesRemaining}
+              revealsLeft={revealsLeft}
             />
           </div>
         </div>

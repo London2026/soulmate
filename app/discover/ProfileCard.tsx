@@ -116,9 +116,9 @@ function DetailRow({ label, value }: { label: string; value: string | number | n
   )
 }
 
-export default function ProfileCard({ profile, canReveal = true, canMeet = true, meetingsLeft = 0, previewMode = false, onLike, likesLeft = 0 }: {
+export default function ProfileCard({ profile, canReveal = true, canMeet = true, meetingsLeft = 0, previewMode = false, onLike, likesLeft = 0, revealsLeft = null }: {
   profile: ProfileData; canReveal?: boolean; canMeet?: boolean; meetingsLeft?: number; previewMode?: boolean
-  onLike?: () => void; likesLeft?: number
+  onLike?: () => void; likesLeft?: number; revealsLeft?: number | null
 }) {
   const [revealed, setRevealed] = useState(profile.already_revealed)
   const [frontUrl, setFrontUrl] = useState<string | null>(profile.front_photo_url)
@@ -363,9 +363,13 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
           {!canReveal && !revealed ? (
             <div style={{ textAlign: 'center', padding: '0.5rem 0 1rem' }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>Face reveal requires a paid plan</p>
+              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
+                {revealsLeft === 0
+                  ? "You've used all 5 photo reveals for this month."
+                  : 'Face reveal requires a paid plan.'}
+              </p>
               <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0.5rem 1.25rem', borderRadius: '4px' }}>
-                Upgrade Plan →
+                {revealsLeft === 0 ? 'Upgrade for Unlimited Reveals →' : 'Upgrade Plan →'}
               </a>
             </div>
           ) : !profile.front_photo_url && !revealed && canReveal ? (
@@ -394,6 +398,11 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
                 Face photo is hidden. Revealing notifies {firstNameOnly(profile.full_name)} instantly.
               </p>
+              {revealsLeft !== null && (
+                <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: revealsLeft <= 1 ? '#f87171' : c.ivoryDim, margin: '0 0 0.5rem' }}>
+                  {revealsLeft} photo reveal{revealsLeft !== 1 ? 's' : ''} remaining this month
+                </p>
+              )}
               {revealError && <p style={{ color: '#F87171', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{revealError}</p>}
               <motion.button onClick={handleReveal} disabled={revealing}
                 whileHover={revealing ? undefined : { backgroundColor: 'rgba(201,168,76,0.1)', boxShadow: '0 0 22px rgba(201,168,76,0.35)' }}

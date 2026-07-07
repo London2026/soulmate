@@ -34,26 +34,33 @@ export default async function DiscoverPage() {
   if ((me as Record<string, unknown>)?.suspended === true) redirect('/suspended')
 
   const userPlan  = me?.plan ?? 'free'
-  const canReveal = userPlan !== 'free'
-  const canMeet   = userPlan !== 'free'
+  const canMeet   = true // all plans can meet; limit enforced via meetingsLeft
 
-  const PLAN_LIMITS: Record<string, number> = { free: 1, starter: 4, standard: 8 }
-  const LIKE_LIMITS: Record<string, number>  = { free: 2, starter: 10, standard: 15 }
+  const PLAN_LIMITS:   Record<string, number> = { free: 2, starter: 4, standard: 8 }
+  const LIKE_LIMITS:   Record<string, number> = { free: 5, starter: 10, standard: 15 }
+  const FREE_REVEAL_LIMIT = 5
   const monthStart = new Date()
   monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
 
-  const [{ count: meetingsSent }, { count: extraPurchased }, { count: likesThisMonth }] = await Promise.all([
+  const [{ count: meetingsSent }, { count: extraPurchased }, { count: likesThisMonth }, { count: revealsThisMonth }] = await Promise.all([
     supabase.from('video_meetings').select('*', { count: 'exact', head: true })
       .eq('requester_id', user.id).gte('created_at', monthStart.toISOString()),
     supabase.from('extra_meeting_purchases').select('*', { count: 'exact', head: true })
       .eq('user_id', user.id).gte('created_at', monthStart.toISOString()),
     supabase.from('profile_likes').select('*', { count: 'exact', head: true })
       .eq('liker_id', user.id).gte('created_at', monthStart.toISOString()),
+    supabase.from('photo_reveals').select('*', { count: 'exact', head: true })
+      .eq('viewer_id', user.id).gte('created_at', monthStart.toISOString()),
   ])
-  const planLimit    = PLAN_LIMITS[userPlan] ?? 1
+  const planLimit    = PLAN_LIMITS[userPlan] ?? 2
   const meetingsLeft = Math.max(0, planLimit + (extraPurchased ?? 0) - (meetingsSent ?? 0))
-  const likeLimit    = LIKE_LIMITS[userPlan] ?? 2
+  const likeLimit    = LIKE_LIMITS[userPlan] ?? 5
   const likesLeft    = Math.max(0, likeLimit - (likesThisMonth ?? 0))
+  // revealsLeft: null = unlimited (paid), number = monthly cap remaining (free)
+  const revealsLeft: number | null = userPlan === 'free'
+    ? Math.max(0, FREE_REVEAL_LIMIT - (revealsThisMonth ?? 0))
+    : null
+  const canReveal = revealsLeft === null || revealsLeft > 0
 
   // Fetch all complete profiles except the current user
   const { data: rows } = await supabase
@@ -376,6 +383,7 @@ export default async function DiscoverPage() {
           likedIds={likedIds}
           mutualIds={mutualIds}
           likesLeft={likesLeft}
+          revealsLeft={revealsLeft}
         />
       </main>
     </div>

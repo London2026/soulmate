@@ -6,7 +6,8 @@ import { sendPhotoRevealedEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedA
 import { sendPhotoRevealSMS, sendMeetingAcceptedSMS, sendMeetingConfirmedAcceptorSMS, sendMeetingDeclinedSMS, sendLikeSMS } from '@/lib/sendSMS'
 import { firstNameOnly } from '@/lib/maskName'
 
-const LIKE_LIMITS: Record<string, number> = { free: 2, starter: 10, standard: 15 }
+const LIKE_LIMITS: Record<string, number> = { free: 5, starter: 10, standard: 15 }
+const FREE_REVEAL_LIMIT = 5
 
 export async function likeProfile(likedId: string): Promise<{ success: boolean; limitReached: boolean; nowMutual: boolean }> {
   const supabase = await createClient()
@@ -104,6 +105,18 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
+
+  // Enforce monthly reveal limit for free users
+  const { data: me } = await supabase.from('profiles').select('plan').eq('id', user.id).single()
+  if ((me?.plan ?? 'free') === 'free') {
+    const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
+    const { count: revealsThisMonth } = await supabase
+      .from('photo_reveals').select('*', { count: 'exact', head: true })
+      .eq('viewer_id', user.id).gte('created_at', monthStart.toISOString())
+    if ((revealsThisMonth ?? 0) >= FREE_REVEAL_LIMIT) {
+      throw new Error("You've used all 5 photo reveals for this month. Upgrade your plan for unlimited reveals.")
+    }
+  }
 
   // Only insert reveal + notification once
   const { data: existing } = await supabase
