@@ -26,7 +26,7 @@ export default async function DiscoverPage() {
   // Guard: onboarding must be complete + get plan
   const { data: me } = await supabase
     .from('profiles')
-    .select('onboarding_complete, plan, member_id, referral_credits, suspended')
+    .select('onboarding_complete, plan, member_id, referral_credits, suspended, created_at')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -61,6 +61,16 @@ export default async function DiscoverPage() {
     ? Math.max(0, FREE_REVEAL_LIMIT - (revealsThisMonth ?? 0))
     : null
   const canReveal = revealsLeft === null || revealsLeft > 0
+
+  // Trial period: 30 days from account creation (free plan only)
+  const createdAt = (me as Record<string, unknown>)?.created_at as string | null
+  const daysSinceCreation = createdAt
+    ? Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000)
+    : 0
+  const trialDaysLeft: number | null = userPlan === 'free'
+    ? Math.max(0, 30 - daysSinceCreation)
+    : null
+  const trialExpired: boolean = userPlan === 'free' && daysSinceCreation > 30
 
   // Fetch all complete profiles except the current user
   const { data: rows } = await supabase
@@ -384,6 +394,8 @@ export default async function DiscoverPage() {
           mutualIds={mutualIds}
           likesLeft={likesLeft}
           revealsLeft={revealsLeft}
+          trialDaysLeft={trialDaysLeft}
+          trialExpired={trialExpired}
         />
       </main>
     </div>

@@ -94,6 +94,7 @@ export default function DiscoverClient({
   inboxNotifications, inboxMeetings, unreadCount, shortlistedIds,
   myMemberId, referralCredits, referralCount, revealedBy, blockedIds,
   likedIds = [], mutualIds = [], likesLeft = 0, revealsLeft = null,
+  trialDaysLeft = null, trialExpired = false,
 }: {
   profiles: ProfileData[]; canReveal: boolean; canMeet: boolean; meetingsLeft: number; myProfile: ProfileData | null
   inboxNotifications: InboxNotification[]; inboxMeetings: InboxMeeting[]; unreadCount: number
@@ -101,6 +102,7 @@ export default function DiscoverClient({
   myMemberId: string | null; referralCredits: number; referralCount: number
   revealedBy: RevealedByEntry[]; blockedIds: string[]
   likedIds?: string[]; mutualIds?: string[]; likesLeft?: number; revealsLeft?: number | null
+  trialDaysLeft?: number | null; trialExpired?: boolean
 }) {
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -331,6 +333,11 @@ export default function DiscoverClient({
           .disc-score-label { margin-left: 0 !important; }
         }
 
+        /* trial counter upgrade button: full-width on mobile so it's easy to tap */
+        @media (max-width: 600px) {
+          .trial-upgrade-btn { margin-left: 0 !important; width: 100% !important; justify-content: center !important; min-height: 44px !important; }
+        }
+
         .compact-card-info { padding: 0.85rem; }
         .compact-card-name { font-size: 1.1rem; }
         .compact-card-sub { font-size: 0.95rem; }
@@ -423,6 +430,115 @@ export default function DiscoverClient({
         </div>
       </div>
       <div style={{ height: '1px', background: 'linear-gradient(to right, #c9a84c, transparent)', marginBottom: '1.5rem' }} />
+
+      {/* ── Free trial: expired banner ── */}
+      {trialExpired && (
+        <div style={{
+          background: 'rgba(220,38,38,0.1)',
+          border: '1px solid rgba(220,38,38,0.35)',
+          borderRadius: '10px',
+          padding: '0.9rem 1.25rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '0.6rem 1rem',
+        }}>
+          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem', color: '#fca5a5', flex: '1 1 180px', lineHeight: 1.5 }}>
+            Your free trial has ended. Upgrade to keep discovering matches.
+          </span>
+          <a href="/pricing" style={{
+            fontFamily: 'Raleway, sans-serif',
+            fontSize: '0.62rem',
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            color: '#fff',
+            background: 'rgba(220,38,38,0.7)',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+            padding: '0 1.1rem',
+            borderRadius: '5px',
+            minHeight: '44px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            border: '1px solid rgba(220,38,38,0.5)',
+            flexShrink: 0,
+          }}>
+            Upgrade Now →
+          </a>
+        </div>
+      )}
+
+      {/* ── Free trial: live counter ── */}
+      {trialDaysLeft !== null && !trialExpired && (() => {
+        const stats = [
+          { label: 'likes left',    value: likesRemaining,  total: 5 },
+          { label: 'reveals left',  value: revealsLeft ?? 0, total: 5 },
+          { label: 'meetings left', value: meetingsLeft,     total: 2 },
+        ]
+        const days = trialDaysLeft
+        const dayColor = days > 10 ? '#4ade80' : days > 5 ? '#fbbf24' : '#f87171'
+        return (
+          <div style={{
+            background: 'rgba(13,31,60,0.55)',
+            border: '1px solid rgba(201,168,76,0.2)',
+            borderRadius: '10px',
+            padding: '0.75rem 1.2rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '0.5rem 1.25rem',
+          }}>
+            <span style={{
+              fontFamily: 'Raleway, sans-serif',
+              fontSize: '0.58rem',
+              fontWeight: 700,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: '#c9a84c',
+              whiteSpace: 'nowrap',
+            }}>
+              Free Trial
+            </span>
+            {stats.map(s => {
+              const pct = s.total > 0 ? s.value / s.total : 0
+              const col = pct > 0.5 ? '#4ade80' : pct > 0 ? '#fbbf24' : '#f87171'
+              return (
+                <span key={s.label} style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', color: '#e8e0d0', display: 'inline-flex', alignItems: 'baseline', gap: '0.28rem', whiteSpace: 'nowrap' }}>
+                  <strong style={{ fontWeight: 700, color: col }}>{s.value}</strong>
+                  <span style={{ color: '#7b93b0', fontSize: '0.88rem' }}>{s.label}</span>
+                </span>
+              )
+            })}
+            <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '0.95rem', color: '#e8e0d0', display: 'inline-flex', alignItems: 'baseline', gap: '0.28rem', whiteSpace: 'nowrap' }}>
+              <strong style={{ fontWeight: 700, color: dayColor }}>{days}</strong>
+              <span style={{ color: '#7b93b0', fontSize: '0.88rem' }}>day{days !== 1 ? 's' : ''} left in trial</span>
+            </span>
+            <a href="/pricing" className="trial-upgrade-btn" style={{
+              marginLeft: 'auto',
+              fontFamily: 'Raleway, sans-serif',
+              fontSize: '0.58rem',
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: '#c9a84c',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              padding: '0 0.85rem',
+              border: '1px solid rgba(201,168,76,0.35)',
+              borderRadius: '5px',
+              minHeight: '36px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              flexShrink: 0,
+            }}>
+              Upgrade →
+            </a>
+          </div>
+        )
+      })()}
 
       {showReveals && <RevealedByPanel revealedBy={revealedBy} />}
 
