@@ -2143,7 +2143,11 @@
     .nav-links { display: none; }
     .nav-cta { display: none; }
     .nav-signin-btn { display: none; }
+    .nav-user-name { display: none; }
+    .nav-plan-badge { display: none; }
     .hamburger { display: flex; }
+    nav { flex-wrap: nowrap; gap: 0.75rem; }
+    #nav-auth-area { flex-shrink: 0; }
 
     .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
     .usp-cards { grid-template-columns: 1fr 1fr; }
@@ -2422,10 +2426,10 @@
 
       authArea.innerHTML = `
         <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
-          <span style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--text-mid);font-style:italic;">
+          <span class="nav-user-name" style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--text-mid);font-style:italic;">
             ${name}
           </span>
-          <span style="font-family:'Raleway',sans-serif;font-size:0.55rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.65rem;background:rgba(139,105,20,0.08);border:1px solid rgba(139,105,20,0.3);color:var(--gold);border-radius:20px;">
+          <span class="nav-plan-badge" style="font-family:'Raleway',sans-serif;font-size:0.55rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.2rem 0.65rem;background:rgba(139,105,20,0.08);border:1px solid rgba(139,105,20,0.3);color:var(--gold);border-radius:20px;">
             Free Plan
           </span>
           <a href="${profileHref}" class="nav-cta" style="margin:0;text-decoration:none;">${profileLabel}</a>
@@ -2493,6 +2497,8 @@
   <a href="#pricing" onclick="toggleMenu()">Pricing</a>
   <div class="mobile-menu-divider"></div>
   <a href="#safety" onclick="toggleMenu()">Safety</a>
+  <div class="mobile-menu-divider"></div>
+  <a href="/support" onclick="toggleMenu()">Contact</a>
   <div class="mobile-menu-actions">
     <a href="/login" class="mobile-menu-signin" onclick="toggleMenu()">Sign In</a>
     <button class="mobile-menu-cta" onclick="toggleMenu(); openModal();">Begin Journey</button>
