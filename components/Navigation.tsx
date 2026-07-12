@@ -12,6 +12,17 @@ interface MeetingStats {
   waiting: number
 }
 
+interface PlanUsage {
+  likesUsed: number
+  likeLimit: number
+  revealsUsed: number
+  revealLimit: number | null // null = unlimited
+  meetingsUsed: number
+  meetingLimit: number
+  trialDaysLeft: number | null // null = not on free trial
+  trialExpired: boolean
+}
+
 interface AuthUser {
   id: string
   name: string
@@ -19,7 +30,12 @@ interface AuthUser {
   stats: MeetingStats
   likeStats: { sent: number; mutual: number }
   bookmarks: number
+  usage: PlanUsage
 }
+
+const PLAN_LIMITS: Record<string, number> = { free: 2, starter: 4, standard: 8 }
+const LIKE_LIMITS: Record<string, number> = { free: 5, starter: 10, standard: 15 }
+const FREE_REVEAL_LIMIT = 5
 
 const c = {
   nav: 'rgba(7,17,31,0.96)',
@@ -49,18 +65,33 @@ export default function Navigation() {
     const supabase = createClient()
 
     async function loadUser(userId: string, email?: string, fullName?: string) {
-      const [profileRes, meetingsRes, likesRes, likedMeRes, shortlistRes] = await Promise.all([
-        supabase.from('profiles').select('full_name, plan').eq('id', userId).maybeSingle(),
+      const monthStart = new Date()
+      monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
+
+      const [
+        profileRes, meetingsRes, likesRes, likedMeRes, shortlistRes,
+        meetingsThisMonthRes, extraPurchasedRes, likesThisMonthRes, revealsThisMonthRes,
+      ] = await Promise.all([
+        supabase.from('profiles').select('full_name, plan, created_at').eq('id', userId).maybeSingle(),
         supabase.from('video_meetings')
           .select('status, requester_id')
           .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`),
         supabase.from('profile_likes').select('liked_id').eq('liker_id', userId),
         supabase.from('profile_likes').select('liker_id').eq('liked_id', userId),
         supabase.from('shortlist').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('video_meetings').select('*', { count: 'exact', head: true })
+          .eq('requester_id', userId).gte('created_at', monthStart.toISOString()),
+        supabase.from('extra_meeting_purchases').select('*', { count: 'exact', head: true })
+          .eq('user_id', userId).gte('created_at', monthStart.toISOString()),
+        supabase.from('profile_likes').select('*', { count: 'exact', head: true })
+          .eq('liker_id', userId).gte('created_at', monthStart.toISOString()),
+        supabase.from('photo_reveals').select('*', { count: 'exact', head: true })
+          .eq('viewer_id', userId).gte('created_at', monthStart.toISOString()),
       ])
 
       const profile  = profileRes.data
       const meetings = meetingsRes.data ?? []
+      const plan     = profile?.plan || 'free'
 
       const myRequests = meetings.filter(m => m.requester_id === userId)
       const stats: MeetingStats = {
@@ -74,13 +105,32 @@ export default function Navigation() {
       const likedMe     = new Set((likedMeRes.data ?? []).map(r => r.liker_id as string))
       const mutualCount = [...likedByMe].filter(id => likedMe.has(id)).length
 
+      const createdAt = profile?.created_at as string | null | undefined
+      const daysSinceCreation = createdAt
+        ? Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000)
+        : 0
+      const trialDaysLeft = plan === 'free' ? Math.max(0, 30 - daysSinceCreation) : null
+      const trialExpired  = plan === 'free' && daysSinceCreation > 30
+
+      const usage: PlanUsage = {
+        likesUsed:    likesThisMonthRes.count ?? 0,
+        likeLimit:    LIKE_LIMITS[plan] ?? 5,
+        revealsUsed:  revealsThisMonthRes.count ?? 0,
+        revealLimit:  plan === 'free' ? FREE_REVEAL_LIMIT : null,
+        meetingsUsed: meetingsThisMonthRes.count ?? 0,
+        meetingLimit: (PLAN_LIMITS[plan] ?? 2) + (extraPurchasedRes.count ?? 0),
+        trialDaysLeft,
+        trialExpired,
+      }
+
       setUser({
         id: userId,
         name: profile?.full_name || fullName || email?.split('@')[0] || 'Member',
-        plan: profile?.plan || 'free',
+        plan,
         stats,
         likeStats: { sent: likedByMe.size, mutual: mutualCount },
         bookmarks: shortlistRes.count ?? 0,
+        usage,
       })
     }
 
@@ -235,6 +285,55 @@ export default function Navigation() {
                     <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '0.22rem 0.7rem', background: 'rgba(201,168,76,0.12)', border: `1px solid rgba(201,168,76,0.3)`, color: c.gold, borderRadius: '20px' }}>
                       {planLabel} Plan
                     </span>
+                  </div>
+
+                  {/* Plan usage */}
+                  <div style={{ padding: '1rem 1.4rem', borderBottom: `1px solid ${c.border}` }}>
+                    <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.75rem' }}>Plan Usage</p>
+                    {[
+                      { icon: '❤️', label: user.plan === 'free' ? 'Trial Likes' : 'Likes', used: user.usage.likesUsed, limit: user.usage.likeLimit },
+                      { icon: '📸', label: user.plan === 'free' ? 'Trial Photo Reveals' : 'Photo Reveals', used: user.usage.revealsUsed, limit: user.usage.revealLimit },
+                      { icon: '🎥', label: user.plan === 'free' ? 'Trial Meetings' : 'Meetings', used: user.usage.meetingsUsed, limit: user.usage.meetingLimit },
+                    ].map(row => {
+                      const remaining = row.limit === null ? null : Math.max(0, row.limit - row.used)
+                      const pct = row.limit ? remaining! / row.limit : 1
+                      const col = row.limit === null ? '#4ade80' : pct > 0.5 ? '#f9a8d4' : pct > 0 ? '#fbbf24' : '#f87171'
+                      return (
+                        <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem', color: c.ivoryDim }}>{row.icon} {row.label}</span>
+                          {row.limit === null ? (
+                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', fontWeight: 600, color: col }}>Unlimited</span>
+                          ) : (row.label.includes('Meetings')) ? (
+                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600, color: col }}>{remaining} remaining</span>
+                          ) : (
+                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600 }}>
+                              <span style={{ color: col }}>{row.used}</span>
+                              <span style={{ color: c.ivoryDim }}> / {row.limit}</span>
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+
+                    {user.usage.trialExpired && (
+                      <div style={{ marginTop: '0.6rem', padding: '0.65rem 0.9rem', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.35)', borderRadius: '8px' }}>
+                        <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.06em', color: '#fca5a5' }}>
+                          ⌛ FREE TRIAL ENDED —{' '}
+                          <Link href="/pricing" onClick={() => setOpen(false)} style={{ color: '#fca5a5', textDecoration: 'underline' }}>UPGRADE NOW</Link>
+                        </span>
+                      </div>
+                    )}
+                    {user.usage.trialDaysLeft !== null && !user.usage.trialExpired && (() => {
+                      const days = user.usage.trialDaysLeft!
+                      const dayColor = days > 10 ? '#4ade80' : days > 5 ? '#fbbf24' : '#f87171'
+                      return (
+                        <div style={{ marginTop: '0.6rem', padding: '0.65rem 0.9rem', background: 'rgba(74,222,128,0.08)', border: `1px solid ${dayColor}55`, borderRadius: '8px' }}>
+                          <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.06em', color: dayColor }}>
+                            ⏳ {days} DAY{days !== 1 ? 'S' : ''} LEFT IN FREE TRIAL
+                          </span>
+                        </div>
+                      )
+                    })()}
                   </div>
 
                   {/* Meeting stats */}
