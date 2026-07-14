@@ -220,6 +220,12 @@ export default function Navigation() {
 
   return (
     <>
+    <style>{`
+      @media (max-width: 640px) {
+        .dnav-text-links { display: none; }
+        .dnav-username { display: none; }
+      }
+    `}</style>
     {/* Inactivity warning modal */}
     {warning && (
       <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
@@ -258,8 +264,9 @@ export default function Navigation() {
         {user ? (
           /* ── Logged-in nav ── */
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
-            <Link href="/profile"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>My Profile</Link>
+            <Link href="/discover" className="dnav-text-links" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
+            <Link href="/profile"  className="dnav-text-links" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>My Profile</Link>
+            <Link href="/blog"     className="dnav-text-links" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Blog</Link>
 
             {/* User dropdown */}
             <div ref={dropRef} style={{ position: 'relative' }}>
@@ -269,7 +276,7 @@ export default function Navigation() {
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(135deg, #1e3358, #253f6a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Playfair Display", serif', fontSize: '0.7rem', fontWeight: 700, color: c.gold, flexShrink: 0 }}>
                   {initials}
                 </div>
-                <span style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivory }}>
+                <span className="dnav-username" style={{ fontFamily: '"Playfair Display", Georgia, serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.ivory }}>
                   {user.name.split(' ')[0]}
                 </span>
                 <span style={{ color: c.ivoryDim, fontSize: '0.65rem' }}>▾</span>
@@ -299,14 +306,14 @@ export default function Navigation() {
                       const pct = row.limit ? remaining! / row.limit : 1
                       const col = row.limit === null ? '#4ade80' : pct > 0.5 ? '#f9a8d4' : pct > 0 ? '#fbbf24' : '#f87171'
                       return (
-                        <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem', color: c.ivoryDim }}>{row.icon} {row.label}</span>
+                        <div key={row.label} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '0.15rem 0.5rem', marginBottom: '0.5rem' }}>
+                          <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem', color: c.ivoryDim, whiteSpace: 'nowrap' }}>{row.icon} {row.label}</span>
                           {row.limit === null ? (
-                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', fontWeight: 600, color: col }}>Unlimited</span>
+                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1rem', fontWeight: 600, color: col, marginLeft: 'auto', whiteSpace: 'nowrap' }}>Unlimited</span>
                           ) : (row.label.includes('Meetings')) ? (
-                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600, color: col }}>{remaining} remaining</span>
+                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600, color: col, marginLeft: 'auto', whiteSpace: 'nowrap' }}>{remaining} remaining</span>
                           ) : (
-                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600 }}>
+                            <span style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', fontWeight: 600, marginLeft: 'auto', whiteSpace: 'nowrap' }}>
                               <span style={{ color: col }}>{row.used}</span>
                               <span style={{ color: c.ivoryDim }}> / {row.limit}</span>
                             </span>
@@ -377,6 +384,10 @@ export default function Navigation() {
                       style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       ⭐ Upgrade Plan
                     </Link>
+                    <Link href="/blog" onClick={() => setOpen(false)}
+                      style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      📰 Blog
+                    </Link>
                     <Link href="/support" onClick={() => setOpen(false)}
                       style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.78rem', letterSpacing: '0.06em', color: c.ivoryDim, textDecoration: 'none', padding: '0.55rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       ❓ Help &amp; Support
@@ -396,6 +407,7 @@ export default function Navigation() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Link href="/discover" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Discover</Link>
             <Link href="/pricing"  style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Pricing</Link>
+            <Link href="/blog"     className="dnav-text-links" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Blog</Link>
             <Link href="/login"    style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', color: c.ivoryDim, textDecoration: 'none', letterSpacing: '0.06em' }}>Sign In</Link>
             <Link href="/signup"
               style={{ padding: '0.5rem 1.25rem', background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', color: '#fff', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', borderRadius: '4px', textDecoration: 'none' }}>
