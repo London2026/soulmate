@@ -41,8 +41,8 @@ export default function BlogIndexPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {posts.map(post => (
             <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
-              <article style={{ background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '12px', padding: '1.75rem', transition: 'border-color 0.2s' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <article style={{ background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '12px', padding: 'clamp(1.25rem, 4vw, 1.75rem)', transition: 'border-color 0.2s' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem 0.75rem', marginBottom: '0.75rem' }}>
                   <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight }}>
                     {post.tag}
                   </span>

@@ -81,7 +81,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </Link>
 
         <div style={{ margin: '1.5rem 0 2.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem 0.75rem', marginBottom: '1rem' }}>
             <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight }}>
               {post.tag}
             </span>
@@ -99,7 +99,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           {post.body.map((block, i) => <Block key={i} block={block} />)}
         </article>
 
-        <div style={{ marginTop: '2.5rem', padding: '1.75rem', background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '12px', textAlign: 'center' }}>
+        <div style={{ marginTop: '2.5rem', padding: 'clamp(1.25rem, 4vw, 1.75rem)', background: c.navyMid, border: `1px solid ${c.border}`, borderRadius: '12px', textAlign: 'center' }}>
           <p style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontSize: '1.2rem', fontWeight: 600, color: c.ivory, margin: '0 0 0.6rem' }}>
             Ready to try it yourself?
           </p>
