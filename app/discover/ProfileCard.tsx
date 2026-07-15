@@ -38,6 +38,7 @@ export interface ProfileData {
   voice_url: string | null
   voice_native_url?: string | null
   front_photo_url: string | null
+  has_front_photo?: boolean
   already_revealed: boolean
   meeting_room_id: string | null
   meeting_status: string | null
@@ -374,7 +375,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
                 {revealsLeft === 0 ? 'Upgrade for Unlimited Reveals →' : 'Upgrade Plan →'}
               </a>
             </div>
-          ) : !profile.front_photo_url && !revealed && canReveal ? (
+          ) : !profile.has_front_photo && !revealed && canReveal ? (
             <div style={{ textAlign: 'center', padding: '0.5rem 0 1rem' }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
               <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>

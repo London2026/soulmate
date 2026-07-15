@@ -200,6 +200,7 @@ export default async function DiscoverPage() {
       revealedSet.has(p.id) && p.front_photo_path
         ? (urlMap[p.front_photo_path] ?? null)
         : null,
+    has_front_photo: !!p.front_photo_path,
     already_revealed: revealedSet.has(p.id),
     meeting_room_id: meetingByOther[p.id]?.room_id ?? null,
     meeting_status: meetingByOther[p.id]?.status ?? null,
@@ -258,6 +259,7 @@ export default async function DiscoverPage() {
     back_photo_2_url: myRow.back_photo_2_path ? (urlMap[myRow.back_photo_2_path] ?? null) : null,
     voice_url: myRow.voice_path ? (urlMap[myRow.voice_path] ?? null) : null,
     front_photo_url: myRow.front_photo_path ? (urlMap[myRow.front_photo_path] ?? null) : null,
+    has_front_photo: !!myRow.front_photo_path,
     already_revealed: false,
     meeting_room_id: null,
     meeting_status: null,
