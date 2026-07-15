@@ -36,6 +36,7 @@ function buildTextUpdate(d: Draft): Record<string, unknown> {
     occupation: d.occupation || null,
     housing: d.housing || null,
     marital_status: d.maritalStatus || null, has_kids: d.hasKids || null,
+    looking_for: d.lookingFor || null,
     pref_gender: d.prefGender || null,
     pref_age_min: d.prefAgeMin ? parseInt(d.prefAgeMin) : null,
     pref_age_max: d.prefAgeMax ? parseInt(d.prefAgeMax) : null,
@@ -68,6 +69,7 @@ interface Draft {
   education: string; university: string; educationSubject: string; otherQualifications: string
   employmentStatus: string; occupation: string; housing: string
   maritalStatus: string; hasKids: string
+  lookingFor: string
   prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string; prefSubReligion: string; prefOccupation: string; prefHeight: string; prefEthnicity: string; otherPreferences: string
   favReels: string; favYoutube: string; favWebSeries: string; favTravel: string; favFoods: string; favAiTools: string; hobby: string
   habitSmoking: string; habitDrinking: string; habitDrugs: string; habitBetting: string
@@ -80,6 +82,7 @@ const EMPTY: Draft = {
   education: '', university: '', educationSubject: '', otherQualifications: '',
   employmentStatus: '', occupation: '', housing: '',
   maritalStatus: '', hasKids: '',
+  lookingFor: '',
   prefGender: '', prefAgeMin: '18', prefAgeMax: '50', prefLocation: '', prefReligion: '', prefSubReligion: '', prefOccupation: '', prefHeight: '', prefEthnicity: '', otherPreferences: '',
   favReels: '', favYoutube: '', favWebSeries: '', favTravel: '', favFoods: '', favAiTools: '', hobby: '',
   habitSmoking: '', habitDrinking: '', habitDrugs: '', habitBetting: '',
@@ -174,6 +177,7 @@ function OnboardingPage() {
           employmentStatus: (profile as Record<string, unknown>).employment_status as string ?? '',
           occupation: profile.occupation ?? '',
           housing: (profile as Record<string, unknown>).housing as string ?? '',
+          lookingFor: (profile as Record<string, unknown>).looking_for as string ?? '',
           prefGender: profile.pref_gender ?? '',
           prefAgeMin: profile.pref_age_min ? String(profile.pref_age_min) : '18',
           prefAgeMax: profile.pref_age_max ? String(profile.pref_age_max) : '50',
@@ -265,6 +269,7 @@ function OnboardingPage() {
     if (step === 1 && (!draft.religion || !draft.motherTongue || !draft.education || !draft.occupation))
       return 'Please complete all fields.'
     if (step === 2) {
+      if (!draft.lookingFor) return 'Please select what you are looking for.'
       if (!draft.prefGender) return 'Please select who you are looking for.'
       if (parseInt(draft.prefAgeMin) >= parseInt(draft.prefAgeMax)) return 'Max age must be greater than min age.'
       if (!draft.prefReligion) return 'Please select a religion preference.'
@@ -349,6 +354,7 @@ function OnboardingPage() {
         education_subject: draft.educationSubject || null, employment_status: draft.employmentStatus || null,
         occupation: draft.occupation,
         marital_status: draft.maritalStatus || null, has_kids: draft.hasKids || null,
+        looking_for: draft.lookingFor || null,
         pref_gender: draft.prefGender, pref_age_min: parseInt(draft.prefAgeMin),
         pref_age_max: parseInt(draft.prefAgeMax), pref_location: draft.prefLocation,
         pref_religion: draft.prefReligion,

@@ -7,9 +7,10 @@ const blur  = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => (e.
 
 const GENDERS   = ['Man', 'Woman', 'Either']
 const RELIGIONS = ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Buddhist', 'Jewish', 'Zoroastrian', 'Any']
+const LOOKING_FOR_OPTIONS = ['Dating', 'Marriage', 'Life Partner', 'Soulful Connection', 'Long-term Partnership']
 
 interface Props {
-  data: { prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string; prefSubReligion: string; prefOccupation: string; prefHeight: string; prefEthnicity: string; otherPreferences: string }
+  data: { lookingFor: string; prefGender: string; prefAgeMin: string; prefAgeMax: string; prefLocation: string; prefReligion: string; prefSubReligion: string; prefOccupation: string; prefHeight: string; prefEthnicity: string; otherPreferences: string }
   onChange: (key: string, value: string) => void
 }
 
@@ -23,6 +24,15 @@ export default function PreferencesStep({ data, onChange }: Props) {
         Set your partner preferences
       </p>
       <div style={{ height: '1px', background: `linear-gradient(to right, ${c.gold}, transparent)`, marginBottom: '1.25rem' }} />
+
+      {/* Looking For (relationship intent) */}
+      <div style={field}>
+        <label style={label}>Looking For</label>
+        <select value={data.lookingFor} onChange={e => onChange('lookingFor', e.target.value)} style={inp} onFocus={focus} onBlur={blur}>
+          <option value="">Select what you are looking for…</option>
+          {LOOKING_FOR_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
 
       {/* Gender preference */}
       <div style={field}>

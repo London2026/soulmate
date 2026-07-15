@@ -187,7 +187,8 @@ export default async function ProfilePage() {
 
   const p = profile as Record<string, unknown>
   const prefFields = [
-    { label: 'Looking For', value: p.pref_gender as string },
+    { label: 'Relationship Goal', value: p.looking_for as string },
+    { label: 'Gender', value: p.pref_gender as string },
     { label: 'Age Range', value: p.pref_age_min && p.pref_age_max ? `${p.pref_age_min} – ${p.pref_age_max} yrs` : null },
     { label: 'Location', value: p.pref_location as string },
     { label: 'Religion', value: p.pref_religion as string },
@@ -424,6 +425,7 @@ export default async function ProfilePage() {
             <Reveal className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
               <ProfileSectionHeader icon="💑" title="Looking For" />
               <div>
+                <ProfileDetailRow label="Relationship Goal"    value={p.looking_for as string} />
                 <ProfileDetailRow label="Gender"               value={p.pref_gender as string} />
                 <ProfileDetailRow label="Age Range"            value={p.pref_age_min && p.pref_age_max ? `${p.pref_age_min} – ${p.pref_age_max} years` : null} />
                 <ProfileDetailRow label="Religion"             value={p.pref_religion as string} />

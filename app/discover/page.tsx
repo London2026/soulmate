@@ -13,6 +13,7 @@ const PROFILE_FIELDS = `
   back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
   fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
   zodiac_sign, hobby, university, other_qualifications, housing, voice_native_path,
+  looking_for,
   pref_gender, pref_age_min, pref_age_max, pref_location, pref_religion, pref_sub_religion,
   pref_occupation, pref_height, pref_ethnicity,
   habit_smoking, habit_drinking, habit_drugs, habit_betting

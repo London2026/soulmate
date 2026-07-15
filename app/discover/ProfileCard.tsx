@@ -47,6 +47,7 @@ export interface ProfileData {
   fav_travel?: string | null
   fav_foods?: string | null
   fav_ai_tools?: string | null
+  looking_for?: string | null
   pref_gender?: string | null
   pref_age_min?: number | null
   pref_age_max?: number | null
@@ -309,10 +310,11 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       </div>
 
       {/* ── Looking For ── */}
-      {[profile.pref_gender, profile.pref_age_min, profile.pref_location, profile.pref_religion, profile.pref_occupation, profile.pref_height, profile.pref_ethnicity].some(Boolean) && (
+      {[profile.looking_for, profile.pref_gender, profile.pref_age_min, profile.pref_location, profile.pref_religion, profile.pref_occupation, profile.pref_height, profile.pref_ethnicity].some(Boolean) && (
         <div className="pc-section" style={{ background: c.navyMid, borderTop: '3px solid #07111f' }}>
           <SectionHeader icon="💑" title="Looking For" />
           <div>
+            <DetailRow label="Relationship Goal"    value={profile.looking_for} />
             <DetailRow label="Gender"               value={profile.pref_gender} />
             <DetailRow label="Age Range"            value={profile.pref_age_min && profile.pref_age_max ? `${profile.pref_age_min} – ${profile.pref_age_max} years` : null} />
             <DetailRow label="Religion"             value={profile.pref_religion} />
