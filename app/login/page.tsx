@@ -100,6 +100,9 @@ export default function LoginPage() {
             <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.95rem', fontStyle: 'italic', color: c.sepia, margin: 0 }}>
               We sent an 8-digit code to <strong style={{ color: c.navy, fontStyle: 'normal' }}>{email}</strong>
             </p>
+            <p style={{ fontFamily: 'Raleway,sans-serif', fontSize: '0.72rem', color: c.gold, fontWeight: 600, marginTop: '0.6rem' }}>
+              Don&apos;t see it? Please check your spam or junk folder.
+            </p>
           </div>
           <div className="auth-card-body">
             <form onSubmit={verifyCode}>
