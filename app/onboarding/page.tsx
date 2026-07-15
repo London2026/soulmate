@@ -258,6 +258,9 @@ function OnboardingPage() {
       if (!draft.age || parseInt(draft.age) < 18) return 'Please enter a valid age (18+).'
       if (!draft.gender) return 'Please select your gender.'
       if (!draft.city || !draft.country) return 'Please enter your city and country.'
+      if (!draft.phone.trim()) return 'Please enter your mobile number.'
+      if (!/^\+[1-9]\d{6,14}$/.test(draft.phone.trim().replace(/[\s-]/g, '')))
+        return 'Please include your country code, e.g. +44 7911 123456.'
     }
     if (step === 1 && (!draft.religion || !draft.motherTongue || !draft.education || !draft.occupation))
       return 'Please complete all fields.'
