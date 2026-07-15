@@ -847,21 +847,23 @@ export default function DiscoverClient({
       {selected && (
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setSelected(null) }}>
           <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px' }}>
-            <div style={{ position: 'sticky', top: '0.75rem', float: 'right', marginRight: '0.75rem', zIndex: 10, display: 'flex', gap: '0.4rem' }}>
-              <button onClick={() => { setBlockTarget(selected); setSelected(null) }}
-                title="Block this profile"
-                style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#f87171', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                🚫
-              </button>
-              <button onClick={() => { setReportTarget(selected); setSelected(null) }}
-                title="Report this profile"
-                style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#e57373', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                ⚑
-              </button>
-              <button onClick={() => setSelected(null)}
-                style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: c.ivoryDim, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                ✕
-              </button>
+            <div style={{ position: 'sticky', top: '0.75rem', height: 0, overflow: 'visible', zIndex: 10 }}>
+              <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', marginRight: '0.75rem' }}>
+                <button onClick={() => { setBlockTarget(selected); setSelected(null) }}
+                  title="Block this profile"
+                  style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#f87171', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  🚫
+                </button>
+                <button onClick={() => { setReportTarget(selected); setSelected(null) }}
+                  title="Report this profile"
+                  style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#e57373', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  ⚑
+                </button>
+                <button onClick={() => setSelected(null)}
+                  style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: c.ivoryDim, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  ✕
+                </button>
+              </div>
             </div>
             <ProfileCard
               profile={{ ...selected, is_liked: liked.has(selected.id), is_mutual: mutual.has(selected.id) }}
