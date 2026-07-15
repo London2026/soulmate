@@ -40,6 +40,11 @@ const STYLE = `
   }
 `
 
+function hasFirstAndLastName(value: string) {
+  const parts = value.trim().split(/\s+/).filter(Boolean)
+  return parts.length >= 2 && parts.every(part => /[a-zA-Z]/.test(part))
+}
+
 function SignupForm() {
   const [step, setStep] = useState<'details' | 'code'>('details')
   const [name, setName] = useState('')
@@ -54,6 +59,7 @@ function SignupForm() {
   async function sendCode(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) { setError('Please enter your name.'); return }
+    if (!hasFirstAndLastName(name)) { setError('Please enter both your first and last name.'); return }
     if (!email.trim()) { setError('Please enter your email address.'); return }
     setLoading(true); setError('')
     const supabase = createClient()
