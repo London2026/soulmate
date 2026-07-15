@@ -38,6 +38,7 @@ export interface ProfileData {
   voice_url: string | null
   voice_native_url?: string | null
   front_photo_url: string | null
+  front_photo_blurred_url?: string | null
   has_front_photo?: boolean
   already_revealed: boolean
   meeting_room_id: string | null
@@ -104,6 +105,21 @@ function SectionHeader({ icon, title }: { icon: string; title: string }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.25rem' }}>
       <span style={{ fontSize: '1.2rem' }}>{icon}</span>
       <span style={{ fontFamily: 'Raleway, sans-serif', fontSize: '1.1rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#f5f0e6' }}>{title}</span>
+    </div>
+  )
+}
+
+function LockedPhotoPanel({ backgroundUrl, children }: { backgroundUrl?: string | null; children: React.ReactNode }) {
+  return (
+    <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4', background: c.navyMid, marginBottom: '0.85rem' }}>
+      {backgroundUrl && (
+        <img src={backgroundUrl} alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(20px)', transform: 'scale(1.12)' }} />
+      )}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,31,60,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', padding: '1.5rem', textAlign: 'center' }}>
+        <span style={{ fontSize: '2.2rem', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}>🔒</span>
+        {children}
+      </div>
     </div>
   )
 }
@@ -364,23 +380,27 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
         <div style={{ padding: '1.5rem 1.75rem', background: c.navyLight, borderTop: '3px solid #07111f' }}>
           {/* Reveal section */}
           {!canReveal && !revealed ? (
-            <div style={{ textAlign: 'center', padding: '0.5rem 0 1rem' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
-                {revealsLeft === 0
-                  ? "You've used all 5 photo reveals for this month."
-                  : 'Face reveal requires a paid plan.'}
-              </p>
-              <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0 1.25rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', minHeight: '44px' }}>
-                {revealsLeft === 0 ? 'Upgrade for Unlimited Reveals →' : 'Upgrade Plan →'}
-              </a>
+            <div style={{ padding: '0.5rem 0 1rem' }}>
+              <LockedPhotoPanel backgroundUrl={profile.front_photo_blurred_url ?? profile.back_photo_1_url}>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#f5f0e6', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+                  {revealsLeft === 0
+                    ? "You've used all 5 photo reveals for this month."
+                    : 'Face reveal requires a paid plan.'}
+                </p>
+              </LockedPhotoPanel>
+              <div style={{ textAlign: 'center' }}>
+                <a href="/pricing" style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.goldLight, textDecoration: 'none', border: `1px solid ${c.border}`, padding: '0 1.25rem', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', minHeight: '44px' }}>
+                  {revealsLeft === 0 ? 'Upgrade for Unlimited Reveals →' : 'Upgrade Plan →'}
+                </a>
+              </div>
             </div>
           ) : !profile.has_front_photo && !revealed && canReveal ? (
-            <div style={{ textAlign: 'center', padding: '0.5rem 0 1rem' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: 0 }}>
-                {firstNameOnly(profile.full_name)} hasn&apos;t uploaded their reveal photo yet
-              </p>
+            <div style={{ padding: '0.5rem 0 1rem' }}>
+              <LockedPhotoPanel backgroundUrl={profile.front_photo_blurred_url ?? profile.back_photo_1_url}>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#f5f0e6', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+                  {firstNameOnly(profile.full_name)} hasn&apos;t uploaded their reveal photo yet
+                </p>
+              </LockedPhotoPanel>
             </div>
           ) : revealed && frontUrl ? (
             <div style={{ marginBottom: '1rem' }}>
@@ -397,10 +417,11 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
             </div>
           ) : (
             <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
-              <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: c.ivoryDim, margin: '0 0 0.75rem' }}>
-                Face photo is hidden. Revealing notifies {firstNameOnly(profile.full_name)} instantly.
-              </p>
+              <LockedPhotoPanel backgroundUrl={profile.front_photo_blurred_url ?? profile.back_photo_1_url}>
+                <p style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', fontSize: '0.95rem', color: '#f5f0e6', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+                  Face photo is hidden. Revealing notifies {firstNameOnly(profile.full_name)} instantly.
+                </p>
+              </LockedPhotoPanel>
               {revealsLeft !== null && (
                 <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: revealsLeft <= 1 ? '#f87171' : c.ivoryDim, margin: '0 0 0.5rem' }}>
                   {revealsLeft} photo reveal{revealsLeft !== 1 ? 's' : ''} remaining this month

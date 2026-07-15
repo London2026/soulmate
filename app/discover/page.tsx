@@ -3,6 +3,7 @@ import Navigation from '@/components/Navigation'
 import BottomNav from '@/components/BottomNav'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { ensureBlurredFrontPhoto } from '@/lib/blurPhoto'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import DiscoverClient from './DiscoverClient'
 
@@ -13,7 +14,7 @@ const PROFILE_FIELDS = `
   back_photo_1_path, back_photo_2_path, voice_path, front_photo_path,
   fav_reels, fav_youtube, fav_web_series, fav_travel, fav_foods, fav_ai_tools,
   zodiac_sign, hobby, university, other_qualifications, housing, voice_native_path,
-  looking_for,
+  looking_for, front_photo_blurred_path,
   pref_gender, pref_age_min, pref_age_max, pref_location, pref_religion, pref_sub_religion,
   pref_occupation, pref_height, pref_ethnicity,
   habit_smoking, habit_drinking, habit_drugs, habit_betting
@@ -125,6 +126,18 @@ export default async function DiscoverPage() {
   // Strip blocked profiles in both directions before any further processing
   const safeRows = (rows ?? []).filter(p => !blockedIds.has(p.id))
 
+  // Ensure every profile with a face photo has a permanently-blurred variant
+  // (generated once, cached in storage) so unrevealed viewers can see a real
+  // blurred preview without ever receiving the actual revealable photo.
+  const blurredPathByProfileId: Record<string, string | null> = {}
+  await Promise.all(safeRows.map(async (p) => {
+    if (!p.front_photo_path) { blurredPathByProfileId[p.id] = null; return }
+    blurredPathByProfileId[p.id] = await ensureBlurredFrontPhoto(
+      adminClient, p.id, p.front_photo_path,
+      (p as Record<string, unknown>).front_photo_blurred_path as string | null
+    )
+  }))
+
   const revealedSet   = new Set((myReveals ?? []).map((r) => r.viewed_id as string))
   const shortlistedIds = (myShortlist ?? []).map((r) => r.profile_id as string)
 
@@ -150,6 +163,7 @@ export default async function DiscoverPage() {
     if (nativePath) allPaths.push(nativePath)
     // front photo only for already-revealed profiles
     if (revealedSet.has(p.id) && p.front_photo_path) allPaths.push(p.front_photo_path)
+    if (blurredPathByProfileId[p.id]) allPaths.push(blurredPathByProfileId[p.id]!)
   }
   if (myRow?.back_photo_1_path) allPaths.push(myRow.back_photo_1_path)
   if (myRow?.back_photo_2_path) allPaths.push(myRow.back_photo_2_path)
@@ -201,6 +215,7 @@ export default async function DiscoverPage() {
         ? (urlMap[p.front_photo_path] ?? null)
         : null,
     has_front_photo: !!p.front_photo_path,
+    front_photo_blurred_url: blurredPathByProfileId[p.id] ? (urlMap[blurredPathByProfileId[p.id]!] ?? null) : null,
     already_revealed: revealedSet.has(p.id),
     meeting_room_id: meetingByOther[p.id]?.room_id ?? null,
     meeting_status: meetingByOther[p.id]?.status ?? null,
