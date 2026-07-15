@@ -1645,6 +1645,28 @@
     color: rgba(245,239,224,0.3);
   }
 
+  /* CURSOR GLOW */
+  #cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 520px;
+    height: 520px;
+    margin-left: -260px;
+    margin-top: -260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,168,67,0.16) 0%, rgba(212,168,67,0.07) 35%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.12s linear;
+    will-change: transform;
+  }
+  #cursor-glow.active { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    #cursor-glow { display: none; }
+  }
+
   /* ANIMATED REVEAL */
   .reveal {
     opacity: 0;
@@ -2455,7 +2477,7 @@
 </head>
 <body>
 
-
+<div id="cursor-glow" aria-hidden="true"></div>
 
 <!-- NAV -->
 <nav>
@@ -3745,6 +3767,27 @@
       setInterval(function() {
         goToSlide((meetingCurrent + 1) % 3);
       }, 3800);
+    })();
+  </script>
+
+  <script>
+    (function() {
+      var glow = document.getElementById('cursor-glow');
+      if (!glow) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+      var raf = null;
+      document.addEventListener('mousemove', function(e) {
+        glow.classList.add('active');
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(function() {
+          glow.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px)';
+        });
+      });
+      document.addEventListener('mouseleave', function() {
+        glow.classList.remove('active');
+      });
     })();
   </script>
 </body>
