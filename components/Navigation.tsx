@@ -47,8 +47,8 @@ const c = {
   sepia: '#5a6e82',
 }
 
-const WARN_MS   = 9 * 60 * 1000   // show warning at 9 min
-const LOGOUT_MS = 10 * 60 * 1000  // auto-logout at 10 min
+const WARN_MS   = 29 * 60 * 1000  // show warning at 29 min
+const LOGOUT_MS = 30 * 60 * 1000  // auto-logout at 30 min
 
 export default function Navigation() {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -235,7 +235,7 @@ export default function Navigation() {
             Still there?
           </h2>
           <p style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '1.05rem', color: '#bdb5a6', lineHeight: 1.65, margin: '0 0 0.5rem' }}>
-            You have been inactive for 9 minutes.
+            You have been inactive for 29 minutes.
           </p>
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.85rem', color: '#f87171', fontWeight: 600, margin: '0 0 1.5rem' }}>
             You will be logged out automatically in <strong style={{ fontSize: '1.1rem' }}>{countdown}s</strong>
