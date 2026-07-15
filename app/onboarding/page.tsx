@@ -58,6 +58,33 @@ function buildTextUpdate(d: Draft): Record<string, unknown> {
   }
 }
 
+// Uploads whichever photos were freshly selected, independently of one another —
+// so replacing just one photo during an edit doesn't silently drop the change
+// while waiting for the other two to also be re-selected.
+async function uploadPhotos(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  back1: File | null, back2: File | null, front: File | null
+): Promise<{ back1Path: string | null; back2Path: string | null; frontPath: string | null }> {
+  let back1Path: string | null = null
+  let back2Path: string | null = null
+  let frontPath: string | null = null
+
+  await Promise.all([
+    back1 ? supabase.storage.from('profile-media')
+      .upload(`${userId}/back-1.${back1.name.split('.').pop() ?? 'jpg'}`, back1, { upsert: true })
+      .then(({ data }) => { back1Path = data?.path ?? null }) : Promise.resolve(),
+    back2 ? supabase.storage.from('profile-media')
+      .upload(`${userId}/back-2.${back2.name.split('.').pop() ?? 'jpg'}`, back2, { upsert: true })
+      .then(({ data }) => { back2Path = data?.path ?? null }) : Promise.resolve(),
+    front ? supabase.storage.from('profile-media')
+      .upload(`${userId}/front.${front.name.split('.').pop() ?? 'jpg'}`, front, { upsert: true })
+      .then(({ data }) => { frontPath = data?.path ?? null }) : Promise.resolve(),
+  ])
+
+  return { back1Path, back2Path, frontPath }
+}
+
 const c = {
   cream: '#f4f1eb', navy: '#0d1f3c', navyMid: '#1a3a5c',
   gold: '#8b6914', goldLight: '#c9a84c', sepia: '#5a6e82', rose: '#9e2a2b',
@@ -315,24 +342,8 @@ function OnboardingPage() {
         nativeVoicePath = data?.path ?? null
       }
 
-      // Only upload photos if new ones were selected
-      let back1Path: string | null = null
-      let back2Path: string | null = null
-      let frontPath: string | null = null
-
-      if (back1 && back2 && front) {
-        const ext1 = back1.name.split('.').pop() ?? 'jpg'
-        const ext2 = back2.name.split('.').pop() ?? 'jpg'
-        const ext3 = front.name.split('.').pop() ?? 'jpg'
-        const [r1, r2, r3] = await Promise.all([
-          supabase.storage.from('profile-media').upload(`${userId}/back-1.${ext1}`, back1, { upsert: true }),
-          supabase.storage.from('profile-media').upload(`${userId}/back-2.${ext2}`, back2, { upsert: true }),
-          supabase.storage.from('profile-media').upload(`${userId}/front.${ext3}`, front, { upsert: true }),
-        ])
-        back1Path = r1.data?.path ?? null
-        back2Path = r2.data?.path ?? null
-        frontPath = r3.data?.path ?? null
-      }
+      // Only upload photos that were freshly selected — each one independently
+      const { back1Path, back2Path, frontPath } = await uploadPhotos(supabase, userId, back1, back2, front)
 
       // Upload ID document if provided
       let idDocPath: string | null = null
@@ -434,20 +445,7 @@ function OnboardingPage() {
         nativeVoicePath2 = data?.path ?? null
       }
 
-      let back1Path: string | null = null, back2Path: string | null = null, frontPath: string | null = null
-      if (back1 && back2 && front) {
-        const ext1 = back1.name.split('.').pop() ?? 'jpg'
-        const ext2 = back2.name.split('.').pop() ?? 'jpg'
-        const ext3 = front.name.split('.').pop() ?? 'jpg'
-        const [r1, r2, r3] = await Promise.all([
-          supabase.storage.from('profile-media').upload(`${userId}/back-1.${ext1}`, back1, { upsert: true }),
-          supabase.storage.from('profile-media').upload(`${userId}/back-2.${ext2}`, back2, { upsert: true }),
-          supabase.storage.from('profile-media').upload(`${userId}/front.${ext3}`, front, { upsert: true }),
-        ])
-        back1Path = r1.data?.path ?? null
-        back2Path = r2.data?.path ?? null
-        frontPath = r3.data?.path ?? null
-      }
+      const { back1Path, back2Path, frontPath } = await uploadPhotos(supabase, userId, back1, back2, front)
 
       let idDocPath: string | null = null
       if (idFile) {
