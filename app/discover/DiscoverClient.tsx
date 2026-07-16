@@ -850,8 +850,8 @@ export default function DiscoverClient({
       {selected && (
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setSelected(null) }}>
           <div className="disc-modal-inner" style={{ position: 'relative', width: '100%', maxWidth: '820px', maxHeight: '92vh', overflowY: 'auto', borderRadius: '16px' }}>
-            <div style={{ position: 'sticky', top: '0.75rem', height: 0, overflow: 'visible', zIndex: 10 }}>
-              <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', marginRight: '0.75rem' }}>
+            <div style={{ position: 'sticky', top: 0, zIndex: 10, background: '#1e3d6e' }}>
+              <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', padding: '0.75rem 0.75rem 0.5rem' }}>
                 <button onClick={() => { setBlockTarget(selected); setSelected(null) }}
                   title="Block this profile"
                   style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(14,26,53,0.9)', border: `1px solid ${c.border}`, color: '#f87171', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
