@@ -319,6 +319,9 @@ export default function DiscoverClient({
           .disc-report-modal { padding: 1.25rem !important; }
           .disc-report-actions { flex-direction: column-reverse !important; }
           .disc-report-actions button { width: 100% !important; min-height: 44px !important; }
+          .disc-block-modal { padding: 1.25rem !important; }
+          .disc-block-actions { flex-direction: column-reverse !important; }
+          .disc-block-actions button { width: 100% !important; }
           .disc-invite-copy { flex-direction: column !important; }
           .disc-invite-copy-btn { width: 100% !important; min-height: 44px !important; justify-content: center !important; }
           .disc-invite-url { min-width: 0 !important; }
@@ -964,7 +967,7 @@ export default function DiscoverClient({
       {/* ── Block confirmation modal ── */}
       {blockTarget && (
         <div className="disc-modal-overlay" onClick={e => { if (e.target === e.currentTarget) setBlockTarget(null) }}>
-          <div style={{ background: '#0d1f3c', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 12, padding: '2rem', maxWidth: 420, width: '90%', margin: 'auto' }}>
+          <div className="disc-block-modal" style={{ background: '#0d1f3c', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 12, padding: '2rem', maxWidth: 420, width: '90%', margin: 'auto', boxSizing: 'border-box' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🚫</div>
             <h3 style={{ fontFamily: '"Playfair Display", Georgia, serif', fontSize: '1.2rem', color: '#f5f0e6', margin: '0 0 0.75rem' }}>
               Block {maskName(blockTarget.full_name)}?
@@ -972,13 +975,13 @@ export default function DiscoverClient({
             <p style={{ fontFamily: 'Georgia, serif', fontSize: '0.95rem', color: '#5a6e82', lineHeight: 1.7, margin: '0 0 1.5rem' }}>
               They will no longer appear in your Discover, and you will no longer appear in theirs. Existing conversations are unaffected.
             </p>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <div className="disc-block-actions" style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
               <button onClick={() => setBlockTarget(null)}
-                style={{ padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: '#5a6e82', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, borderRadius: 4, cursor: 'pointer' }}>
+                style={{ padding: '0.6rem 1.25rem', minHeight: '44px', background: 'transparent', border: '1px solid rgba(201,168,76,0.2)', color: '#5a6e82', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 600, borderRadius: 4, cursor: 'pointer' }}>
                 Cancel
               </button>
               <button onClick={() => handleBlock(blockTarget.id)}
-                style={{ padding: '0.6rem 1.25rem', background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, borderRadius: 4, cursor: 'pointer' }}>
+                style={{ padding: '0.6rem 1.25rem', minHeight: '44px', background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.4)', color: '#f87171', fontFamily: 'Raleway, sans-serif', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, borderRadius: 4, cursor: 'pointer' }}>
                 Block Member
               </button>
             </div>
