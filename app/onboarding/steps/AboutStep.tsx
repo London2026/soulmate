@@ -6,6 +6,7 @@ const focus = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderC
 const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')
 
 const GENDERS = ['Man', 'Woman', 'Other']
+const SEXUAL_ORIENTATIONS = ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Asexual', 'Other', 'Prefer not to say']
 
 const ZODIAC_SIGNS = [
   '♈ Aries', '♉ Taurus', '♊ Gemini', '♋ Cancer',
@@ -14,7 +15,7 @@ const ZODIAC_SIGNS = [
 ]
 
 interface Props {
-  data: { firstName: string; lastName: string; age: string; gender: string; city: string; country: string; phone: string; height: string; weight: string; ethnicity: string; zodiacSign: string }
+  data: { firstName: string; lastName: string; age: string; gender: string; sexualOrientation: string; city: string; country: string; phone: string; height: string; weight: string; ethnicity: string; zodiacSign: string }
   onChange: (key: string, value: string) => void
 }
 
@@ -66,6 +67,18 @@ export default function AboutStep({ data, onChange }: Props) {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Sexual Orientation */}
+      <div style={field}>
+        <label style={label}>Sexual Orientation</label>
+        <select value={data.sexualOrientation} onChange={e => onChange('sexualOrientation', e.target.value)}
+          style={{ ...inp, appearance: 'auto' as const }}
+          onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
+          onBlur={e => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')}>
+          <option value="">Select…</option>
+          {SEXUAL_ORIENTATIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
       </div>
 
       {/* City + Country */}

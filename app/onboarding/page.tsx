@@ -22,6 +22,7 @@ function buildTextUpdate(d: Draft): Record<string, unknown> {
     full_name: (d.firstName.trim() + ' ' + d.lastName.trim()).trim() || null,
     age: d.age ? parseInt(d.age) : null,
     gender: d.gender || null,
+    sexual_orientation: d.sexualOrientation || null,
     city: d.city || null, country: d.country || null,
     height: d.height || null, weight: d.weight || null, ethnicity: d.ethnicity || null,
     zodiac_sign: d.zodiacSign || null,
@@ -91,7 +92,7 @@ const c = {
 }
 
 interface Draft {
-  firstName: string; lastName: string; age: string; gender: string; city: string; country: string; phone: string; height: string; weight: string; ethnicity: string; zodiacSign: string
+  firstName: string; lastName: string; age: string; gender: string; sexualOrientation: string; city: string; country: string; phone: string; height: string; weight: string; ethnicity: string; zodiacSign: string
   religion: string; subReligion: string; motherTongue: string
   education: string; university: string; educationSubject: string; otherQualifications: string
   employmentStatus: string; occupation: string; housing: string
@@ -104,7 +105,7 @@ interface Draft {
 }
 
 const EMPTY: Draft = {
-  firstName: '', lastName: '', age: '', gender: '', city: '', country: '', phone: '', height: '', weight: '', ethnicity: '', zodiacSign: '',
+  firstName: '', lastName: '', age: '', gender: '', sexualOrientation: '', city: '', country: '', phone: '', height: '', weight: '', ethnicity: '', zodiacSign: '',
   religion: '', subReligion: '', motherTongue: '',
   education: '', university: '', educationSubject: '', otherQualifications: '',
   employmentStatus: '', occupation: '', housing: '',
@@ -192,6 +193,7 @@ function OnboardingPage() {
           lastName: nameParts.slice(1).join(' ') ?? '',
           age: profile.age ? String(profile.age) : '',
           gender: profile.gender ?? '',
+          sexualOrientation: (profile as Record<string, unknown>).sexual_orientation as string ?? '',
           city: profile.city ?? '',
           country: profile.country ?? '',
           religion: profile.religion ?? '',
@@ -288,6 +290,7 @@ function OnboardingPage() {
       if (!draft.firstName.trim() || !draft.lastName.trim()) return 'Please enter your first and last name.'
       if (!draft.age || parseInt(draft.age) < 18) return 'Please enter a valid age (18+).'
       if (!draft.gender) return 'Please select your gender.'
+      if (!draft.sexualOrientation) return 'Please select your sexual orientation.'
       if (!draft.city || !draft.country) return 'Please enter your city and country.'
       if (!draft.phone.trim()) return 'Please enter your mobile number.'
       if (!/^\+[1-9]\d{6,14}$/.test(draft.phone.trim().replace(/[\s-]/g, '')))
@@ -357,6 +360,7 @@ function OnboardingPage() {
         id: userId,
         full_name: (draft.firstName.trim() + ' ' + draft.lastName.trim()).trim(),
         age: parseInt(draft.age), gender: draft.gender,
+        sexual_orientation: draft.sexualOrientation || null,
         city: draft.city, country: draft.country,
         height: draft.height || null, weight: draft.weight || null, ethnicity: draft.ethnicity || null,
         zodiac_sign: draft.zodiacSign || null,

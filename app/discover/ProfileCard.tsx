@@ -50,6 +50,7 @@ export interface ProfileData {
   fav_foods?: string | null
   fav_ai_tools?: string | null
   looking_for?: string | null
+  sexual_orientation?: string | null
   pref_gender?: string | null
   pref_age_min?: number | null
   pref_age_max?: number | null
@@ -290,6 +291,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
       <div className="pc-section" style={{ background: c.navyMid, borderTop: '3px solid #07111f' }}>
         <SectionHeader icon="🧑" title="Personal Details" />
         <div>
+          <DetailRow label="Sexual Orientation" value={profile.sexual_orientation} />
           <DetailRow label="Mother Tongue"  value={profile.mother_tongue} />
           <DetailRow label="Height"         value={profile.height} />
           <DetailRow label="Weight"         value={profile.weight} />

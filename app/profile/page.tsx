@@ -383,6 +383,7 @@ export default async function ProfilePage() {
           <Reveal className="prof-section" style={{ borderTop: `1px solid ${c.borderSub}`, background: 'transparent' }}>
             <ProfileSectionHeader icon="🧑" title="Personal Details" />
             <div>
+              <ProfileDetailRow label="Sexual Orientation" value={p.sexual_orientation as string} />
               <ProfileDetailRow label="Mother Tongue"  value={profile.mother_tongue} />
               <ProfileDetailRow label="Height"         value={p.height as string} />
               <ProfileDetailRow label="Weight"         value={p.weight as string} />
