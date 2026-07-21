@@ -24,7 +24,7 @@ function buildTextUpdate(d: Draft): Record<string, unknown> {
     gender: d.gender || null,
     sexual_orientation: d.sexualOrientation || null,
     city: d.city || null, country: d.country || null,
-    height: d.height || null, weight: d.weight || null, ethnicity: d.ethnicity || null,
+    height: d.height || null, weight: d.weight || null, blood_group: d.bloodGroup || null, ethnicity: d.ethnicity || null,
     zodiac_sign: d.zodiacSign || null,
     religion: d.religion || null,
     sub_religion: d.subReligion || null,
@@ -92,7 +92,7 @@ const c = {
 }
 
 interface Draft {
-  firstName: string; lastName: string; age: string; gender: string; sexualOrientation: string; city: string; country: string; phone: string; height: string; weight: string; ethnicity: string; zodiacSign: string
+  firstName: string; lastName: string; age: string; gender: string; sexualOrientation: string; city: string; country: string; phone: string; height: string; weight: string; bloodGroup: string; ethnicity: string; zodiacSign: string
   religion: string; subReligion: string; motherTongue: string
   education: string; university: string; educationSubject: string; otherQualifications: string
   employmentStatus: string; occupation: string; housing: string
@@ -105,7 +105,7 @@ interface Draft {
 }
 
 const EMPTY: Draft = {
-  firstName: '', lastName: '', age: '', gender: '', sexualOrientation: '', city: '', country: '', phone: '', height: '', weight: '', ethnicity: '', zodiacSign: '',
+  firstName: '', lastName: '', age: '', gender: '', sexualOrientation: '', city: '', country: '', phone: '', height: '', weight: '', bloodGroup: '', ethnicity: '', zodiacSign: '',
   religion: '', subReligion: '', motherTongue: '',
   education: '', university: '', educationSubject: '', otherQualifications: '',
   employmentStatus: '', occupation: '', housing: '',
@@ -220,6 +220,7 @@ function OnboardingPage() {
           phone: profile.phone ?? '',
           height: (profile as Record<string, unknown>).height as string ?? '',
           weight: (profile as Record<string, unknown>).weight as string ?? '',
+          bloodGroup: (profile as Record<string, unknown>).blood_group as string ?? '',
           ethnicity: (profile as Record<string, unknown>).ethnicity as string ?? '',
           zodiacSign: (profile as Record<string, unknown>).zodiac_sign as string ?? '',
           maritalStatus: profile.marital_status ?? '',
@@ -362,7 +363,7 @@ function OnboardingPage() {
         age: parseInt(draft.age), gender: draft.gender,
         sexual_orientation: draft.sexualOrientation || null,
         city: draft.city, country: draft.country,
-        height: draft.height || null, weight: draft.weight || null, ethnicity: draft.ethnicity || null,
+        height: draft.height || null, weight: draft.weight || null, blood_group: draft.bloodGroup || null, ethnicity: draft.ethnicity || null,
         zodiac_sign: draft.zodiacSign || null,
         religion: draft.religion,
         mother_tongue: draft.motherTongue, education: draft.education,

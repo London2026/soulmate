@@ -7,6 +7,7 @@ const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderC
 
 const GENDERS = ['Man', 'Woman', 'Other']
 const SEXUAL_ORIENTATIONS = ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Asexual', 'Other', 'Prefer not to say']
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', "Don't know"]
 
 const ZODIAC_SIGNS = [
   '♈ Aries', '♉ Taurus', '♊ Gemini', '♋ Cancer',
@@ -15,7 +16,7 @@ const ZODIAC_SIGNS = [
 ]
 
 interface Props {
-  data: { firstName: string; lastName: string; age: string; gender: string; sexualOrientation: string; city: string; country: string; phone: string; height: string; weight: string; ethnicity: string; zodiacSign: string }
+  data: { firstName: string; lastName: string; age: string; gender: string; sexualOrientation: string; city: string; country: string; phone: string; height: string; weight: string; bloodGroup: string; ethnicity: string; zodiacSign: string }
   onChange: (key: string, value: string) => void
 }
 
@@ -107,6 +108,18 @@ export default function AboutStep({ data, onChange }: Props) {
           <input type="text" value={data.weight} onChange={e => onChange('weight', e.target.value)}
             placeholder="e.g. 70 kg or 154 lbs" style={inp} onFocus={focus} onBlur={blur} />
         </div>
+      </div>
+
+      {/* Blood Group */}
+      <div style={{ ...field, marginTop: '1.1rem' }}>
+        <label style={label}>Blood Group</label>
+        <select value={data.bloodGroup} onChange={e => onChange('bloodGroup', e.target.value)}
+          style={{ ...inp, appearance: 'auto' as const }}
+          onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
+          onBlur={e => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')}>
+          <option value="">Select…</option>
+          {BLOOD_GROUPS.map(b => <option key={b} value={b}>{b}</option>)}
+        </select>
       </div>
 
       {/* Ethnicity */}

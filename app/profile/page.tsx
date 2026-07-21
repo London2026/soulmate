@@ -387,6 +387,7 @@ export default async function ProfilePage() {
               <ProfileDetailRow label="Mother Tongue"  value={profile.mother_tongue} />
               <ProfileDetailRow label="Height"         value={p.height as string} />
               <ProfileDetailRow label="Weight"         value={p.weight as string} />
+              <ProfileDetailRow label="Blood Group"    value={p.blood_group as string} />
               <ProfileDetailRow label="Marital Status" value={profile.marital_status} />
               <ProfileDetailRow label="Children"       value={profile.has_kids} />
               <ProfileDetailRow label="Ethnicity"      value={p.ethnicity as string} />

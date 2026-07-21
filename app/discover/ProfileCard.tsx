@@ -21,6 +21,7 @@ export interface ProfileData {
   occupation: string
   height?: string | null
   weight?: string | null
+  blood_group?: string | null
   ethnicity?: string | null
   education_subject?: string | null
   employment_status?: string | null
@@ -295,6 +296,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
           <DetailRow label="Mother Tongue"  value={profile.mother_tongue} />
           <DetailRow label="Height"         value={profile.height} />
           <DetailRow label="Weight"         value={profile.weight} />
+          <DetailRow label="Blood Group"    value={profile.blood_group} />
           <DetailRow label="Marital Status" value={profile.marital_status} />
           <DetailRow label="Children"       value={profile.has_kids} />
           <DetailRow label="Ethnicity"      value={profile.ethnicity} />
