@@ -23,6 +23,7 @@ const STYLE = `
   .checkout-head { padding:1.8rem 2rem 1.4rem; border-bottom:1px solid rgba(13,31,60,0.15); text-align:center; background:#f4f1eb; }
   .checkout-body { padding:1.75rem 2rem; }
   @media (max-width:600px) {
+    .checkout-page { justify-content:flex-start; padding-top:1.25rem; padding-bottom:1.5rem; }
     .checkout-head { padding:1.25rem 1rem 1rem !important; }
     .checkout-body { padding:1.25rem 1rem !important; }
   }
