@@ -7,7 +7,7 @@ export const PIXXLES_PLAN_PRICES: Record<string, number> = {
   standard: 9.0,
 }
 
-export const PIXXLES_CURRENCY = 'GBP'
+export const PIXXLES_CURRENCY = 'USD'
 
 function config() {
   const baseUrl = process.env.PIXXLES_BASE_URL

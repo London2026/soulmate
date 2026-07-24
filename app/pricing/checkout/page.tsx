@@ -12,8 +12,8 @@ const c = {
 }
 
 const PLAN_LABELS: Record<string, { name: string; price: string }> = {
-  starter: { name: 'Starter', price: '£6.00 / month' },
-  standard: { name: 'Standard', price: '£9.00 / month' },
+  starter: { name: 'Starter', price: '$6.00 / month' },
+  standard: { name: 'Standard', price: '$9.00 / month' },
 }
 
 const STYLE = `

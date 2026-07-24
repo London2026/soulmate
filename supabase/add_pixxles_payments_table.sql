@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.pixxles_payments (
   user_id uuid REFERENCES public.profiles(id) ON DELETE CASCADE,
   plan text NOT NULL,
   amount numeric NOT NULL,
-  currency text NOT NULL DEFAULT 'GBP',
+  currency text NOT NULL DEFAULT 'USD',
   status text NOT NULL DEFAULT 'pending', -- pending | success | failed
   result_code text,
   transaction_id text,
