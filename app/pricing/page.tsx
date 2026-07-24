@@ -149,7 +149,7 @@ export default function PricingPage() {
   const [checkoutError, setCheckoutError] = useState('')
   const router = useRouter()
 
-  async function handleSelect(planKey: string) {
+  function handleSelect(planKey: string) {
     setCheckoutError('')
 
     if (planKey === 'free') {
@@ -157,8 +157,8 @@ export default function PricingPage() {
       return
     }
 
-    // Paid plans — payments not yet configured
-    setCheckoutError('Paid plans are coming soon. We\'re finalising our payment provider — check back shortly or email support@banduraa.com.')
+    setCheckoutLoading(true)
+    router.push(`/pricing/checkout?plan=${planKey}`)
   }
 
   const isBusy = pending || checkoutLoading
