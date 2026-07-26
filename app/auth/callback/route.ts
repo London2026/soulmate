@@ -32,14 +32,14 @@ export async function GET(request: NextRequest) {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('onboarding_complete, plan')
+          .select('onboarding_complete, plan_started_at')
           .eq('id', user.id)
           .maybeSingle()
 
         if (profile?.onboarding_complete) {
           // Profile done → go straight to discover
           return NextResponse.redirect(`${origin}/discover`)
-        } else if (profile?.plan) {
+        } else if (profile?.plan_started_at) {
           // Has picked a plan but not finished onboarding — encourage them to complete
           if (user.email) {
             sendEncouragementEmail(user.email).catch(() => {})

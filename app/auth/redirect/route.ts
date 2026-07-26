@@ -12,11 +12,11 @@ export async function GET(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('onboarding_complete, plan')
+    .select('onboarding_complete, plan_started_at')
     .eq('id', user.id)
     .maybeSingle()
 
   if (profile?.onboarding_complete) return NextResponse.redirect(`${origin}/discover`)
-  if (profile?.plan) return NextResponse.redirect(`${origin}/onboarding`)
+  if (profile?.plan_started_at) return NextResponse.redirect(`${origin}/onboarding`)
   return NextResponse.redirect(`${origin}/pricing`)
 }

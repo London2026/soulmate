@@ -11,6 +11,7 @@ export async function selectPlan(plan: string) {
   await supabase.from('profiles').upsert({
     id: user.id,
     plan,
+    plan_started_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   })
 
