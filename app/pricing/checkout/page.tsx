@@ -29,6 +29,14 @@ const STYLE = `
   }
   /* Give the injected COPYandPAY form breathing room and full width */
   form.paymentWidgets { width: 100%; }
+  /* The site's root layout sets white body text globally; the widget's
+     input fields don't set their own color, so typed text was inheriting
+     white on a white input background and appeared invisible. */
+  form.paymentWidgets input,
+  form.paymentWidgets select,
+  form.paymentWidgets label {
+    color: #0d1f3c !important;
+  }
 `
 
 function CheckoutForm() {

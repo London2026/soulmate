@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Navigation from '@/components/Navigation'
+import { createClient } from '@/lib/supabase/server'
 
 const c = {
   navy: '#0d1f3c', navyMid: '#152240', ivory: '#f5f0e6',
@@ -7,9 +8,32 @@ const c = {
   border: 'rgba(201,168,76,0.18)',
 }
 
-export default function PaymentSuccessPage() {
+export default async function PaymentSuccessPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let onboardingComplete = false
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_complete')
+      .eq('id', user.id)
+      .maybeSingle()
+    onboardingComplete = profile?.onboarding_complete ?? false
+  }
+
+  const cta = onboardingComplete
+    ? { href: '/discover', label: 'Start Discovering →' }
+    : { href: '/onboarding', label: 'Create Your Profile & Start Discovering →' }
+
   return (
     <div style={{ minHeight: '100vh', background: c.navy }}>
+      <style>{`
+        .success-cta { display: inline-block; padding: 1rem 3rem; }
+        @media (max-width: 480px) {
+          .success-cta { width: 100%; box-sizing: border-box; padding: 1rem 1.25rem; white-space: normal; line-height: 1.4; }
+        }
+      `}</style>
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 65%)' }} />
       <Navigation />
 
@@ -45,9 +69,9 @@ export default function PaymentSuccessPage() {
         </div>
 
         {/* CTA */}
-        <Link href="/discover"
-          style={{ display: 'inline-block', padding: '1rem 3rem', background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, color: c.navy, fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', borderRadius: '6px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(201,168,76,0.3)' }}>
-          Start Discovering →
+        <Link href={cta.href} className="success-cta"
+          style={{ background: `linear-gradient(135deg, #e8c876, ${c.goldLight})`, color: c.navy, fontFamily: 'Raleway, sans-serif', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', borderRadius: '6px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(201,168,76,0.3)', whiteSpace: 'nowrap' }}>
+          {cta.label}
         </Link>
 
         <p style={{ marginTop: '1.25rem', fontFamily: 'Raleway, sans-serif', fontSize: '0.68rem', color: 'rgba(189,181,166,0.4)', letterSpacing: '0.08em' }}>
