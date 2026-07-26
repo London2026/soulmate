@@ -185,10 +185,13 @@ export async function sendProfileLiveEmail(to: string, firstName: string, member
         🔍 <strong>Browse Discover</strong> — explore other members' profiles, voice intros, and interests
       </p>
       <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
-        💘 <strong>Reveal a photo</strong> — when someone catches your eye, reveal their front photo and request a video meeting
+        💘 <strong>Reveal a photo</strong> — when someone catches your eye, reveal their front photo. The moment someone reveals yours, you will be informed straight away.
       </p>
       <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
-        🎥 <strong>Video meetings</strong> — meet potential matches face-to-face in a private, secure video call
+        ❤️ <strong>Like a profile</strong> — if they like you back, it is a mutual match and your video call feature is activated
+      </p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
+        🎥 <strong>Book a video meeting</strong> — once you have a mutual like, meet each other face-to-face in a private, secure video call
       </p>
       <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0;">
         🪪 <strong>Get verified</strong> — upload your ID from your profile settings to earn a green verified tick
