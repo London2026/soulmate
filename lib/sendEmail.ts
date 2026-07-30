@@ -185,7 +185,7 @@ export async function sendProfileLiveEmail(to: string, firstName: string, member
         🔍 <strong>Browse Discover</strong> — explore other members' profiles, voice intros, and interests
       </p>
       <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
-        💘 <strong>Reveal a photo</strong> — when someone catches your eye, reveal their front photo. The moment someone reveals yours, you will be informed straight away.
+        💘 <strong>Reveal a photo</strong> — when someone catches your eye, reveal their front photo. If anyone reveals yours, you will receive an email and a message to let you know.
       </p>
       <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
         ❤️ <strong>Like a profile</strong> — if they like you back, it is a mutual match and your video call feature is activated
