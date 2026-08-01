@@ -52,7 +52,7 @@ export default async function DiscoverPage() {
     supabase.from('profile_likes').select('*', { count: 'exact', head: true })
       .eq('liker_id', user.id).gte('created_at', monthStart.toISOString()),
     supabase.from('photo_reveals').select('*', { count: 'exact', head: true })
-      .eq('viewer_id', user.id).gte('created_at', monthStart.toISOString()),
+      .eq('viewer_id', user.id).gte('revealed_at', monthStart.toISOString()),
   ])
   const planLimit    = PLAN_LIMITS[userPlan] ?? 2
   const meetingsLeft = Math.max(0, planLimit + (extraPurchased ?? 0) - (meetingsSent ?? 0))

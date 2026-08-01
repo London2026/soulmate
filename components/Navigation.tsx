@@ -86,7 +86,7 @@ export default function Navigation() {
         supabase.from('profile_likes').select('*', { count: 'exact', head: true })
           .eq('liker_id', userId).gte('created_at', monthStart.toISOString()),
         supabase.from('photo_reveals').select('*', { count: 'exact', head: true })
-          .eq('viewer_id', userId).gte('created_at', monthStart.toISOString()),
+          .eq('viewer_id', userId).gte('revealed_at', monthStart.toISOString()),
       ])
 
       const profile  = profileRes.data

@@ -35,9 +35,16 @@ export async function ensureBlurredFrontPhoto(
       .toBuffer()
 
     const blurredPath = `${userId}/front-blurred.jpg`
+    // Upload as a Blob rather than a raw Node Buffer — in Vercel's serverless
+    // runtime, passing a Buffer directly through supabase-js's upload() can
+    // get coerced through a text/UTF-8 pathway internally, corrupting the
+    // binary JPEG data (observed as replacement-character bytes at the start
+    // of the uploaded file). A Blob carries unambiguous binary semantics that
+    // survive the underlying fetch call intact.
+    const blob = new Blob([blurredBuffer], { type: 'image/jpeg' })
     const { error: uploadError } = await adminClient
       .storage.from(BUCKET)
-      .upload(blurredPath, blurredBuffer, { upsert: true, contentType: 'image/jpeg' })
+      .upload(blurredPath, blob, { upsert: true, contentType: 'image/jpeg' })
     if (uploadError) {
       console.error('ensureBlurredFrontPhoto: upload failed', userId, uploadError)
       return null
