@@ -116,7 +116,7 @@ function LockedPhotoPanel({ backgroundUrl, children }: { backgroundUrl?: string 
     <div style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', aspectRatio: '3/4', background: c.navyMid, marginBottom: '0.85rem' }}>
       {backgroundUrl && (
         <img src={backgroundUrl} alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(20px)', transform: 'scale(1.12)' }} />
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       )}
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,31,60,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', padding: '1.5rem', textAlign: 'center' }}>
         <span style={{ fontSize: '2.2rem', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}>🔒</span>

@@ -28,10 +28,14 @@ export async function ensureBlurredFrontPhoto(
     }
 
     const inputBuffer = Buffer.from(await original.arrayBuffer())
+    // Resize + blur strong enough that no facial feature is ever recoverable,
+    // but a wide/gentle enough combination that the result still reads as a
+    // blurred photo (visible colour regions and shapes) rather than a flat
+    // gradient blob.
     const blurredBuffer = await sharp(inputBuffer)
-      .resize({ width: 48 })
-      .blur(8)
-      .jpeg({ quality: 60 })
+      .resize({ width: 100 })
+      .blur(6)
+      .jpeg({ quality: 70 })
       .toBuffer()
 
     const blurredPath = `${userId}/front-blurred.jpg`
