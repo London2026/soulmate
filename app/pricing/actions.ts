@@ -1,12 +1,31 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 
-export async function selectPlan(plan: string) {
+export async function selectPlan(plan: string): Promise<{ error?: string } | void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  if (plan === 'free') {
+    const email = user.email?.trim().toLowerCase()
+    if (email) {
+      const admin = createAdminClient()
+      const { data: existing } = await admin
+        .from('used_free_trial_emails')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle()
+
+      if (existing) {
+        return { error: 'This email address has already used its free trial. Please choose Starter or Standard to continue.' }
+      }
+
+      await admin.from('used_free_trial_emails').upsert({ email }, { onConflict: 'email', ignoreDuplicates: true })
+    }
+  }
 
   await supabase.from('profiles').upsert({
     id: user.id,

@@ -211,6 +211,38 @@ export async function sendProfileLiveEmail(to: string, firstName: string, member
   await send(to, subject, html, userId)
 }
 
+export async function sendTrialEndingSoonEmail(to: string, firstName: string, daysLeft: number, userId?: string) {
+  const subject = `⏳ Your free trial ends in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:24px;color:#0d1f3c;margin:0 0 12px;">Your free trial is ending soon</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:24px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.75;margin:0 0 16px;">
+      Hello <strong>${firstName}</strong>, your free trial on Banduraa ends in <strong>${daysLeft} day${daysLeft === 1 ? '' : 's'}</strong>. We would love for you to continue your search for a meaningful connection with us.
+    </p>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:16px 20px;margin-bottom:24px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 12px;">Upgrade now to keep</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
+        💘 Unlimited face photo reveals
+      </p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0 0 8px;">
+        🎥 More video meetings every month
+      </p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;line-height:1.7;margin:0;">
+        ❤️ Uninterrupted access to Discover and your matches
+      </p>
+    </div>
+    <div style="text-align:center;margin-bottom:28px;">
+      <a href="https://banduraa.com/pricing" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Choose a Plan and Continue →
+      </a>
+    </div>
+    <p style="font-family:Georgia,serif;font-size:14px;color:#5a6e82;line-height:1.7;margin:0;">
+      If you take no action, your account will remain active but your free trial benefits will end once the trial period is over.
+    </p>
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
+}
+
 export async function sendAdminNewSubscriberEmail(memberName: string, plan: string) {
   const subject = `💳 New subscriber — ${memberName} (${plan})`
   const html = wrap(`

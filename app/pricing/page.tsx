@@ -153,7 +153,10 @@ export default function PricingPage() {
     setCheckoutError('')
 
     if (planKey === 'free') {
-      startTransition(async () => { await selectPlan('free') })
+      startTransition(async () => {
+        const result = await selectPlan('free')
+        if (result?.error) setCheckoutError(result.error)
+      })
       return
     }
 
