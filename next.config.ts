@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // sharp ships native binaries; without this, Next.js's serverless file
+  // tracing can fail to bundle the correct platform binary, causing photo
+  // blurring to silently fail in production while working fine locally.
+  serverExternalPackages: ['sharp'],
   async headers() {
     return [
       {

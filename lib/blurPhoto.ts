@@ -22,7 +22,10 @@ export async function ensureBlurredFrontPhoto(
   try {
     const { data: original, error: downloadError } = await adminClient
       .storage.from(BUCKET).download(frontPhotoPath)
-    if (downloadError || !original) return null
+    if (downloadError || !original) {
+      console.error('ensureBlurredFrontPhoto: download failed', userId, downloadError)
+      return null
+    }
 
     const inputBuffer = Buffer.from(await original.arrayBuffer())
     const blurredBuffer = await sharp(inputBuffer)
@@ -35,12 +38,16 @@ export async function ensureBlurredFrontPhoto(
     const { error: uploadError } = await adminClient
       .storage.from(BUCKET)
       .upload(blurredPath, blurredBuffer, { upsert: true, contentType: 'image/jpeg' })
-    if (uploadError) return null
+    if (uploadError) {
+      console.error('ensureBlurredFrontPhoto: upload failed', userId, uploadError)
+      return null
+    }
 
     await adminClient.from('profiles').update({ front_photo_blurred_path: blurredPath }).eq('id', userId)
 
     return blurredPath
-  } catch {
+  } catch (err) {
+    console.error('ensureBlurredFrontPhoto: sharp processing failed', userId, err)
     return null
   }
 }
