@@ -109,6 +109,13 @@ function CheckoutForm() {
           {checkoutId && widgetSrc && (
             <>
               <form action="/payment/result" className="paymentWidgets" data-brands="VISA MASTER AMEX" />
+              <Script
+                id={`wpwl-options-${checkoutId}`}
+                strategy="afterInteractive"
+                dangerouslySetInnerHTML={{
+                  __html: `window.wpwlOptions = { style: "plain", locale: "en" };`,
+                }}
+              />
               <Script key={checkoutId} src={widgetSrc} strategy="afterInteractive" />
             </>
           )}
