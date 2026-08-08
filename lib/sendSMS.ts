@@ -133,3 +133,32 @@ export async function sendMeetingConfirmedAcceptorSMS(
     `Banduraa: Hi ${acceptorFirstName}, your video meeting with ${requesterName} is confirmed for ${dateStr} at ${time}. Join here: https://meet.jit.si/Banduraa-${roomId}\n\nSafety: Keep your ID ready and do not share your phone number unless you feel comfortable.\n\nReply STOP to opt out.`
   )
 }
+
+export async function sendMeetingReminderSMS(
+  toPhone: string,
+  firstName: string,
+  otherName: string,
+  time: string,
+  tzLabel: string,
+  minutesBefore: number,
+  roomId: string,
+) {
+  const whenLabel = minutesBefore >= 60 ? '1 hour' : `${minutesBefore} minutes`
+  await vonageSend(
+    toPhone,
+    `Banduraa: Hi ${firstName}, your video meeting with ${otherName} starts in ${whenLabel} at ${time} (${tzLabel}). Join here: https://meet.jit.si/Banduraa-${roomId}\n\nNeed to change it? Visit your profile to reschedule or cancel.\n\nReply STOP to opt out.`
+  )
+}
+
+export async function sendMeetingRescheduledSMS(
+  toPhone: string,
+  firstName: string,
+  otherName: string,
+  dateStr: string,
+  time: string,
+) {
+  await vonageSend(
+    toPhone,
+    `Banduraa: Hi ${firstName}, ${otherName} changed your video meeting to ${dateStr} at ${time}. View it in your profile: https://banduraa.com/profile\n\nReply STOP to opt out.`
+  )
+}

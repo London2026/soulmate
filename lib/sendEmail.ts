@@ -486,6 +486,78 @@ export async function sendMeetingConfirmedAcceptorEmail(
   await send(to, subject, html, userId)
 }
 
+export async function sendMeetingReminderEmail(
+  to: string,
+  firstName: string,
+  otherName: string,
+  dateStr: string,
+  time: string,
+  tzLabel: string,
+  minutesBefore: number,
+  roomId: string,
+  userId?: string
+) {
+  const meetingUrl = `https://meet.jit.si/Banduraa-${roomId}`
+  const whenLabel = minutesBefore >= 60 ? '1 hour' : `${minutesBefore} minutes`
+  const subject = `⏰ Your video meeting with ${otherName} starts in ${whenLabel}`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your meeting starts in ${whenLabel}</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
+      Hi <strong>${firstName}</strong>,
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
+      This is a reminder that your video meeting with <strong style="color:#0d1f3c;">${otherName}</strong> is coming up soon.
+    </p>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;margin-bottom:20px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 8px;">Meeting Details</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">📅 ${dateStr}</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0;">🕐 ${time} (${tzLabel} — your local time)</p>
+    </div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <a href="${meetingUrl}" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        🎥 Join Meeting →
+      </a>
+    </div>
+    <p style="font-family:Georgia,serif;font-size:14px;color:#5a6e82;line-height:1.7;margin:0;">
+      Need to change the time or can&apos;t make it? Visit your profile page to reschedule or cancel — cancelling won&apos;t count against your monthly meeting allowance.
+    </p>
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
+}
+
+export async function sendMeetingRescheduledEmail(
+  to: string,
+  firstName: string,
+  otherName: string,
+  dateStr: string,
+  time: string,
+  userId?: string
+) {
+  const subject = `🔄 ${otherName} changed your Banduraa video meeting time`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Your meeting time has changed</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
+      Hi <strong>${firstName}</strong>,
+    </p>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#5a6e82;line-height:1.7;margin:0 0 16px;">
+      <strong style="color:#0d1f3c;">${otherName}</strong> has updated your video meeting to a new date and time. No action is needed — it&apos;s already updated in your profile.
+    </p>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;margin-bottom:20px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 8px;">New Meeting Time</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">📅 ${dateStr}</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0;">🕐 ${time}</p>
+    </div>
+    <div style="text-align:center;">
+      <a href="https://banduraa.com/profile" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        View Meeting →
+      </a>
+    </div>
+  `, userId ? getUnsubscribeUrl(userId) : undefined)
+  await send(to, subject, html, userId)
+}
+
 export async function sendReportNotificationEmail(reporterName: string, reporterMemberId: string, reportedMemberId: string, reason: string, message: string | null) {
   const subject = `🚩 Profile report — ${reportedMemberId} reported by ${reporterMemberId}`
   const html = wrap(`

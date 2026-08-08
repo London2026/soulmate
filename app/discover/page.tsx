@@ -46,7 +46,8 @@ export default async function DiscoverPage() {
 
   const [{ count: meetingsSent }, { count: extraPurchased }, { count: likesThisMonth }, { count: revealsThisMonth }] = await Promise.all([
     supabase.from('video_meetings').select('*', { count: 'exact', head: true })
-      .eq('requester_id', user.id).gte('created_at', monthStart.toISOString()),
+      .eq('requester_id', user.id).gte('created_at', monthStart.toISOString())
+      .in('status', ['pending', 'accepted']),
     supabase.from('extra_meeting_purchases').select('*', { count: 'exact', head: true })
       .eq('user_id', user.id).gte('created_at', monthStart.toISOString()),
     supabase.from('profile_likes').select('*', { count: 'exact', head: true })

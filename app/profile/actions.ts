@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
-import { sendMeetingRequestEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendMeetingCancelledEmail } from '@/lib/sendEmail'
+import { sendMeetingRequestEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendMeetingCancelledEmail, sendMeetingRescheduledEmail } from '@/lib/sendEmail'
 import { firstNameOnly } from '@/lib/maskName'
 import {
   sendMeetingRequestSMS,
@@ -11,7 +11,9 @@ import {
   sendMeetingConfirmedAcceptorSMS,
   sendMeetingDeclinedSMS,
   sendMeetingCancelledSMS,
+  sendMeetingRescheduledSMS,
 } from '@/lib/sendSMS'
+import { zonedTimeToUtc, countryToTimezone } from '@/lib/timezone'
 
 export async function requestVideoMeeting(
   recipientId: string,
@@ -43,10 +45,14 @@ export async function requestVideoMeeting(
   ])
   if (!iLikedThem || !theyLikedMe) throw new Error('A mutual like is required before requesting a video meeting.')
 
-  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const { data: me } = await supabase.from('profiles').select('full_name, country').eq('id', user.id).single()
   const name = me?.full_name ?? 'Someone'
 
   const roomId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`
+
+  const meetingAt = preferredDate && preferredTime
+    ? zonedTimeToUtc(preferredDate, preferredTime, countryToTimezone(me?.country)).toISOString()
+    : null
 
   let meeting: { id: string } | null = null
   const fullInsert = await supabase.from('video_meetings').insert({
@@ -56,6 +62,7 @@ export async function requestVideoMeeting(
     status: 'pending',
     preferred_date: preferredDate || null,
     preferred_time: preferredTime || null,
+    meeting_at: meetingAt,
     message: message || null,
   }).select('id').single()
 
@@ -228,7 +235,7 @@ export async function cancelMeeting(meetingId: string): Promise<void> {
     .eq('id', meetingId)
     .single()
   if (!meeting) return
-  if (meeting.status !== 'pending') return
+  if (!['pending', 'accepted'].includes(meeting.status)) return
 
   await supabase.from('video_meetings').update({ status: 'cancelled' }).eq('id', meetingId)
 
@@ -259,6 +266,65 @@ export async function cancelMeeting(meetingId: string): Promise<void> {
       ? sendMeetingCancelledEmail(otherAuth.user.email, firstNameOnly(otherProfile?.full_name ?? ''), me?.full_name ?? 'Your match', dateStr, otherId)
       : Promise.resolve(),
   ])
+}
+
+export async function rescheduleMeeting(meetingId: string, newDate: string, newTime: string): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  if (!newDate || !newTime) throw new Error('Please choose a date and time')
+
+  const { data: meeting } = await supabase
+    .from('video_meetings')
+    .select('requester_id, recipient_id, status')
+    .eq('id', meetingId)
+    .single()
+  if (!meeting) throw new Error('Meeting not found')
+  if (user.id !== meeting.requester_id && user.id !== meeting.recipient_id) throw new Error('Not authorized')
+  if (!['pending', 'accepted'].includes(meeting.status)) throw new Error('This meeting can no longer be rescheduled')
+
+  const { data: requesterProfile } = await supabase
+    .from('profiles')
+    .select('country')
+    .eq('id', meeting.requester_id)
+    .single()
+  const meetingAt = zonedTimeToUtc(newDate, newTime, countryToTimezone(requesterProfile?.country)).toISOString()
+
+  await supabase.from('video_meetings').update({
+    preferred_date: newDate,
+    preferred_time: newTime,
+    meeting_at: meetingAt,
+    reminder_60_sent: false,
+    reminder_15_sent: false,
+  }).eq('id', meetingId)
+
+  const otherId = user.id === meeting.requester_id ? meeting.recipient_id : meeting.requester_id
+  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const dateStr = new Date(newDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+  const changerName = me?.full_name ?? 'Your match'
+
+  await supabase.from('notifications').insert({
+    recipient_id: otherId,
+    sender_id: user.id,
+    type: 'meeting_rescheduled',
+    message: `${changerName} has changed your video meeting to ${dateStr} at ${newTime}.`,
+  })
+
+  const [{ data: otherProfile }, { data: otherAuth }] = await Promise.all([
+    supabase.from('profiles').select('full_name, phone').eq('id', otherId).single(),
+    createAdminClient().auth.admin.getUserById(otherId),
+  ])
+
+  await Promise.all([
+    otherProfile?.phone
+      ? sendMeetingRescheduledSMS(otherProfile.phone, firstNameOnly(otherProfile.full_name ?? ''), changerName, dateStr, newTime)
+      : Promise.resolve(),
+    otherAuth?.user?.email
+      ? sendMeetingRescheduledEmail(otherAuth.user.email, firstNameOnly(otherProfile?.full_name ?? ''), changerName, dateStr, newTime, otherId)
+      : Promise.resolve(),
+  ])
+
+  revalidatePath('/profile')
 }
 
 export async function cancelSubscription(): Promise<void> {
