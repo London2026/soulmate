@@ -9,5 +9,7 @@ export function isTrialExpired(plan: string | null | undefined, createdAt: strin
 }
 
 export const TRIAL_EXPIRED_MESSAGE = 'Your free trial has ended. Upgrade your plan to continue.'
-export const OTHER_TRIAL_EXPIRED_LIKE_MESSAGE = "This member's free trial has ended, so they can't receive new likes right now."
-export const OTHER_TRIAL_EXPIRED_MEETING_MESSAGE = "This member's free trial has ended, so video meetings aren't available with them right now."
+// Shown to other members, so it deliberately doesn't mention trials, plans, or billing —
+// just a respectful, neutral reason the action isn't available right now.
+export const OTHER_TRIAL_EXPIRED_LIKE_MESSAGE = "This member isn't currently active on Banduraa, so we're unable to deliver a like to them at this time."
+export const OTHER_TRIAL_EXPIRED_MEETING_MESSAGE = "This member isn't currently active on Banduraa, so a video meeting can't be arranged with them at this time."
