@@ -10,8 +10,10 @@ export async function selectPlan(plan: string): Promise<{ error?: string } | voi
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Only block when a date of birth is on file and fails the check — accounts
+  // created before this field existed have none and must not be locked out.
   const dateOfBirth = user.user_metadata?.date_of_birth as string | undefined
-  if (!isOldEnough(dateOfBirth)) return { error: UNDERAGE_MESSAGE }
+  if (dateOfBirth && !isOldEnough(dateOfBirth)) return { error: UNDERAGE_MESSAGE }
 
   if (plan === 'free') {
     const email = user.email?.trim().toLowerCase()

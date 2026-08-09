@@ -8,8 +8,10 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // Only block when a date of birth is on file and fails the check — accounts
+  // created before this field existed have none and must not be locked out.
   const dateOfBirth = user.user_metadata?.date_of_birth as string | undefined
-  if (!isOldEnough(dateOfBirth)) return Response.json({ error: UNDERAGE_MESSAGE }, { status: 403 })
+  if (dateOfBirth && !isOldEnough(dateOfBirth)) return Response.json({ error: UNDERAGE_MESSAGE }, { status: 403 })
 
   const body = await request.json().catch(() => ({}))
   const plan = (body as { plan?: string }).plan
