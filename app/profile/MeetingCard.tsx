@@ -28,6 +28,7 @@ export default function MeetingCard({ meeting }: Props) {
   const [rescheduling, setRescheduling] = useState(false)
   const [newDate, setNewDate] = useState(meeting.preferred_date ?? '')
   const [newTime, setNewTime] = useState(meeting.preferred_time ?? '')
+  const [actionError, setActionError] = useState('')
 
   const meetingUrl = `https://meet.jit.si/Banduraa-${meeting.room_id}`
 
@@ -45,9 +46,12 @@ export default function MeetingCard({ meeting }: Props) {
   })()
 
   async function handleAccept() {
-    setLoading('accept')
-    try { await acceptMeeting(meeting.id); setStatus('accepted') }
-    finally { setLoading(null) }
+    setLoading('accept'); setActionError('')
+    try {
+      const result = await acceptMeeting(meeting.id)
+      if (result.error) setActionError(result.error)
+      else setStatus('accepted')
+    } finally { setLoading(null) }
   }
 
   async function handleDecline() {
@@ -63,12 +67,16 @@ export default function MeetingCard({ meeting }: Props) {
   }
 
   async function handleReschedule() {
-    setLoading('reschedule')
+    setLoading('reschedule'); setActionError('')
     try {
-      await rescheduleMeeting(meeting.id, newDate, newTime)
-      setPDate(newDate)
-      setPTime(newTime)
-      setRescheduling(false)
+      const result = await rescheduleMeeting(meeting.id, newDate, newTime)
+      if (result.error) {
+        setActionError(result.error)
+      } else {
+        setPDate(newDate)
+        setPTime(newTime)
+        setRescheduling(false)
+      }
     } finally { setLoading(null) }
   }
 
@@ -100,6 +108,10 @@ export default function MeetingCard({ meeting }: Props) {
           <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.6rem', color: c.sepia, margin: '0.15rem 0 0' }}>{timeAgo}</p>
         </div>
       </div>
+
+      {actionError && (
+        <p style={{ color: '#f87171', fontSize: '0.78rem', fontFamily: '"Cormorant Garamond", serif', margin: '0 0 0.6rem' }}>{actionError}</p>
+      )}
 
       {/* Actions */}
       {status === 'pending' && !meeting.i_requested && (

@@ -26,8 +26,9 @@ export default function RevealedByCard({ viewer }: { viewer: Viewer }) {
     setRequesting(true)
     setError('')
     try {
-      await requestVideoMeeting(viewer.id, '', '', "I'd love to connect with you!")
-      setRoomId('pending')
+      const result = await requestVideoMeeting(viewer.id, '', '', "I'd love to connect with you!")
+      if (result.error) setError(result.error)
+      else setRoomId('pending')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {

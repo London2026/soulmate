@@ -193,7 +193,12 @@ export default function DiscoverClient({
       setLikesRemaining(r => Math.max(0, r - 1))
       try {
         const result = await likeProfile(profileId)
-        if (result.limitReached) {
+        if (result.error) {
+          setLiked(prev => { const n = new Set(prev); n.delete(profileId); return n })
+          setLikesRemaining(r => r + 1)
+          setLikeToast(result.error)
+          setTimeout(() => setLikeToast(''), 4000)
+        } else if (result.limitReached) {
           setLiked(prev => { const n = new Set(prev); n.delete(profileId); return n })
           setLikesRemaining(0)
           setLikeToast('No likes remaining this month. Upgrade your plan for more likes.')
@@ -559,8 +564,13 @@ export default function DiscoverClient({
             setNotifications(prev => prev.filter(n => n.id !== id))
           }}
           onAcceptMeeting={async (id) => {
-            await acceptMeetingInbox(id)
-            setMeetings(prev => prev.filter(m => m.id !== id))
+            const result = await acceptMeetingInbox(id)
+            if (result.error) {
+              setLikeToast(result.error)
+              setTimeout(() => setLikeToast(''), 4000)
+            } else {
+              setMeetings(prev => prev.filter(m => m.id !== id))
+            }
           }}
           onDeclineMeeting={async (id) => {
             await declineMeetingInbox(id)

@@ -161,9 +161,12 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
   async function handleReveal() {
     setRevealing(true); setRevealError('')
     try {
-      const { signedUrl } = await revealPhoto(profile.id)
-      setRevealed(true); setFrontUrl(signedUrl)
-      setRevealMsg(`${firstNameOnly(profile.full_name)} has been notified.`)
+      const result = await revealPhoto(profile.id)
+      if (result.error) { setRevealError(result.error) }
+      else if (result.signedUrl) {
+        setRevealed(true); setFrontUrl(result.signedUrl)
+        setRevealMsg(`${firstNameOnly(profile.full_name)} has been notified.`)
+      }
     } catch (err) { setRevealError(err instanceof Error ? err.message : 'Something went wrong.') }
     finally { setRevealing(false) }
   }
@@ -172,8 +175,9 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
     if (!meetDate || !meetTime) { setMeetError('Please select a date and time.'); return }
     setRequesting(true); setMeetError('')
     try {
-      await requestVideoMeeting(profile.id, meetDate, meetTime, meetMsg || `I'd love to connect with you!`)
-      setMeetSent(true)
+      const result = await requestVideoMeeting(profile.id, meetDate, meetTime, meetMsg || `I'd love to connect with you!`)
+      if (result.error) setMeetError(result.error)
+      else setMeetSent(true)
     } catch (err) {
       setMeetError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally { setRequesting(false) }

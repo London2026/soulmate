@@ -21,7 +21,7 @@ export async function requestVideoMeeting(
   preferredDate: string,
   preferredTime: string,
   message: string
-): Promise<{ meetingId: string }> {
+): Promise<{ meetingId?: string; error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
@@ -30,8 +30,8 @@ export async function requestVideoMeeting(
     supabase.from('profiles').select('plan, created_at').eq('id', user.id).single(),
     supabase.from('profiles').select('plan, created_at').eq('id', recipientId).single(),
   ])
-  if (isTrialExpired(myTrial?.plan, myTrial?.created_at)) throw new Error(TRIAL_EXPIRED_MESSAGE)
-  if (isTrialExpired(recipientTrial?.plan, recipientTrial?.created_at)) throw new Error(OTHER_TRIAL_EXPIRED_MEETING_MESSAGE)
+  if (isTrialExpired(myTrial?.plan, myTrial?.created_at)) return { error: TRIAL_EXPIRED_MESSAGE }
+  if (isTrialExpired(recipientTrial?.plan, recipientTrial?.created_at)) return { error: OTHER_TRIAL_EXPIRED_MEETING_MESSAGE }
 
   // Check if a pending/accepted meeting already exists
   const { data: existing } = await supabase
@@ -51,7 +51,7 @@ export async function requestVideoMeeting(
     supabase.from('profile_likes').select('id').eq('liker_id', user.id).eq('liked_id', recipientId).maybeSingle(),
     supabase.from('profile_likes').select('id').eq('liker_id', recipientId).eq('liked_id', user.id).maybeSingle(),
   ])
-  if (!iLikedThem || !theyLikedMe) throw new Error('A mutual like is required before requesting a video meeting.')
+  if (!iLikedThem || !theyLikedMe) return { error: 'A mutual like is required before requesting a video meeting.' }
 
   const { data: me } = await supabase.from('profiles').select('full_name, country').eq('id', user.id).single()
   const name = me?.full_name ?? 'Someone'
@@ -81,13 +81,13 @@ export async function requestVideoMeeting(
       recipient_id: recipientId,
       status: 'pending',
     }).select('id').single()
-    if (baseInsert.error || !baseInsert.data) throw new Error(baseInsert.error?.message ?? 'Failed to create meeting request')
+    if (baseInsert.error || !baseInsert.data) return { error: baseInsert.error?.message ?? 'Failed to create meeting request' }
     meeting = baseInsert.data
   } else {
     meeting = fullInsert.data
   }
 
-  if (!meeting) throw new Error('Failed to create meeting request')
+  if (!meeting) return { error: 'Failed to create meeting request' }
 
   const dateStr = new Date(preferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 
@@ -124,13 +124,13 @@ export async function requestVideoMeeting(
   return { meetingId: meeting.id }
 }
 
-export async function acceptMeeting(meetingId: string): Promise<{ roomId: string }> {
+export async function acceptMeeting(meetingId: string): Promise<{ roomId?: string; error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
   const { data: myTrial } = await supabase.from('profiles').select('plan, created_at').eq('id', user.id).single()
-  if (isTrialExpired(myTrial?.plan, myTrial?.created_at)) throw new Error(TRIAL_EXPIRED_MESSAGE)
+  if (isTrialExpired(myTrial?.plan, myTrial?.created_at)) return { error: TRIAL_EXPIRED_MESSAGE }
 
   const { data: meeting } = await supabase
     .from('video_meetings')
@@ -138,7 +138,7 @@ export async function acceptMeeting(meetingId: string): Promise<{ roomId: string
     .eq('id', meetingId)
     .single()
 
-  if (!meeting) throw new Error('Meeting not found')
+  if (!meeting) return { error: 'Meeting not found.' }
 
   await supabase.from('video_meetings').update({ status: 'accepted' }).eq('id', meetingId)
 
@@ -279,20 +279,20 @@ export async function cancelMeeting(meetingId: string): Promise<void> {
   ])
 }
 
-export async function rescheduleMeeting(meetingId: string, newDate: string, newTime: string): Promise<void> {
+export async function rescheduleMeeting(meetingId: string, newDate: string, newTime: string): Promise<{ success?: boolean; error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
-  if (!newDate || !newTime) throw new Error('Please choose a date and time')
+  if (!newDate || !newTime) return { error: 'Please choose a date and time.' }
 
   const { data: meeting } = await supabase
     .from('video_meetings')
     .select('requester_id, recipient_id, status')
     .eq('id', meetingId)
     .single()
-  if (!meeting) throw new Error('Meeting not found')
-  if (user.id !== meeting.requester_id && user.id !== meeting.recipient_id) throw new Error('Not authorized')
-  if (!['pending', 'accepted'].includes(meeting.status)) throw new Error('This meeting can no longer be rescheduled')
+  if (!meeting) return { error: 'Meeting not found.' }
+  if (user.id !== meeting.requester_id && user.id !== meeting.recipient_id) return { error: 'Not authorized.' }
+  if (!['pending', 'accepted'].includes(meeting.status)) return { error: 'This meeting can no longer be rescheduled.' }
 
   const { data: requesterProfile } = await supabase
     .from('profiles')
@@ -336,6 +336,7 @@ export async function rescheduleMeeting(meetingId: string, newDate: string, newT
   ])
 
   revalidatePath('/profile')
+  return { success: true }
 }
 
 export async function cancelSubscription(): Promise<void> {
