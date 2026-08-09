@@ -176,7 +176,7 @@ export default function DiscoverClient({
     catch { setShortlist(prev => { const next = new Set(prev); if (next.has(profileId)) next.delete(profileId); else next.add(profileId); return next }) }
   }
 
-  async function handleLike(profileId: string) {
+  async function handleLike(profileId: string, profileName: string) {
     if (liked.has(profileId)) {
       setLiked(prev => { const n = new Set(prev); n.delete(profileId); return n })
       setMutual(prev => { const n = new Set(prev); n.delete(profileId); return n })
@@ -200,7 +200,10 @@ export default function DiscoverClient({
           setTimeout(() => setLikeToast(''), 4000)
         } else if (result.nowMutual) {
           setMutual(prev => new Set([...prev, profileId]))
-          setLikeToast('Mutual like! 🎉 You can now request a video meeting.')
+          setLikeToast(`It's a mutual like with ${maskName(profileName)}! 🎉 Your video call booking is now activated.`)
+          setTimeout(() => setLikeToast(''), 4000)
+        } else {
+          setLikeToast(`You have liked ${maskName(profileName)}. If they like you back, your video call booking will be activated.`)
           setTimeout(() => setLikeToast(''), 4000)
         }
       } catch (err) {
@@ -873,7 +876,7 @@ export default function DiscoverClient({
             <ProfileCard
               profile={{ ...selected, is_liked: liked.has(selected.id), is_mutual: mutual.has(selected.id) }}
               canReveal={canReveal} canMeet={canMeet} meetingsLeft={meetingsLeft}
-              onLike={() => handleLike(selected.id)} likesLeft={likesRemaining}
+              onLike={() => handleLike(selected.id, selected.full_name)} likesLeft={likesRemaining}
               revealsLeft={revealsLeft}
             />
           </div>
