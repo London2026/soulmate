@@ -117,11 +117,16 @@ export async function verifyAndApplyCheckout(checkoutId: string): Promise<Verify
   }).eq('checkout_id', checkoutId)
 
   if (success) {
-    await admin.from('profiles').update({
+    // upsert (not update) since a first-time signup that goes straight to a
+    // paid plan has no profiles row yet at this point
+    const { data: { user: buyer } } = await admin.auth.admin.getUserById(row.user_id)
+    await admin.from('profiles').upsert({
+      id: row.user_id,
       plan: row.plan,
       plan_started_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }).eq('id', row.user_id)
+      date_of_birth: buyer?.user_metadata?.date_of_birth ?? undefined,
+    })
   }
 
   return { ok: true, success, alreadyProcessed: false, plan: row.plan, resultCode, message: data.result?.description }

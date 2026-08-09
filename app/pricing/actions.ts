@@ -3,11 +3,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { isOldEnough, UNDERAGE_MESSAGE } from '@/lib/ageVerification'
 
 export async function selectPlan(plan: string): Promise<{ error?: string } | void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const dateOfBirth = user.user_metadata?.date_of_birth as string | undefined
+  if (!isOldEnough(dateOfBirth)) return { error: UNDERAGE_MESSAGE }
 
   if (plan === 'free') {
     const email = user.email?.trim().toLowerCase()
@@ -32,6 +36,7 @@ export async function selectPlan(plan: string): Promise<{ error?: string } | voi
     plan,
     plan_started_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    date_of_birth: dateOfBirth,
   })
 
   redirect('/onboarding')

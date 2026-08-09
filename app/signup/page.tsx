@@ -45,10 +45,21 @@ function hasFirstAndLastName(value: string) {
   return parts.length >= 2 && parts.every(part => /[a-zA-Z]/.test(part))
 }
 
+function calculateAge(dateOfBirth: string): number {
+  const dob = new Date(dateOfBirth)
+  const today = new Date()
+  let age = today.getFullYear() - dob.getFullYear()
+  const monthDiff = today.getMonth() - dob.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--
+  return age
+}
+
 function SignupForm() {
   const [step, setStep] = useState<'details' | 'code'>('details')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [dob, setDob] = useState('')
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -61,9 +72,12 @@ function SignupForm() {
     if (!name.trim()) { setError('Please enter your name.'); return }
     if (!hasFirstAndLastName(name)) { setError('Please enter both your first and last name.'); return }
     if (!email.trim()) { setError('Please enter your email address.'); return }
+    if (!dob) { setError('Please enter your date of birth.'); return }
+    if (calculateAge(dob) < 18) { setError('You must be at least 18 years old to create a Banduraa account.'); return }
+    if (!ageConfirmed) { setError('Please confirm you are 18 or older and agree to the Terms & Privacy Policy.'); return }
     setLoading(true); setError('')
     const supabase = createClient()
-    const metadata: Record<string, string> = { full_name: name.trim() }
+    const metadata: Record<string, string> = { full_name: name.trim(), date_of_birth: dob }
     if (refCode) metadata.referral_code = refCode
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
@@ -167,7 +181,7 @@ function SignupForm() {
                 onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
                 onBlur={e => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')} />
             </div>
-            <div style={{ marginBottom: '1.25rem' }}>
+            <div style={{ marginBottom: '1.1rem' }}>
               <label className="auth-lbl">Email Address</label>
               <input type="email" value={email} required placeholder="you@example.com"
                 onChange={e => { setEmail(e.target.value); setError('') }}
@@ -175,6 +189,24 @@ function SignupForm() {
                 onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
                 onBlur={e => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')} />
             </div>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label className="auth-lbl">Date of Birth</label>
+              <input type="date" value={dob} required
+                onChange={e => { setDob(e.target.value); setError('') }}
+                className="auth-inp"
+                onFocus={e => (e.target.style.borderColor = '#1b3a6b')}
+                onBlur={e => (e.target.style.borderColor = 'rgba(13,31,60,0.18)')} />
+            </div>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', marginBottom: '1.25rem', cursor: 'pointer' }}>
+              <input type="checkbox" checked={ageConfirmed}
+                onChange={e => { setAgeConfirmed(e.target.checked); setError('') }}
+                style={{ marginTop: '0.2rem', width: '16px', height: '16px', flexShrink: 0, accentColor: c.navy }} />
+              <span style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.92rem', color: c.sepia, lineHeight: 1.5 }}>
+                I confirm I am 18 years of age or older and agree to Banduraa&apos;s{' '}
+                <Link href="/terms" style={{ color: c.burgundy }}>Terms of Service</Link> and{' '}
+                <Link href="/privacy" style={{ color: c.burgundy }}>Privacy Policy</Link>.
+              </span>
+            </label>
             {errBox}
             <button type="submit" disabled={loading} className="auth-btn"
               style={{ background: loading ? c.navyMid : c.navy, color: c.goldLight, cursor: loading ? 'default' : 'pointer' }}>

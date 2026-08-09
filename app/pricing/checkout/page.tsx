@@ -48,6 +48,7 @@ function CheckoutForm() {
   const [widgetSrc, setWidgetSrc] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(!!planInfo)
+  const [billingAck, setBillingAck] = useState(false)
   const requested = useRef(false)
 
   useEffect(() => {
@@ -94,6 +95,27 @@ function CheckoutForm() {
             </div>
           )}
 
+          {planInfo && (
+            <div style={{ background: c.cream, border: `1px solid ${c.border}`, borderRadius: '6px', padding: '1rem 1.15rem', marginBottom: '1.25rem' }}>
+              <p style={{ fontFamily: 'Raleway, sans-serif', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: c.gold, margin: '0 0 0.65rem' }}>
+                Subscription Details
+              </p>
+              <ul style={{ margin: 0, padding: '0 0 0 1.1rem', fontFamily: '"Cormorant Garamond",serif', fontSize: '0.95rem', color: c.navy, lineHeight: 1.75 }}>
+                <li><strong>Amount:</strong> {planInfo.price}, charged in USD</li>
+                <li><strong>Billing frequency:</strong> Billed automatically every month</li>
+                <li><strong>Auto-renewal:</strong> Your subscription renews automatically each month at the same price until you cancel</li>
+                <li><strong>Cancellation:</strong> Cancel anytime from your Account page — this takes effect at the end of your current billing period, and you won&apos;t be charged again after that</li>
+              </ul>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.9rem', cursor: 'pointer' }}>
+                <input type="checkbox" checked={billingAck} onChange={e => setBillingAck(e.target.checked)}
+                  style={{ marginTop: '0.2rem', width: '15px', height: '15px', flexShrink: 0, accentColor: c.navy }} />
+                <span style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.9rem', color: c.sepia, lineHeight: 1.5 }}>
+                  I have read and agree to the recurring billing, auto-renewal, and cancellation terms above.
+                </span>
+              </label>
+            </div>
+          )}
+
           {loading && (
             <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '1rem', color: c.sepia, textAlign: 'center' }}>
               Preparing secure checkout…
@@ -106,7 +128,7 @@ function CheckoutForm() {
             </div>
           )}
 
-          {checkoutId && widgetSrc && (
+          {checkoutId && widgetSrc && billingAck && (
             <>
               <form action="/payment/result" className="paymentWidgets" data-brands="VISA MASTER AMEX" />
               <Script
@@ -118,6 +140,12 @@ function CheckoutForm() {
               />
               <Script key={checkoutId} src={widgetSrc} strategy="afterInteractive" />
             </>
+          )}
+
+          {checkoutId && widgetSrc && !billingAck && (
+            <p style={{ fontFamily: '"Cormorant Garamond",serif', fontStyle: 'italic', fontSize: '0.9rem', color: c.sepia, textAlign: 'center', margin: 0 }}>
+              Please confirm the billing terms above to continue to payment.
+            </p>
           )}
         </div>
       </div>
