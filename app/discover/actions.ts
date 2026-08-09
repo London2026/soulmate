@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPhotoRevealedEmail, sendMeetingAcceptedEmail, sendMeetingConfirmedAcceptorEmail, sendMeetingDeclinedEmail, sendReportNotificationEmail, sendMutualShortlistEmail, sendLikeNotificationEmail } from '@/lib/sendEmail'
 import { sendPhotoRevealSMS, sendMeetingAcceptedSMS, sendMeetingConfirmedAcceptorSMS, sendMeetingDeclinedSMS, sendLikeSMS } from '@/lib/sendSMS'
 import { firstNameOnly } from '@/lib/maskName'
+import { isTrialExpired, TRIAL_EXPIRED_MESSAGE, OTHER_TRIAL_EXPIRED_LIKE_MESSAGE } from '@/lib/trial'
 
 const LIKE_LIMITS: Record<string, number> = { free: 5, starter: 10, standard: 15 }
 const FREE_REVEAL_LIMIT = 5
@@ -14,8 +15,18 @@ export async function likeProfile(likedId: string): Promise<{ success: boolean; 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { data: me } = await supabase.from('profiles').select('plan, full_name, member_id').eq('id', user.id).single()
+  const { data: me } = await supabase.from('profiles').select('plan, full_name, member_id, created_at').eq('id', user.id).single()
   const plan = me?.plan ?? 'free'
+
+  if (isTrialExpired(plan, me?.created_at)) throw new Error(TRIAL_EXPIRED_MESSAGE)
+
+  const { data: likedProfile } = await supabase
+    .from('profiles')
+    .select('full_name, phone, member_id, plan, created_at')
+    .eq('id', likedId)
+    .single()
+
+  if (isTrialExpired(likedProfile?.plan, likedProfile?.created_at)) throw new Error(OTHER_TRIAL_EXPIRED_LIKE_MESSAGE)
 
   const monthStart = new Date()
   monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
@@ -47,13 +58,6 @@ export async function likeProfile(likedId: string): Promise<{ success: boolean; 
   const nowMutual = !!mutualCheck
 
   const likerMemberId = (me as Record<string, unknown>)?.member_id as string ?? '#' + user.id.slice(0, 8).toUpperCase()
-
-  const { data: likedProfile } = await supabase
-    .from('profiles')
-    .select('full_name, phone, member_id')
-    .eq('id', likedId)
-    .single()
-
   const likedFirstName = firstNameOnly(likedProfile?.full_name ?? '')
 
   await supabase.from('notifications').insert({
@@ -107,7 +111,8 @@ export async function revealPhoto(viewedUserId: string): Promise<{ signedUrl: st
   if (!user) throw new Error('Not authenticated')
 
   // Enforce monthly reveal limit for free users
-  const { data: me } = await supabase.from('profiles').select('plan').eq('id', user.id).single()
+  const { data: me } = await supabase.from('profiles').select('plan, created_at').eq('id', user.id).single()
+  if (isTrialExpired(me?.plan, me?.created_at)) throw new Error(TRIAL_EXPIRED_MESSAGE)
   if ((me?.plan ?? 'free') === 'free') {
     const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
     const { count: revealsThisMonth } = await supabase
@@ -282,6 +287,10 @@ export async function acceptMeetingInbox(meetingId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
+
+  const { data: myTrial } = await supabase.from('profiles').select('plan, created_at').eq('id', user.id).single()
+  if (isTrialExpired(myTrial?.plan, myTrial?.created_at)) throw new Error(TRIAL_EXPIRED_MESSAGE)
+
   const { data: meeting } = await supabase
     .from('video_meetings')
     .select('room_id, requester_id, preferred_date, preferred_time')

@@ -203,9 +203,11 @@ export default function DiscoverClient({
           setLikeToast('Mutual like! 🎉 You can now request a video meeting.')
           setTimeout(() => setLikeToast(''), 4000)
         }
-      } catch {
+      } catch (err) {
         setLiked(prev => { const n = new Set(prev); n.delete(profileId); return n })
         setLikesRemaining(r => r + 1)
+        setLikeToast(err instanceof Error ? err.message : 'Something went wrong.')
+        setTimeout(() => setLikeToast(''), 4000)
       }
     }
   }

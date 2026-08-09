@@ -14,6 +14,7 @@ import {
   sendMeetingRescheduledSMS,
 } from '@/lib/sendSMS'
 import { zonedTimeToUtc, countryToTimezone } from '@/lib/timezone'
+import { isTrialExpired, TRIAL_EXPIRED_MESSAGE, OTHER_TRIAL_EXPIRED_MEETING_MESSAGE } from '@/lib/trial'
 
 export async function requestVideoMeeting(
   recipientId: string,
@@ -24,6 +25,13 @@ export async function requestVideoMeeting(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
+
+  const [{ data: myTrial }, { data: recipientTrial }] = await Promise.all([
+    supabase.from('profiles').select('plan, created_at').eq('id', user.id).single(),
+    supabase.from('profiles').select('plan, created_at').eq('id', recipientId).single(),
+  ])
+  if (isTrialExpired(myTrial?.plan, myTrial?.created_at)) throw new Error(TRIAL_EXPIRED_MESSAGE)
+  if (isTrialExpired(recipientTrial?.plan, recipientTrial?.created_at)) throw new Error(OTHER_TRIAL_EXPIRED_MEETING_MESSAGE)
 
   // Check if a pending/accepted meeting already exists
   const { data: existing } = await supabase
@@ -120,6 +128,9 @@ export async function acceptMeeting(meetingId: string): Promise<{ roomId: string
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
+
+  const { data: myTrial } = await supabase.from('profiles').select('plan, created_at').eq('id', user.id).single()
+  if (isTrialExpired(myTrial?.plan, myTrial?.created_at)) throw new Error(TRIAL_EXPIRED_MESSAGE)
 
   const { data: meeting } = await supabase
     .from('video_meetings')
