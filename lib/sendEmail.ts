@@ -275,6 +275,50 @@ export async function sendTrialEndedEmail(to: string, firstName: string, userId?
   await send(to, subject, html, userId)
 }
 
+const PLAN_NAMES: Record<string, string> = { starter: 'Starter', standard: 'Standard' }
+
+// Transactional receipt — always sent regardless of marketing email
+// preference (no userId passed to send(), so the unsubscribe check is
+// skipped, and no unsubscribe link is shown on a payment record).
+export async function sendPaymentReceiptEmail(
+  to: string,
+  firstName: string,
+  plan: string,
+  amount: number,
+  currency: string,
+  transactionId: string,
+) {
+  const planName = PLAN_NAMES[plan] ?? plan
+  const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const subject = `✅ Payment receipt — Banduraa ${planName} plan`
+  const html = wrap(`
+    <h2 style="font-family:Georgia,serif;font-size:22px;color:#0d1f3c;margin:0 0 12px;">Thank you for your payment</h2>
+    <div style="height:2px;background:linear-gradient(to right,#c9a84c,transparent);margin-bottom:20px;"></div>
+    <p style="font-family:Georgia,serif;font-size:16px;color:#2c4a6e;line-height:1.7;margin:0 0 16px;">
+      Hi <strong>${firstName}</strong>, this confirms your payment for the Banduraa <strong style="color:#0d1f3c;">${planName}</strong> plan was successful.
+    </p>
+    <div style="background:#f4f1eb;border-left:3px solid #c9a84c;padding:14px 18px;margin-bottom:20px;border-radius:0 6px 6px 0;">
+      <p style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8b6914;margin:0 0 8px;">Receipt</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">Plan: <strong>${planName}</strong></p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">Amount charged: <strong>${amount.toFixed(2)} ${currency}</strong></p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0 0 4px;">Date: ${dateStr}</p>
+      <p style="font-family:Georgia,serif;font-size:15px;color:#0d1f3c;margin:0;">Transaction ID: <span style="font-family:'Courier New',monospace;">${transactionId}</span></p>
+    </div>
+    <p style="font-family:Georgia,serif;font-size:15px;color:#5a6e82;line-height:1.7;margin:0 0 24px;">
+      Your subscription will renew automatically every month at the same price until you cancel. You can cancel anytime from your Account page — cancellation takes effect at the end of your current billing period.
+    </p>
+    <div style="text-align:center;margin-bottom:8px;">
+      <a href="https://banduraa.com/discover" style="display:inline-block;padding:13px 36px;background:linear-gradient(135deg,#e8c876,#c9a84c);color:#0d1f3c;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:4px;">
+        Continue to Banduraa →
+      </a>
+    </div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:#9aabb8;text-align:center;margin:16px 0 0;">
+      This is a payment receipt for your records — please keep it for your reference.
+    </p>
+  `)
+  await send(to, subject, html)
+}
+
 export async function sendAdminNewSubscriberEmail(memberName: string, plan: string) {
   const subject = `💳 New subscriber — ${memberName} (${plan})`
   const html = wrap(`

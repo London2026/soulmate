@@ -1,4 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendPaymentReceiptEmail, sendAdminNewSubscriberEmail } from '@/lib/sendEmail'
+import { firstNameOnly } from '@/lib/maskName'
 
 // Paid plan keys and their price, kept in one place so a checkout amount can
 // never be trusted from the client — only ever looked up here server-side.
@@ -128,6 +130,17 @@ export async function verifyAndApplyCheckout(checkoutId: string): Promise<Verify
       updated_at: new Date().toISOString(),
       date_of_birth: buyer?.user_metadata?.date_of_birth ?? undefined,
     })
+
+    const buyerName = (buyer?.user_metadata?.full_name as string | undefined) ?? 'Member'
+    const buyerEmail = buyer?.email
+    const amount = PIXXLES_PLAN_PRICES[row.plan] ?? 0
+    const transactionId = (data.id as string) ?? checkoutId
+    await Promise.all([
+      buyerEmail
+        ? sendPaymentReceiptEmail(buyerEmail, firstNameOnly(buyerName), row.plan, amount, PIXXLES_CURRENCY, transactionId)
+        : Promise.resolve(),
+      sendAdminNewSubscriberEmail(buyerName, row.plan),
+    ])
   }
 
   return { ok: true, success, alreadyProcessed: false, plan: row.plan, resultCode, message: data.result?.description }
