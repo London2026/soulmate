@@ -13,7 +13,7 @@ export default async function AdminPage() {
 
   const admin = createAdminClient()
 
-  const [membersRes, meetingsRes, revealsRes, ticketsRes, reportsRes] = await Promise.all([
+  const [membersRes, meetingsRes, revealsRes, ticketsRes, reportsRes, paymentsRes] = await Promise.all([
     admin.from('profiles')
       .select('id, full_name, age, gender, city, country, plan, phone, onboarding_complete, created_at, id_verified, id_document_path, id_country, member_id, crm_status, crm_notes, crm_last_contacted, suspended')
       .order('created_at', { ascending: false }),
@@ -33,6 +33,10 @@ export default async function AdminPage() {
       .select('id, reporter_id, reported_id, reason, message, created_at, status')
       .order('created_at', { ascending: false })
       .limit(200),
+    admin.from('pixxles_payments')
+      .select('id, user_id, plan, amount, currency, status, transaction_id, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100),
   ])
 
   const members   = membersRes.data   ?? []
@@ -40,6 +44,7 @@ export default async function AdminPage() {
   const reveals   = revealsRes.data   ?? []
   const tickets   = ticketsRes.data   ?? []
   const reports   = reportsRes.data   ?? []
+  const payments  = paymentsRes.data  ?? []
 
   // Build name + member_id lookup from members
   const nameById: Record<string, string> = {}
@@ -100,6 +105,11 @@ export default async function AdminPage() {
     created_at: m.created_at,
   }))
 
+  const paymentsWithNames = payments.map(p => ({
+    ...p,
+    member_name: nameById[p.user_id] ?? p.user_id.slice(0, 8),
+  }))
+
   const reportsWithNames = reports.map(r => ({
     ...r,
     status: (r.status ?? 'pending') as string,
@@ -120,6 +130,7 @@ export default async function AdminPage() {
       idVerifications={idVerifications}
       tickets={tickets}
       reports={reportsWithNames}
+      payments={paymentsWithNames}
     />
   )
 }

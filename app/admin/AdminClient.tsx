@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket, suspendMember, unsuspendMember, updateReportStatus } from './actions'
+import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket, suspendMember, unsuspendMember, updateReportStatus, resendPaymentReceipt } from './actions'
 
 const c = {
   navy: '#0d1f3c', navy2: '#122d52', navy3: '#1a3a6b',
@@ -36,6 +36,18 @@ interface Report {
   created_at: string
 }
 
+interface Payment {
+  id: string
+  user_id: string
+  member_name: string
+  plan: string
+  amount: number
+  currency: string
+  status: string
+  transaction_id: string | null
+  created_at: string
+}
+
 interface Props {
   stats: { totalMembers: number; newThisWeek: number; activeSubscribers: number; revealsToday: number; revealsThisMonth: number; pendingMeetings: number; meetingsAccepted: number; reportsPending: number }
   members: Record<string, unknown>[]
@@ -45,6 +57,7 @@ interface Props {
   idVerifications: IdVerification[]
   tickets: Record<string, unknown>[]
   reports: Report[]
+  payments: Payment[]
   defaultTab?: Tab
 }
 
@@ -99,6 +112,8 @@ function statusBadge(status: string) {
     pending:  { bg: 'rgba(201,122,46,0.2)',  color: '#fbbf24' },
     accepted: { bg: 'rgba(46,125,82,0.2)',   color: '#4ade80' },
     declined: { bg: 'rgba(158,42,43,0.2)',   color: '#f87171' },
+    success:  { bg: 'rgba(46,125,82,0.2)',   color: '#4ade80' },
+    failed:   { bg: 'rgba(158,42,43,0.2)',   color: '#f87171' },
   }
   const s = map[status] ?? map.pending
   return (
@@ -139,10 +154,17 @@ const REPORT_STATUSES = [
   { value: 'dismissed', label: 'Dismissed', color: '#9aabb8', bg: 'rgba(154,171,184,0.15)' },
 ]
 
-export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, tickets, reports, defaultTab }: Props) {
+export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, tickets, reports, payments, defaultTab }: Props) {
   const [tab, setTab] = useState<Tab>(defaultTab ?? 'dashboard')
   const [idDocs, setIdDocs] = useState<IdVerification[]>(idVerifications)
   const [idAction, setIdAction] = useState<Record<string, 'verifying' | 'rejecting' | 'done'>>({})
+  const [receiptAction, setReceiptAction] = useState<Record<string, 'sending' | 'sent' | string>>({})
+
+  async function handleResendReceipt(paymentId: string) {
+    setReceiptAction(prev => ({ ...prev, [paymentId]: 'sending' }))
+    const result = await resendPaymentReceipt(paymentId)
+    setReceiptAction(prev => ({ ...prev, [paymentId]: result.error ?? 'sent' }))
+  }
 
   const [reportData, setReportData] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
@@ -603,6 +625,50 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
                       <td style={td}>{fmt(m.created_at)}</td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+
+            <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: '1.1rem', color: c.text, margin: '2.5rem 0 1rem' }}>
+              Recent Payments
+            </h3>
+            <div style={{ overflowX: 'auto', border: `1px solid ${c.border2}`, borderRadius: 6 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>{['Member','Plan','Amount','Status','Date','Receipt'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {payments.length === 0 && (
+                    <tr><td style={td} colSpan={6}>No payments yet.</td></tr>
+                  )}
+                  {payments.map(p => {
+                    const action = receiptAction[p.id]
+                    return (
+                      <tr key={p.id} className="admin-row">
+                        <td style={{ ...td, color: c.text, fontWeight: 500 }}>{p.member_name}</td>
+                        <td style={td}>{planBadge(p.plan)}</td>
+                        <td style={td}>{p.amount.toFixed(2)} {p.currency}</td>
+                        <td style={td}>{statusBadge(p.status)}</td>
+                        <td style={td}>{fmt(p.created_at)}</td>
+                        <td style={td}>
+                          {p.status !== 'success' ? (
+                            <span style={{ color: c.text3 }}>—</span>
+                          ) : action === 'sent' ? (
+                            <span style={{ color: '#4ade80', fontSize: '0.75rem' }}>✓ Sent</span>
+                          ) : action === 'sending' ? (
+                            <span style={{ color: c.text3, fontSize: '0.75rem' }}>Sending…</span>
+                          ) : action ? (
+                            <span style={{ color: '#f87171', fontSize: '0.72rem' }}>{action}</span>
+                          ) : (
+                            <button onClick={() => handleResendReceipt(p.id)}
+                              style={{ background: 'none', border: `1px solid ${c.border}`, color: c.gold, borderRadius: 4, padding: '0.3rem 0.7rem', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
+                              Resend Receipt
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
