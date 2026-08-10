@@ -9,12 +9,13 @@ export const PIXXLES_PLAN_PRICES: Record<string, number> = {
 
 export const PIXXLES_CURRENCY = 'USD'
 
+// Live production entity, activated by Pixxles 2026-08-10 — confirmed to accept USD.
 function config() {
-  const baseUrl = process.env.PIXXLES_BASE_URL
-  const entityId = process.env.PIXXLES_ENTITY_ID
-  const authToken = process.env.PIXXLES_AUTH_TOKEN
+  const baseUrl = process.env.PIXXLES_PROD_BASE_URL
+  const entityId = process.env.PIXXLES_PROD_ENTITY_ID
+  const authToken = process.env.PIXXLES_PROD_AUTH_TOKEN
   if (!baseUrl || !entityId || !authToken) {
-    throw new Error('Pixxles is not configured — missing PIXXLES_BASE_URL/PIXXLES_ENTITY_ID/PIXXLES_AUTH_TOKEN')
+    throw new Error('Pixxles is not configured — missing PIXXLES_PROD_BASE_URL/PIXXLES_PROD_ENTITY_ID/PIXXLES_PROD_AUTH_TOKEN')
   }
   return { baseUrl, entityId, authToken }
 }
