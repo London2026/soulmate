@@ -18,7 +18,10 @@ const PLAN_LABELS: Record<string, { name: string; price: string }> = {
 
 const STYLE = `
   .checkout-page { min-height:100dvh; background:#f4f1eb; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; box-sizing:border-box; }
-  .checkout-home-btn { position:fixed; top:1rem; left:1rem; display:flex; align-items:center; gap:0.4rem; font-family:Raleway,sans-serif; font-size:0.68rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#5a6e82; text-decoration:none; padding:0.5rem 0.85rem; border:1px solid rgba(13,31,60,0.15); border-radius:6px; background:rgba(244,241,235,0.9); }
+  /* Normal document flow (not fixed) so it scrolls away with the page instead
+     of persistently floating over the subscription details / card fields
+     on tall mobile layouts. */
+  .checkout-home-btn { align-self:flex-start; display:flex; align-items:center; gap:0.4rem; font-family:Raleway,sans-serif; font-size:0.68rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:#5a6e82; text-decoration:none; padding:0.5rem 0.85rem; border:1px solid rgba(13,31,60,0.15); border-radius:6px; background:rgba(244,241,235,0.9); margin-bottom:1.25rem; }
   .checkout-card { width:100%; max-width:460px; background:#fff; border-radius:10px; box-shadow:0 16px 60px rgba(13,31,60,0.12); border:1px solid rgba(13,31,60,0.15); overflow:hidden; }
   .checkout-head { padding:1.8rem 2rem 1.4rem; border-bottom:1px solid rgba(13,31,60,0.15); text-align:center; background:#f4f1eb; }
   .checkout-body { padding:1.75rem 2rem; }
