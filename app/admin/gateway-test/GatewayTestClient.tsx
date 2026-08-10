@@ -17,6 +17,10 @@ const STYLE = `
   .gwtest-body { padding:1.75rem 2rem; }
   form.paymentWidgets { width: 100%; }
   form.paymentWidgets input, form.paymentWidgets select, form.paymentWidgets label { color: #0d1f3c !important; }
+  /* Card number / CVV are cross-origin <iframe>s; the widget copies the outer
+     iframe's own computed color/background into the inner field on mount,
+     so that's the only way to fix invisible white-on-white typed text. */
+  .wpwl-control-iframe { color: #0d1f3c !important; background-color: #ffffff !important; }
 `
 
 export default function GatewayTestClient() {

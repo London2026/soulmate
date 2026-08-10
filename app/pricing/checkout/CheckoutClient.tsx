@@ -30,12 +30,22 @@ const STYLE = `
   /* Give the injected COPYandPAY form breathing room and full width */
   form.paymentWidgets { width: 100%; }
   /* The site's root layout sets white body text globally; the widget's
-     input fields don't set their own color, so typed text was inheriting
-     white on a white input background and appeared invisible. */
+     non-iframed input fields (card holder etc.) don't set their own color,
+     so typed text was inheriting white on a white input background. */
   form.paymentWidgets input,
   form.paymentWidgets select,
   form.paymentWidgets label {
     color: #0d1f3c !important;
+  }
+  /* Card number / CVV are rendered as cross-origin <iframe> elements
+     (eu-prod.oppwa.com/v1/pciIframe.html) — page CSS can never reach inside
+     them directly. The widget's own script reads the *outer* iframe tag's
+     computed color/background and copies it into the inner input on mount
+     (setUpIframeInputStyles -> getElementStyles), so styling the iframe
+     element itself is the only way to fix its invisible white-on-white text. */
+  .wpwl-control-iframe {
+    color: #0d1f3c !important;
+    background-color: #ffffff !important;
   }
 `
 
