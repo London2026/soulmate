@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const c = {
@@ -40,13 +40,15 @@ const STYLE = `
   }
 `
 
-export default function LoginPage() {
+function LoginForm() {
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
 
   async function sendCode(e: React.FormEvent) {
     e.preventDefault()
@@ -79,7 +81,8 @@ export default function LoginPage() {
       email: email.trim(), token: code, type: 'email',
     })
     if (error) { setLoading(false); setError('Invalid or expired code. Please check your email and try again.'); return }
-    if (data.user) router.push('/auth/redirect')
+    const isSafeRedirect = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+    if (data.user) router.push(isSafeRedirect ? redirectTo : '/auth/redirect')
   }
 
   const errBox = error ? (
@@ -175,5 +178,13 @@ export default function LoginPage() {
       </div>
       <p className="auth-footer">By continuing you agree to our Terms &amp; Privacy Policy</p>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
