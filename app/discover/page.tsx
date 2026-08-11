@@ -28,7 +28,7 @@ export default async function DiscoverPage() {
   // Guard: onboarding must be complete + get plan
   const { data: me } = await supabase
     .from('profiles')
-    .select('onboarding_complete, plan, member_id, referral_credits, suspended, created_at')
+    .select('onboarding_complete, plan, member_id, referral_credits, suspended, created_at, pref_gender')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -75,12 +75,20 @@ export default async function DiscoverPage() {
     : null
   const trialExpired: boolean = userPlan === 'free' && daysSinceCreation > 30
 
-  // Fetch all complete profiles except the current user
-  const { data: rows } = await supabase
+  // Fetch complete profiles except the current user, filtered to the gender
+  // this member said they're looking for during onboarding (Man/Woman/Either) —
+  // respects each member's own stated preference rather than assuming
+  // opposite-gender-only, so it works correctly for gay/lesbian/bisexual members too.
+  const myPrefGender = (me as Record<string, unknown>)?.pref_gender as string | null
+  let profilesQuery = supabase
     .from('profiles')
     .select(PROFILE_FIELDS)
     .eq('onboarding_complete', true)
     .neq('id', user.id)
+  if (myPrefGender && myPrefGender !== 'Either') {
+    profilesQuery = profilesQuery.eq('gender', myPrefGender)
+  }
+  const { data: rows } = await profilesQuery
     .order('created_at', { ascending: false })
     .limit(30)
 
