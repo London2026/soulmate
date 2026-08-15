@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CountUp } from '@/components/motion'
+import VerifiedBadge from '@/components/VerifiedBadge'
 import ProfileCard, { type ProfileData } from './ProfileCard'
 import { maskName } from '@/lib/maskName'
 import { markNotificationRead, acceptMeetingInbox, declineMeetingInbox, toggleShortlist, reportProfile, blockProfile, likeProfile, unlikeProfile } from './actions'
@@ -1043,8 +1044,9 @@ function MyProfileCard({ profile }: { profile: ProfileData }) {
       </div>
       {/* Info */}
       <div className="compact-card-info">
-        <p className="compact-card-name" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem', lineHeight: 1.2 }}>
+        <p className="compact-card-name" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem', lineHeight: 1.2 }}>
           {maskName(profile.full_name)}
+          {profile.id_verified && <VerifiedBadge />}
         </p>
         <p className="compact-card-sub" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: c.sepia, margin: '0 0 0.4rem' }}>
           {profile.age} · {profile.city}
@@ -1251,8 +1253,9 @@ function CompactCard({ profile, onClick, shortlisted = false, onShortlist }: {
       </div>
 
       <div className="compact-card-info">
-        <p className="compact-card-name" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem', lineHeight: 1.2 }}>
+        <p className="compact-card-name" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontFamily: '"Playfair Display", serif', fontWeight: 600, color: c.ivory, margin: '0 0 0.2rem', lineHeight: 1.2 }}>
           {maskName(profile.full_name)}
+          {profile.id_verified && <VerifiedBadge />}
         </p>
         <p className="compact-card-sub" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic', color: c.sepia, margin: '0 0 0.4rem' }}>
           {profile.age} · {profile.city}

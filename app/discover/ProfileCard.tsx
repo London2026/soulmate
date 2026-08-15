@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { VoicePlayer } from '@/components/motion'
+import VerifiedBadge from '@/components/VerifiedBadge'
 import { revealPhoto } from './actions'
 import { requestVideoMeeting } from '@/app/profile/actions'
 import { maskName, firstNameOnly } from '@/lib/maskName'
@@ -213,7 +214,7 @@ export default function ProfileCard({ profile, canReveal = true, canMeet = true,
             <h2 className="pc-name" style={{ fontFamily: 'var(--font-playfair, "Playfair Display", serif)', fontWeight: 600, color: c.ivory, margin: 0, lineHeight: 1 }}>
               {maskName(profile.full_name)}
             </h2>
-            {profile.id_verified && <span title="ID Verified" style={{ fontSize: '1rem', color: '#16a34a' }}>✅</span>}
+            {profile.id_verified && <VerifiedBadge size={18} />}
             <span style={{ fontFamily: '"Courier New", monospace', fontSize: '0.82rem', fontWeight: 700, color: c.goldLight, background: 'rgba(201,168,76,0.08)', border: `1px solid ${c.border}`, padding: '0.22rem 0.65rem', borderRadius: '6px', letterSpacing: '0.08em' }}>
               {profile.member_id ?? '#' + profile.id.slice(0, 8).toUpperCase()}
             </span>
