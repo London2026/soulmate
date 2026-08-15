@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket, suspendMember, unsuspendMember, updateReportStatus, resendPaymentReceipt } from './actions'
+import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket, suspendMember, unsuspendMember, updateReportStatus, resendPaymentReceipt, updateMemberProfile } from './actions'
 
 const c = {
   navy: '#0d1f3c', navy2: '#122d52', navy3: '#1a3a6b',
@@ -154,6 +154,13 @@ const REPORT_STATUSES = [
   { value: 'dismissed', label: 'Dismissed', color: '#9aabb8', bg: 'rgba(154,171,184,0.15)' },
 ]
 
+const GENDER_OPTIONS = ['Man', 'Woman', 'Other']
+
+const editInp: React.CSSProperties = {
+  width: '100%', padding: '0.3rem 0.5rem', borderRadius: 4, border: '1px solid rgba(201,168,76,0.3)',
+  background: 'rgba(255,255,255,0.06)', color: '#e8e3d8', fontSize: '0.8rem', fontFamily: 'Raleway, sans-serif',
+}
+
 export default function AdminClient({ stats, members, meetings, reveals, planCounts, idVerifications, tickets, reports, payments, defaultTab }: Props) {
   const [tab, setTab] = useState<Tab>(defaultTab ?? 'dashboard')
   const [idDocs, setIdDocs] = useState<IdVerification[]>(idVerifications)
@@ -164,6 +171,34 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
     setReceiptAction(prev => ({ ...prev, [paymentId]: 'sending' }))
     const result = await resendPaymentReceipt(paymentId)
     setReceiptAction(prev => ({ ...prev, [paymentId]: result.error ?? 'sent' }))
+  }
+
+  const [memberOverrides, setMemberOverrides] = useState<Record<string, Record<string, unknown>>>({})
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<{ full_name: string; age: string; gender: string; city: string; country: string }>({ full_name: '', age: '', gender: '', city: '', country: '' })
+  const [savingMember, setSavingMember] = useState(false)
+
+  function startEditMember(m: any) {
+    setEditingMemberId(m.id)
+    setEditForm({
+      full_name: m.full_name ?? '', age: String(m.age ?? ''), gender: m.gender ?? '',
+      city: m.city ?? '', country: m.country ?? '',
+    })
+  }
+
+  async function saveEditMember(profileId: string) {
+    setSavingMember(true)
+    const data = {
+      full_name: editForm.full_name.trim(),
+      age: parseInt(editForm.age, 10) || undefined,
+      gender: editForm.gender,
+      city: editForm.city.trim(),
+      country: editForm.country.trim(),
+    }
+    await updateMemberProfile(profileId, data)
+    setMemberOverrides(prev => ({ ...prev, [profileId]: data }))
+    setSavingMember(false)
+    setEditingMemberId(null)
   }
 
   const [reportData, setReportData] = useState<Record<string, string>>(() => {
@@ -431,32 +466,75 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
             <div style={{ overflowX: 'auto', border: `1px solid ${c.border2}`, borderRadius: 6 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr>{['Member ID','Name','Age','Gender','Location','Religion','Plan','Status','WhatsApp','Joined'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
+                  <tr>{['Member ID','Name','Age','Gender','Location','Religion','Plan','Status','WhatsApp','Joined',''].map(h => <th key={h} style={th}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
-                  {members.filter((m: any) => m.onboarding_complete).map((m: any) => (
-                    <tr key={m.id} className="admin-row">
-                      <td style={{ ...td, fontFamily: 'monospace', color: c.gold, fontSize: '0.78rem' }}>{m.member_id ?? '—'}</td>
-                      <td style={{ ...td, color: c.text, fontWeight: 500 }}>{m.full_name ?? '—'}</td>
-                      <td style={td}>{m.age ?? '—'}</td>
-                      <td style={td}>{m.gender ?? '—'}</td>
-                      <td style={td}>{[m.city, m.country].filter(Boolean).join(', ') || '—'}</td>
-                      <td style={td}>{m.religion ?? '—'}</td>
-                      <td style={td}>{planBadge(m.plan ?? 'free')}</td>
-                      <td style={td}>
-                        {m.suspended
-                          ? <span style={{ padding: '0.15rem 0.5rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, background: 'rgba(158,42,43,0.2)', color: '#f87171' }}>Suspended</span>
-                          : <span style={{ color: '#4ade80', fontSize: '0.75rem' }}>Active</span>
-                        }
-                      </td>
-                      <td style={td}>
-                        <span style={{ color: m.phone ? '#4ade80' : c.text3, fontSize: '0.75rem' }}>
-                          {m.phone ? '✓ ' + m.phone : '—'}
-                        </span>
-                      </td>
-                      <td style={td}>{fmt(m.created_at)}</td>
-                    </tr>
-                  ))}
+                  {members.filter((m: any) => m.onboarding_complete).map((raw: any) => {
+                    const m = { ...raw, ...(memberOverrides[raw.id] ?? {}) }
+                    const isEditing = editingMemberId === m.id
+                    return (
+                      <tr key={m.id} className="admin-row">
+                        <td style={{ ...td, fontFamily: 'monospace', color: c.gold, fontSize: '0.78rem' }}>{m.member_id ?? '—'}</td>
+                        {isEditing ? (
+                          <>
+                            <td style={td}><input style={editInp} value={editForm.full_name} onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))} /></td>
+                            <td style={td}><input style={{ ...editInp, width: '4rem' }} value={editForm.age} onChange={e => setEditForm(f => ({ ...f, age: e.target.value }))} /></td>
+                            <td style={td}>
+                              <select style={editInp} value={editForm.gender} onChange={e => setEditForm(f => ({ ...f, gender: e.target.value }))}>
+                                {GENDER_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
+                              </select>
+                            </td>
+                            <td style={td}>
+                              <div style={{ display: 'flex', gap: '0.3rem' }}>
+                                <input style={editInp} placeholder="City" value={editForm.city} onChange={e => setEditForm(f => ({ ...f, city: e.target.value }))} />
+                                <input style={editInp} placeholder="Country" value={editForm.country} onChange={e => setEditForm(f => ({ ...f, country: e.target.value }))} />
+                              </div>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td style={{ ...td, color: c.text, fontWeight: 500 }}>{m.full_name ?? '—'}</td>
+                            <td style={td}>{m.age ?? '—'}</td>
+                            <td style={td}>{m.gender ?? '—'}</td>
+                            <td style={td}>{[m.city, m.country].filter(Boolean).join(', ') || '—'}</td>
+                          </>
+                        )}
+                        <td style={td}>{m.religion ?? '—'}</td>
+                        <td style={td}>{planBadge(m.plan ?? 'free')}</td>
+                        <td style={td}>
+                          {m.suspended
+                            ? <span style={{ padding: '0.15rem 0.5rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, background: 'rgba(158,42,43,0.2)', color: '#f87171' }}>Suspended</span>
+                            : <span style={{ color: '#4ade80', fontSize: '0.75rem' }}>Active</span>
+                          }
+                        </td>
+                        <td style={td}>
+                          <span style={{ color: m.phone ? '#4ade80' : c.text3, fontSize: '0.75rem' }}>
+                            {m.phone ? '✓ ' + m.phone : '—'}
+                          </span>
+                        </td>
+                        <td style={td}>{fmt(m.created_at)}</td>
+                        <td style={td}>
+                          {isEditing ? (
+                            <div style={{ display: 'flex', gap: '0.4rem' }}>
+                              <button onClick={() => saveEditMember(m.id)} disabled={savingMember}
+                                style={{ background: 'none', border: `1px solid ${c.gold}`, color: c.gold, borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
+                                {savingMember ? 'Saving…' : 'Save'}
+                              </button>
+                              <button onClick={() => setEditingMemberId(null)} disabled={savingMember}
+                                style={{ background: 'none', border: `1px solid ${c.border}`, color: c.text3, borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button onClick={() => startEditMember(m)}
+                              style={{ background: 'none', border: `1px solid ${c.border}`, color: c.text2, borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
+                              Edit
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

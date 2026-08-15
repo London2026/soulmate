@@ -32,6 +32,15 @@ export async function updateMemberCRM(profileId: string, data: { crm_status?: st
   await admin.from('profiles').update(data).eq('id', profileId)
 }
 
+export async function updateMemberProfile(
+  profileId: string,
+  data: { full_name?: string; age?: number; gender?: string; city?: string; country?: string }
+): Promise<void> {
+  await assertAdmin()
+  const admin = createAdminClient()
+  await admin.from('profiles').update(data).eq('id', profileId)
+}
+
 export async function markMemberContacted(profileId: string): Promise<void> {
   await assertAdmin()
   const admin = createAdminClient()
