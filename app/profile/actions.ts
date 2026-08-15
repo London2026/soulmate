@@ -15,6 +15,7 @@ import {
 } from '@/lib/sendSMS'
 import { zonedTimeToUtc, countryToTimezone } from '@/lib/timezone'
 import { isTrialExpired, TRIAL_EXPIRED_MESSAGE, OTHER_TRIAL_EXPIRED_MEETING_MESSAGE } from '@/lib/trial'
+import { deleteMemberById } from '@/lib/deleteMember'
 
 export async function requestVideoMeeting(
   recipientId: string,
@@ -353,35 +354,5 @@ export async function deleteAccount(): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const admin = createAdminClient()
-
-  // Collect storage paths to delete
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('back_photo_1_path, back_photo_2_path, front_photo_path, voice_path, voice_native_path, id_document_path')
-    .eq('id', user.id)
-    .single()
-
-  const p = profile as Record<string, unknown> | null
-  const paths = [
-    p?.back_photo_1_path, p?.back_photo_2_path, p?.front_photo_path,
-    p?.voice_path, p?.voice_native_path, p?.id_document_path,
-  ].filter((x): x is string => typeof x === 'string' && x.length > 0)
-
-  if (paths.length > 0) {
-    await admin.storage.from('profile-media').remove(paths)
-  }
-
-  await Promise.all([
-    admin.from('photo_reveals').delete().or(`viewer_id.eq.${user.id},viewed_id.eq.${user.id}`),
-    admin.from('notifications').delete().or(`recipient_id.eq.${user.id},sender_id.eq.${user.id}`),
-    admin.from('shortlist').delete().or(`user_id.eq.${user.id},profile_id.eq.${user.id}`),
-    admin.from('video_meetings').delete().or(`requester_id.eq.${user.id},recipient_id.eq.${user.id}`),
-    admin.from('reports').delete().or(`reporter_id.eq.${user.id},reported_id.eq.${user.id}`),
-    admin.from('referrals').delete().or(`referrer_id.eq.${user.id},referred_id.eq.${user.id}`),
-    admin.from('extra_meeting_purchases').delete().eq('user_id', user.id),
-  ])
-
-  await admin.from('profiles').delete().eq('id', user.id)
-  await admin.auth.admin.deleteUser(user.id)
+  await deleteMemberById(user.id)
 }

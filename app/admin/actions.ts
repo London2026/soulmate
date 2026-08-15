@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPaymentReceiptEmail } from '@/lib/sendEmail'
 import { firstNameOnly } from '@/lib/maskName'
 import { PIXXLES_PLAN_PRICES, PIXXLES_CURRENCY } from '@/lib/pixxles'
+import { deleteMemberById } from '@/lib/deleteMember'
 
 const ADMIN_EMAIL = 'london.anup@gmail.com'
 
@@ -39,6 +40,18 @@ export async function updateMemberProfile(
   await assertAdmin()
   const admin = createAdminClient()
   await admin.from('profiles').update(data).eq('id', profileId)
+}
+
+export async function deleteMemberProfile(profileId: string): Promise<{ error?: string }> {
+  await assertAdmin()
+  const admin = createAdminClient()
+
+  // Guard against ever deleting the admin's own account
+  const { data: { user: target } } = await admin.auth.admin.getUserById(profileId)
+  if (target?.email === ADMIN_EMAIL) return { error: 'Cannot delete the admin account.' }
+
+  await deleteMemberById(profileId)
+  return {}
 }
 
 export async function markMemberContacted(profileId: string): Promise<void> {

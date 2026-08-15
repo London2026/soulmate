@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket, suspendMember, unsuspendMember, updateReportStatus, resendPaymentReceipt, updateMemberProfile } from './actions'
+import { verifyMember, rejectMemberId, updateMemberCRM, markMemberContacted, updateTicket, suspendMember, unsuspendMember, updateReportStatus, resendPaymentReceipt, updateMemberProfile, deleteMemberProfile } from './actions'
 
 const c = {
   navy: '#0d1f3c', navy2: '#122d52', navy3: '#1a3a6b',
@@ -199,6 +199,22 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
     setMemberOverrides(prev => ({ ...prev, [profileId]: data }))
     setSavingMember(false)
     setEditingMemberId(null)
+  }
+
+  const [deleteState, setDeleteState] = useState<Record<string, 'confirm' | 'deleting'>>({})
+  const [deletedMemberIds, setDeletedMemberIds] = useState<Set<string>>(new Set())
+  const [deleteError, setDeleteError] = useState<Record<string, string>>({})
+
+  async function confirmDeleteMember(profileId: string) {
+    setDeleteState(prev => ({ ...prev, [profileId]: 'deleting' }))
+    setDeleteError(prev => ({ ...prev, [profileId]: '' }))
+    const result = await deleteMemberProfile(profileId)
+    if (result.error) {
+      setDeleteError(prev => ({ ...prev, [profileId]: result.error! }))
+      setDeleteState(prev => { const n = { ...prev }; delete n[profileId]; return n })
+    } else {
+      setDeletedMemberIds(prev => new Set([...prev, profileId]))
+    }
   }
 
   const [reportData, setReportData] = useState<Record<string, string>>(() => {
@@ -462,14 +478,14 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
         {/* ── MEMBERS ── */}
         {tab === 'members' && (
           <div>
-            {sectionTitle('Members', members.filter((m: any) => m.onboarding_complete).length)}
+            {sectionTitle('Members', members.filter((m: any) => m.onboarding_complete && !deletedMemberIds.has(m.id)).length)}
             <div style={{ overflowX: 'auto', border: `1px solid ${c.border2}`, borderRadius: 6 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr>{['Member ID','Name','Age','Gender','Location','Religion','Plan','Status','WhatsApp','Joined',''].map(h => <th key={h} style={th}>{h}</th>)}</tr>
                 </thead>
                 <tbody>
-                  {members.filter((m: any) => m.onboarding_complete).map((raw: any) => {
+                  {members.filter((m: any) => m.onboarding_complete && !deletedMemberIds.has(m.id)).map((raw: any) => {
                     const m = { ...raw, ...(memberOverrides[raw.id] ?? {}) }
                     const isEditing = editingMemberId === m.id
                     return (
@@ -525,11 +541,38 @@ export default function AdminClient({ stats, members, meetings, reveals, planCou
                                 Cancel
                               </button>
                             </div>
+                          ) : deleteState[m.id] === 'confirm' ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                              <span style={{ fontSize: '0.66rem', color: '#f87171', fontFamily: 'Raleway, sans-serif' }}>Delete permanently?</span>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button onClick={() => confirmDeleteMember(m.id)}
+                                  style={{ background: 'rgba(158,42,43,0.18)', border: '1px solid #f87171', color: '#f87171', borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.68rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif', fontWeight: 700 }}>
+                                  Yes, Delete
+                                </button>
+                                <button onClick={() => setDeleteState(prev => { const n = { ...prev }; delete n[m.id]; return n })}
+                                  style={{ background: 'none', border: `1px solid ${c.border}`, color: c.text3, borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.68rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : deleteState[m.id] === 'deleting' ? (
+                            <span style={{ fontSize: '0.72rem', color: c.text3, fontFamily: 'Raleway, sans-serif' }}>Deleting…</span>
                           ) : (
-                            <button onClick={() => startEditMember(m)}
-                              style={{ background: 'none', border: `1px solid ${c.border}`, color: c.text2, borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
-                              Edit
-                            </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'flex-start' }}>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button onClick={() => startEditMember(m)}
+                                  style={{ background: 'none', border: `1px solid ${c.border}`, color: c.text2, borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
+                                  Edit
+                                </button>
+                                <button onClick={() => setDeleteState(prev => ({ ...prev, [m.id]: 'confirm' }))}
+                                  style={{ background: 'none', border: '1px solid rgba(158,42,43,0.4)', color: '#f87171', borderRadius: 4, padding: '0.25rem 0.6rem', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'Raleway, sans-serif' }}>
+                                  Delete
+                                </button>
+                              </div>
+                              {deleteError[m.id] && (
+                                <span style={{ fontSize: '0.64rem', color: '#f87171', fontFamily: 'Raleway, sans-serif' }}>{deleteError[m.id]}</span>
+                              )}
+                            </div>
                           )}
                         </td>
                       </tr>
