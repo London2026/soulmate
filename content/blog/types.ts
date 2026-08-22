@@ -3,6 +3,7 @@ export type BlogBlock =
   | { type: 'h2'; text: string }
   | { type: 'list'; items: string[] }
   | { type: 'quote'; text: string }
+  | { type: 'video'; youtubeId: string; caption?: string }
 
 export interface BlogPost {
   slug: string

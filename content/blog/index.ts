@@ -2,11 +2,13 @@ import type { BlogPost } from './types'
 import voiceFirstMatching from './posts/voice-first-matching'
 import idVerificationSafety from './posts/id-verification-safety'
 import safeVideoMeetingTips from './posts/safe-video-meeting-tips'
+import howToUseBanduraaVideo from './posts/how-to-use-banduraa-video'
 
 const allPosts: BlogPost[] = [
   voiceFirstMatching,
   idVerificationSafety,
   safeVideoMeetingTips,
+  howToUseBanduraaVideo,
 ]
 
 export function getAllPosts(): BlogPost[] {
