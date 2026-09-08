@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: '%s | Banduraa',
   },
   description: 'The privacy-first matrimony platform where personality comes before photos. Share your voice, connect authentically, and find your forever.',
-  keywords: ['matrimony', 'Muslim matrimony', 'South Asian matrimony', 'Islamic marriage', 'halal matchmaking', 'voice-first matrimony', 'privacy matrimony', 'nikah', 'rishta', 'marriage UK'],
+  keywords: ['matrimony', 'matrimony site', 'online matrimony', 'matrimony UK', 'matrimony USA', 'marriage UK', 'marriage USA', 'voice-first matrimony', 'privacy matrimony', 'find a life partner', 'video meeting matrimony', 'verified matrimony profiles'],
   authors: [{ name: 'Banduraa', url: 'https://banduraa.com' }],
   creator: 'Banduraa',
   openGraph: {
@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     url: 'https://banduraa.com',
     images: [{ url: '/banduraa-hero-bg.png', width: 1200, height: 630, alt: 'Banduraa — Find Your Forever' }],
     locale: 'en_GB',
+    alternateLocale: ['en_US'],
   },
   twitter: {
     card: 'summary_large_image',

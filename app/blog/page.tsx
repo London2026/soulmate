@@ -12,6 +12,7 @@ const c = {
 export const metadata: Metadata = {
   title: 'Blog',
   description: 'Guidance on voice-first matching, profile verification, and meeting safely — straight from the team building Banduraa.',
+  alternates: { canonical: 'https://banduraa.com/blog' },
 }
 
 function formatDate(iso: string) {
