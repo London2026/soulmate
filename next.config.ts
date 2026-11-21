@@ -25,6 +25,15 @@ const nextConfig: NextConfig = {
   // tracing can fail to bundle the correct platform binary, causing photo
   // blurring to silently fail in production while working fine locally.
   serverExternalPackages: ['sharp'],
+  // Force-include sharp's Linux native binary + libvips shared library in every
+  // function bundle. Tracing missed libvips-cpp.so on Vercel, which made any
+  // page importing sharp (e.g. /discover) crash with a 500.
+  outputFileTracingIncludes: {
+    '/*': [
+      './node_modules/@img/sharp-linux-x64/**/*',
+      './node_modules/@img/sharp-libvips-linux-x64/**/*',
+    ],
+  },
   async headers() {
     return [
       {
