@@ -56,7 +56,7 @@ export default function GatewayTestClient() {
             Pixxles Gateway Verification
           </h2>
           <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '1rem', fontStyle: 'italic', color: c.sepia, margin: 0 }}>
-            £1.00 GBP — production gateway
+            $1.00 USD — production gateway
           </p>
         </div>
         <div className="gwtest-body">
@@ -64,12 +64,12 @@ export default function GatewayTestClient() {
             <>
               <div style={{ background: 'rgba(158,42,43,0.06)', border: `1px solid ${c.border}`, borderRadius: '6px', padding: '0.9rem 1rem', marginBottom: '1.25rem' }}>
                 <p style={{ fontFamily: '"Cormorant Garamond",serif', fontSize: '0.95rem', color: c.navy, margin: 0, lineHeight: 1.6 }}>
-                  This charges a real <strong>£1.00</strong> to whatever card is entered below, via Pixxles&apos; live production gateway. Use a real bank card you control. This is for gateway verification only — it does not affect any customer account or subscription.
+                  This charges a real <strong>$1.00 USD</strong> to whatever card is entered below, via Pixxles&apos; live production gateway. Use a real bank card you control. This is for gateway verification only — it does not affect any customer account or subscription.
                 </p>
               </div>
               <button onClick={() => setStarted(true)}
                 style={{ width: '100%', padding: '0.9rem', background: c.navy, color: c.goldLight, border: 'none', borderRadius: '6px', fontFamily: 'Raleway, sans-serif', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer' }}>
-                I understand — Start £1 Test →
+                I understand — Start $1 Test →
               </button>
             </>
           )}

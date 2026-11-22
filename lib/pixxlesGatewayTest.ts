@@ -5,7 +5,7 @@
 // and gateway URL are wired up correctly.
 
 const TEST_AMOUNT = '1.00'
-const TEST_CURRENCY = 'GBP'
+const TEST_CURRENCY = 'USD'
 
 function config() {
   const baseUrl = process.env.PIXXLES_PROD_BASE_URL
